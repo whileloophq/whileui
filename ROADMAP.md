@@ -18,14 +18,21 @@ WhileUI was built React Native first, on Uniwind, with the web reached through
 `react-native-web`. The web path still exists and still works
 (`createWhileUIViteCompatConfig` in `packages/ui/src/vite.ts`).
 
-But the apps we actually ship are web-first and reach the stores through a
-native shell — a WebView, not a native renderer. Under that reality a
-React-Native-first library is indirection we pay for and never use: every web
-app carries `react-native-web` for portability it does not exercise, and loses
-semantic HTML and real form elements to get it.
+But not every app is native-first. split-loop is a web app that reaches the
+stores through a shell — a WebView, not a native renderer — and for an app like
+that a React-Native-first library is indirection: it carries `react-native-web`
+for portability it never exercises and loses semantic HTML to get it.
 
-So the primary renderer is now the DOM. React Native becomes the second track,
-kept for the rare app where a WebView genuinely is not enough.
+So there are two tracks, both live, sharing one token layer:
+
+- **DOM** — web-first apps. split-loop. Browser, Capacitor for iOS/Android,
+  Tauri for desktop; one build.
+- **React Native** — native-first apps. sidekick-app: Expo for iOS and Android,
+  `react-native-web` for web, and an iOS build offered on Apple-silicon Macs
+  from App Store Connect.
+
+A component that both need — SearchBar, FAB, charts — is built on both from the
+same variants. Neither track is held back for the other.
 
 ## Three targets, one renderer
 
@@ -120,7 +127,7 @@ Material variants diverge. Study, do not copy: see the attribution rule in
 One package, subpath exports, which is already how this package is built.
 
 ```
-@thewhileloop/whileui              DOM. The primary track.
+@thewhileloop/whileui              DOM. Web-first apps.
   ├── /                            components + blocks
   ├── /tokens                      theme contract, presets, recipes — no React
   ├── /platform                    capability adapter, auto-detects host
@@ -129,7 +136,7 @@ One package, subpath exports, which is already how this package is built.
   ├── /platform/tauri
   └── /vite                        Vite config helper
 
-@thewhileloop/whileui-native       React Native. Frozen, not deleted.
+@thewhileloop/whileui-native       React Native. Native-first apps.
 ```
 
 Radix and Motion are peer dependencies **wrapped by WhileUI**, so an app never
@@ -216,11 +223,11 @@ handlers have to co-operate with the router rather than just proxy a call.
 
 ## Known gaps
 
-Carried from `TODO.md`, plus what this direction surfaces:
+Known before this direction was set, plus what it surfaces:
 
 - **FAB** — Konsta has one, we do not. Every app with a primary create action
   needs it.
-- **Searchbar** — already on `TODO.md`. Needs to be a real component, not a
+- **Searchbar** — long asked for by sidekick. Needs to be a real component, not a
   styled input.
 - **`blocks/auth/` and `blocks/profile/` are empty directories.** The templates
   live unexported in `apps/showcase/templates/`. Decide: export or delete the
@@ -236,8 +243,9 @@ Carried from `TODO.md`, plus what this direction surfaces:
 
 - **A pixel-perfect iOS or Material skin.** That is Konsta's product. Ours is a
   token system a brand can drive.
-- **API parity between the DOM and native tracks.** Tempting and expensive.
-  `whileui-native` is frozen; the DOM track evolves freely.
+- **Forced API parity between the tracks.** Same names and variants where a
+  component exists on both — that part is cheap, variants are strings. Beyond
+  that, neither track waits for the other.
 - **A second renderer abstraction.** No `Platform.select` in the DOM track, no
   universal primitive layer. `react-strict-dom` may make this worth revisiting
   in a few years — until then, two tracks that share tokens is the whole design.
@@ -247,7 +255,7 @@ Carried from `TODO.md`, plus what this direction surfaces:
 ## How work gets pulled
 
 Nothing in Groups A–D gets built speculatively. Each piece is pulled into
-existence by a real screen in a real app that needs it — the loop `TODO.md`
+existence by a real screen in a real app that needs it — the loop the native track
 already describes as _build in the app first, extract once proven_.
 
 The first consumer is Split-Loop, which is being migrated screen by screen

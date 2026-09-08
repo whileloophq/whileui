@@ -6,11 +6,11 @@ Beautiful, accessible, themeable components built with [Uniwind](https://uniwind
 
 **Requirements:** React 19+, React Native 0.81+, Expo 52+ (if using Expo). Supports React Native Web.
 
-> **Direction:** the DOM is becoming the primary renderer — web, Capacitor
-> mobile and Tauri desktop are one WebView build — and this React Native track
-> is being frozen rather than retired. See [ROADMAP.md](./ROADMAP.md) for what
-> the package owns, what it delegates, and how the two tracks divide.
-> Everything documented below describes the current, shipping native track.
+> **Two tracks, one token layer.** This README documents the React Native track
+> (native-first apps such as sidekick-app: Expo for iOS/Android,
+> `react-native-web` for web). The DOM track — `@thewhileloop/whileui/web`, for
+> web-first apps such as split-loop via Capacitor and Tauri — is documented in
+> its own section below. See [ROADMAP.md](./ROADMAP.md).
 
 ## Installation
 
@@ -401,7 +401,7 @@ Copy from `apps/showcase/templates/profile/`:
 
 ## DOM Track (web, Capacitor, Tauri)
 
-The primary renderer going forward — see [ROADMAP.md](./ROADMAP.md). Same tokens
+For web-first apps, via Capacitor and Tauri — see [ROADMAP.md](./ROADMAP.md). Same tokens
 and the same `variant`/`size` API as the native components above, rendering
 plain DOM. No `react-native-web`.
 
@@ -419,6 +419,13 @@ import { AppShell, Header, DrawerMenu, Button, Card } from '@thewhileloop/whileu
 | `platform/` — `haptics`, `secureStore`, `hardwareBack`, `keyboard`, `statusBar`, `share`, `deepLinks`. Web fallbacks by default; `installPlatform(createCapacitorPlatform({ App, Haptics, … }))` once at boot. Zero Capacitor deps in the library | ✓      |
 
 Everything else is listed, per category, in the DOM showcase: `cd apps/site && bun run dev` (port 8083). The showcase's own shell is `AppShell` + `Header` + `DrawerMenu`.
+
+**Tokens without a renderer.** `@thewhileloop/whileui/tokens` exports the theme
+and visual contracts, the presets, and `deriveThemeColors(base, scheme)` — give it
+the 25 base colours an app defines and it returns all 52, using the same ratios
+as the default presets. Safe in a build script on either track (no React, RN or
+Uniwind imports); `useThemeColors()` uses it too, so a missing `--color-primary-soft`
+derives from the app's own primary instead of falling back to the default palette.
 
 **One gotcha.** Visual tokens are emitted unitless (`--ui-radius-md: 14`) because the native track consumes them as numbers. On the DOM every pixel token needs `calc(var(--x) * 1px)`; `packages/ui/src/web/lib/recipes.ts` does this for you.
 

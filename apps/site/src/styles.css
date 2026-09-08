@@ -1,14 +1,10 @@
 @import 'tailwindcss';
-
-/* Tokens, generated from a WhileUI preset. See scripts/gen-theme.ts. */
 @import './theme.generated.css';
 
-/* Tailwind must scan the DOM track for class names, since the components live
-   outside this app. Native-track sources are deliberately not scanned. */
+/* Scan the DOM track only; native sources are not part of this build. */
 @source '../../../packages/ui/src/web';
 
-/* `dark` is a class on <html>, set before paint in index.html. Without this
-   Tailwind 4 defaults to prefers-color-scheme and the toggle does nothing. */
+/* `dark` is a class on <html>, set before paint in index.html. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {

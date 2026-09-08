@@ -1,26 +1,13 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../../../lib/cn';
 
-/**
- * DOM Header. Same shape as `blocks/navigation/header.tsx` on the native
- * track: `title`/`subtitle` or `centerContent`, a `leftAction` slot, and
- * `rightActions` as data so the icon buttons come out identical.
- *
- * Two DOM-only additions. `sticky` (default on), because a header that scrolls
- * away is the web default and almost never what an app wants. And `children`,
- * rendered under the title row, which is where a category strip or a search
- * field goes — the native showcase puts its chips there too, it just does so
- * inline.
- *
- * Clears the notch itself via `env(safe-area-inset-top)`, so the brand never
- * sits under the clock in a Capacitor shell. Harmless in a browser.
- */
+// DOM Header, same shape as the native block. DOM-only: `sticky` (default on),
+// `children` under the title row, `contentClassName`. Clears the notch itself.
 
 export interface HeaderAction {
   key: string;
   icon: ReactNode;
-  /** Accessible name. Required on the DOM: an icon-only button with no label
-   *  is invisible to a screen reader. */
+  /** Accessible name — icon-only buttons need one. */
   label: string;
   onPress: () => void;
   tone?: HeaderIconButtonProps['tone'];
@@ -113,8 +100,7 @@ export interface HeaderIconButtonProps extends ButtonHTMLAttributes<HTMLButtonEl
   tone?: 'muted' | 'secondary' | 'ghost';
 }
 
-/** 40px square, matching the native showcase's header controls. Pass a
- *  complete icon element as children; it is sized to 20px. */
+/** 40px square. Children is a complete icon element, sized to 20px. */
 export function HeaderIconButton({
   label,
   tone = 'muted',
@@ -147,8 +133,7 @@ export interface HeaderBackButtonProps extends Omit<HeaderIconButtonProps, 'labe
   icon?: ReactNode;
 }
 
-/** Defaults to `history.back()`, which is also what the Android hardware back
- *  key and the iOS edge swipe end up doing — so the three stay in agreement. */
+/** Defaults to `history.back()`, matching the Android key and the iOS swipe. */
 export function HeaderBackButton({
   label = 'Back',
   icon,

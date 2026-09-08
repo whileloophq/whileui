@@ -1,48 +1,27 @@
 import type { Platform } from './types';
 import { createWebPlatform } from './web';
 
-/**
- * The Capacitor implementation — with **no Capacitor dependency**.
- *
- * The app passes in the plugin modules it installed, and this adapts them.
- * That is what lets `@thewhileloop/whileui` stay installable for a plain web
- * app: it never imports `@capacitor/*`, so a browser build carries none of it
- * and a Capacitor build wires it once in its entry point:
- *
- * ```ts
- * import { App } from '@capacitor/app';
- * import { Haptics } from '@capacitor/haptics';
- * import { Keyboard } from '@capacitor/keyboard';
- * import { Preferences } from '@capacitor/preferences';
- * import { Share } from '@capacitor/share';
- * import { StatusBar } from '@capacitor/status-bar';
- * import { installPlatform, createCapacitorPlatform } from '@thewhileloop/whileui/web';
- *
- * installPlatform(createCapacitorPlatform({ App, Haptics, Keyboard, Preferences, Share, StatusBar }));
- * ```
- *
- * Every dependency is optional. A missing one falls back to the web behaviour
- * for that capability, so an app can adopt plugins one at a time — but the
- * mandatory set is `App` (hardware back, deep links), `Keyboard`, `StatusBar`
- * and a storage backend. Ship without those and the app is broken in ways a
- * simulator will not show you.
- *
- * The dependency types below are *structural*: the minimum shape of each plugin
- * this file calls. They are deliberately not imported from `@capacitor/*` so
- * the library has no type dependency either. Method-shorthand keeps them
- * bivariant, so the real modules assign cleanly; a mismatch shows up in the
- * app's own typecheck, which is where you want it.
- */
+// Capacitor implementation with no Capacitor dependency: the app passes in the
+// plugin modules it installed, once, at boot. Dependency types are structural
+// (method shorthand → bivariant) so the library has no type dependency either.
+// Every dep is optional and falls back to the web behaviour; the mandatory set
+// is `App`, `Keyboard`, `StatusBar` and a storage backend.
+//
+//   import { App } from '@capacitor/app';
+//   import { Haptics } from '@capacitor/haptics';
+//   import { Keyboard } from '@capacitor/keyboard';
+//   import { Preferences } from '@capacitor/preferences';
+//   import { Share } from '@capacitor/share';
+//   import { StatusBar } from '@capacitor/status-bar';
+//   installPlatform(createCapacitorPlatform({ App, Haptics, Keyboard, Preferences, Share, StatusBar }));
 
-// A listener handle is a Promise in Capacitor 5+, and was sync before that.
+// Capacitor 5+ returns a Promise from addListener; earlier versions were sync.
 type Handle = { remove(): Promise<void> | void };
 type MaybePromise<T> = T | Promise<T>;
 
 export interface CapacitorDeps {
   /** `@capacitor/app` — hardware back, deep links, exit/minimise. */
   App?: {
-    // Two events share one method in Capacitor's API; `any` here is the
-    // boundary between their loosely-typed overloads and our typed handlers.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     addListener(
       eventName: 'backButton' | 'appUrlOpen',
@@ -51,28 +30,24 @@ export interface CapacitorDeps {
     exitApp(): Promise<void>;
     minimizeApp?(): Promise<void>;
   };
-  /** `@capacitor/haptics`. */
   Haptics?: {
     impact(options: { style: 'LIGHT' | 'MEDIUM' | 'HEAVY' }): Promise<void>;
     selectionChanged?(): Promise<void>;
     notification?(options: { type: 'SUCCESS' | 'WARNING' | 'ERROR' }): Promise<void>;
   };
-  /** `@capacitor/preferences`. **Not encrypted** — UserDefaults / SharedPreferences.
-   *  Fine for settings; for tokens prefer `secureStorage`. */
+  /** `@capacitor/preferences` — unencrypted. Prefer `secureStorage` for tokens. */
   Preferences?: {
     get(options: { key: string }): Promise<{ value: string | null }>;
     set(options: { key: string; value: string }): Promise<void>;
     remove(options: { key: string }): Promise<void>;
   };
-  /** A Keychain/Keystore-backed store, if you have one. Wins over
-   *  `Preferences`. Any object with these three methods. */
+  /** A Keychain/Keystore-backed store. Wins over `Preferences`. */
   secureStorage?: {
     name: string;
     get(key: string): Promise<string | null>;
     set(key: string, value: string): Promise<void>;
     remove(key: string): Promise<void>;
   };
-  /** `@capacitor/keyboard`. */
   Keyboard?: {
     hide(): Promise<void>;
     addListener(
@@ -80,12 +55,10 @@ export interface CapacitorDeps {
       listener: (info?: { keyboardHeight?: number }) => void
     ): MaybePromise<Handle>;
   };
-  /** `@capacitor/status-bar`. */
   StatusBar?: {
     setStyle(options: { style: 'LIGHT' | 'DARK' | 'DEFAULT' }): Promise<void>;
     setBackgroundColor?(options: { color: string }): Promise<void>;
   };
-  /** `@capacitor/share`. */
   Share?: {
     share(options: { title?: string; text?: string; url?: string }): Promise<unknown>;
   };
@@ -138,9 +111,7 @@ export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
         : web.secureStore,
 
     hardwareBack: {
-      // The Android convention at the root is to leave. Minimise keeps the
-      // app's state for when they come back; exit is the fallback where the
-      // plugin is too old to offer it.
+      // Android convention at the root is to leave; minimise keeps state.
       fallback: (canGoBack) => {
         if (canGoBack) {
           window.history.back();
@@ -183,12 +154,10 @@ export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
 
     statusBar: StatusBar
       ? {
-          // Capacitor's `Style` names the *background* the bar sits on, which
-          // is the same thing our `StatusBarStyle` names — so this is a
-          // straight uppercase, not an inversion.
+          // Capacitor's `Style` names the background, same as ours — no inversion.
           setStyle: (style) => StatusBar.setStyle({ style: style === 'dark' ? 'DARK' : 'LIGHT' }),
           setBackgroundColor: async (color) => {
-            // Android only; iOS draws the bar over the WebView instead.
+            // Android only; iOS draws the bar over the WebView.
             if (StatusBar.setBackgroundColor) await StatusBar.setBackgroundColor({ color });
             await web.statusBar.setBackgroundColor(color);
           },
@@ -203,7 +172,7 @@ export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
               await Share.share(input);
               return true;
             } catch {
-              // Capacitor rejects when the sheet is dismissed.
+              // Rejects when the sheet is dismissed.
               return false;
             }
           },
@@ -221,7 +190,6 @@ export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
   };
 }
 
-/** Normalise Capacitor's sync-or-async listener handle to a plain unsubscribe. */
 function subscribe(handle: MaybePromise<Handle>): () => void {
   return () => {
     void Promise.resolve(handle).then((h) => h.remove());

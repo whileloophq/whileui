@@ -87,6 +87,7 @@ export {
   themePresetToCss,
   type ThemePreset,
 } from './lib/theme-presets';
+export { deriveThemeColors, THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './lib/theme-derive';
 
 // ─── Primitives ──────────────────────────────────────────────
 export { Text, textVariants, type TextProps } from './components/text';

@@ -1,11 +1,7 @@
 import type { Host } from './types';
 
-/**
- * Which shell is this WebView inside? Informational only — the *installed*
- * platform is whatever the app passed to `installPlatform()`. The two are
- * compared in the showcase so a Capacitor build that forgot to install its
- * adapter says so instead of silently running on web fallbacks.
- */
+// Which shell we are inside. Informational: the installed platform is whatever
+// `installPlatform()` received. The showcase compares the two.
 export function detectHost(): Host {
   if (typeof window === 'undefined') return 'web';
   const w = window as unknown as {

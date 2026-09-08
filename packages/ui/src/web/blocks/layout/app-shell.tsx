@@ -1,25 +1,10 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../../../lib/cn';
 
-/**
- * DOM AppShell. Same slots as `blocks/layout/app-shell.tsx` on the native
- * track: `header`, `footer`, `bottomNav`, plus `loading` and `skeleton`.
- *
- * **`loading` swaps only the content.** Header, footer and nav stay mounted, so
- * a screen that is fetching shows its chrome immediately and its skeleton
- * underneath, instead of the whole shell popping in when data lands. That is
- * the fix TODO.md asks for under "Skeleton/Loading", applied at the one place
- * every screen passes through.
- *
- * The bottom nav sits in a `sticky` rail at the end of the column rather than
- * `position: fixed`. iOS only settles a fixed element once a scroll has
- * finished, so mid-flick a fixed dock drifts over the list and drops back.
- * Sticky is placed by the scroller and tracks the finger — and because it
- * occupies real space, nothing has to be padded out of its way.
- *
- * `safeArea` pads the nav rail for the home indicator. The top inset is the
- * Header's own job, so a custom header knows to handle it.
- */
+// DOM AppShell, same slots as the native block. `loading` swaps only the
+// content so chrome never pops in after data. Bottom nav is `sticky`, not
+// `fixed`: iOS settles fixed elements only after a scroll ends, so a fixed dock
+// drifts mid-flick. `safeArea` pads the nav rail; the Header owns the top inset.
 
 export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   header?: ReactNode;

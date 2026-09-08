@@ -2,20 +2,21 @@
 
 Rules for AI agents and contributors editing this codebase. Follow every rule. No exceptions on docs.
 
-**Read `ROADMAP.md` first.** It states which renderer is primary, what this
+**Read `ROADMAP.md` first.** It states what each track is for, what this
 package owns versus delegates, and why. These rules are how; the roadmap is why.
 Where the two disagree, the roadmap wins and these rules are stale — fix them.
 
 ## Two tracks
 
-- **DOM (primary).** Web, Capacitor mobile, Tauri desktop. All three are a
-  WebView rendering the same build; there is no per-target UI branching.
-- **React Native (frozen).** Kept for apps a WebView cannot serve. Not deleted,
-  not actively developed. Do not hold the DOM track back for API parity with it.
+- **DOM** — web-first apps (split-loop): browser, Capacitor mobile, Tauri
+  desktop. One build, no per-target UI branching.
+- **React Native** — native-first apps (sidekick-app): Expo for iOS/Android,
+  `react-native-web` for web.
 
-Rules below marked **[RN]** apply only to the frozen track. Everything else —
-tokens, `tv()` variants, UI standards, touch targets, press feedback — is
-renderer-agnostic and applies to both.
+Both are live and share the token layer. Same names and variants where a
+component exists on both; never hold one track back for the other. Rules marked
+**[RN]** apply only to the native track. Everything else — tokens, `tv()`
+variants, UI standards, touch targets, press feedback — applies to both.
 
 ## Core Rules
 
@@ -203,7 +204,7 @@ component — there is a narrow viewport and a wide one.
 - **Touch and pointer both.** Every interactive element gets a 44px touch target
   _and_ a hover state. The same build serves a phone and a desktop.
 
-**[RN]** On the frozen native track the old guidance still holds: `Platform.OS`
+**[RN]** On the native track the old guidance still holds: `Platform.OS`
 for behaviour that truly differs, `useWindowDimensions` for breakpoints, and the
 Uniwind `web:` variant for per-platform styling.
 
@@ -261,10 +262,10 @@ Add to this file when you discover:
 
 | What                  | Path                                               | Notes                                                                                                                                                                                                                                     |
 | --------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Component (DOM)**   | `packages/ui/src/web/components/<name>.tsx`        | Primary track. Export from `packages/ui/src/web/index.ts`. Demo in `apps/site`                                                                                                                                                            |
-| **Component (RN)**    | `packages/ui/src/components/<name>/`               | Frozen track. Export from `index.ts`, re-export in `packages/ui/src/index.ts`. Demo in `apps/showcase`                                                                                                                                    |
+| **Component (DOM)**   | `packages/ui/src/web/components/<name>.tsx`        | DOM track. Export from `packages/ui/src/web/index.ts`. Demo in `apps/site`                                                                                                                                                                |
+| **Component (RN)**    | `packages/ui/src/components/<name>/`               | Native track. Export from `index.ts`, re-export in `packages/ui/src/index.ts`. Demo in `apps/showcase`                                                                                                                                    |
 | **DOM recipe**        | `packages/ui/src/web/lib/recipes.ts`               | Token geometry as CSS `var()`. Mirror of `lib/recipes.ts` — keep the two in step. Pixel tokens are unitless: `calc(var(--x) * 1px)`                                                                                                       |
-| **Block (DOM)**       | `packages/ui/src/web/blocks/<category>/<name>.tsx` | Primary track. Same slots/props as the RN block where one exists. Export from `packages/ui/src/web/index.ts`. Demo in `apps/site` — the showcase's own shell is `AppShell` + `Header` + `DrawerMenu`                                      |
+| **Block (DOM)**       | `packages/ui/src/web/blocks/<category>/<name>.tsx` | DOM track. Same slots/props as the RN block where one exists. Export from `packages/ui/src/web/index.ts`. Demo in `apps/site` — the showcase's own shell is `AppShell` + `Header` + `DrawerMenu`                                          |
 | **Block (RN)**        | `packages/ui/src/blocks/<category>/`               | Categories: `layout`, `navigation`, `chat`, `lists`, `commerce`, `media`, `datepicker`, `splash`                                                                                                                                          |
 | **Auth/Profile**      | `apps/showcase/templates/auth/` or `profile/`      | Copy-paste templates; NOT in core package. Import primitives from `@thewhileloop/whileui`                                                                                                                                                 |
 | **Shared hook/util**  | `packages/ui/src/lib/`                             | Theme helpers, cn, portal, tv, font-context                                                                                                                                                                                               |

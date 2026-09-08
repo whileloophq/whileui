@@ -15,15 +15,8 @@ export { detectHost } from './detect';
 export { createWebPlatform } from './web';
 export { createCapacitorPlatform, type CapacitorDeps } from './capacitor';
 
-/**
- * The installed platform, and the stable handles components import.
- *
- * The exports below are *proxies* that delegate to whatever is currently
- * installed — so `import { haptics }` at the top of a component works whether
- * or not `installPlatform()` has run yet, and so a component never holds a
- * reference to a stale implementation. The web platform is installed by
- * default; a Capacitor app replaces it once, at boot, before rendering.
- */
+// The installed platform, behind proxy handles so imports work before
+// `installPlatform()` runs and never hold a stale implementation.
 
 let current: Platform = createWebPlatform();
 let disconnectBack: (() => void) | undefined;
@@ -34,20 +27,14 @@ export function installPlatform(platform: Platform): void {
   disconnectBack = platform.hardwareBack.connect?.(dispatchBack);
 }
 
-/** The installed platform. Mostly for diagnostics — prefer the named handles. */
 export function currentPlatform(): Platform {
   return current;
 }
 
 // ─── Hardware back ───────────────────────────────────────────
 
-/**
- * Handlers run most-recent-first, and the first to return `true` consumes the
- * press. That ordering is the whole point: an open sheet registers on open and
- * unregisters on close, so back closes the sheet, then the next press goes
- * to the drawer beneath it, and only then to navigation. Nothing has to know
- * about anything else.
- */
+// Newest-first; the first handler to return `true` consumes the press. A sheet
+// registers on open and releases on close, so back unwinds the UI in order.
 const backHandlers: BackHandler[] = [];
 
 function dispatchBack(canGoBack: boolean): void {
@@ -58,7 +45,7 @@ function dispatchBack(canGoBack: boolean): void {
 }
 
 export const hardwareBack = {
-  /** Register an interceptor. Returns its unsubscribe; call it on unmount. */
+  /** Register an interceptor. Returns its unsubscribe. */
   onBack(handler: BackHandler): () => void {
     backHandlers.push(handler);
     return () => {
@@ -66,13 +53,10 @@ export const hardwareBack = {
       if (index >= 0) backHandlers.splice(index, 1);
     };
   },
-  /** Run the back sequence as if the key had been pressed. On a host with a
-   *  real back event this is what that event calls; on the web it is how a
-   *  header back button and the showcase drive the same path. */
+  /** Run the back sequence as if the key were pressed. */
   trigger(): void {
     dispatchBack(window.history.length > 1);
   },
-  /** How many interceptors are currently registered. Diagnostics. */
   get depth(): number {
     return backHandlers.length;
   },

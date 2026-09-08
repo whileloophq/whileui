@@ -3,16 +3,9 @@ import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { surfacePadding, type SurfacePadding } from '../lib/recipes';
 
-/**
- * DOM Card. Mirrors `components/card/card.tsx`.
- *
- * `frosted` is deliberately absent for now. On the native track it goes through
- * `expo-blur`; on the DOM it is `backdrop-filter`, which is a different enough
- * mechanism to deserve its own pass rather than a guessed shim. Worth knowing
- * before adding it: a `backdrop-filter` other than `none` makes the element a
- * containing block for every fixed-position descendant, so an overlay rendered
- * inside a frosted card lays out inside the card. Portal out, or don't frost.
- */
+// DOM Card, mirroring `components/card/card.tsx`. No `frosted` yet: on the DOM a
+// `backdrop-filter` also makes the element a containing block for fixed
+// descendants, so overlays inside it must portal out.
 
 const cardVariants = tv({
   base: 'border border-border bg-card text-card-foreground',

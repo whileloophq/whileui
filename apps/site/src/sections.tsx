@@ -1,10 +1,6 @@
 import type { ReactNode } from 'react';
 
-/**
- * Section helpers, mirroring `apps/showcase/App.tsx` so the two showcases read
- * the same way. Same names, same shape, same props — a demo written for one
- * track should be recognisable in the other.
- */
+// Section helpers, same names and props as `apps/showcase/App.tsx`.
 
 export function SectionGroup({ label }: { label: string }) {
   return (
@@ -36,13 +32,8 @@ export function Section({
   );
 }
 
-/**
- * A category with nothing ported into it yet.
- *
- * Deliberately visible rather than hidden: the showcase doubles as the port's
- * progress board, so an empty tab should say what it is waiting for. See the
- * four groups in ROADMAP.md.
- */
+// What a category is still waiting on. Visible on purpose: the showcase is the
+// port's progress board.
 export function Pending({ items }: { items: string[] }) {
   return (
     <div className="rounded-xl border border-dashed border-border p-6">
@@ -64,12 +55,8 @@ export function Pending({ items }: { items: string[] }) {
   );
 }
 
-/**
- * A single-path stroke icon, so the showcase needs no icon dependency to
- * exercise icon slots. Sized by whatever contains it (`[&>svg]:size-5` in the
- * header buttons and drawer items). Real apps will want Lucide or similar; the
- * icon-dependency decision is deliberately not made here.
- */
+// Single-path stroke icon so the showcase needs no icon dependency. Sized by
+// its container. The real icon-dependency decision is not made here.
 export function Glyph({ d }: { d: string }) {
   return (
     <svg

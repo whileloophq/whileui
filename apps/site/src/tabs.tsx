@@ -21,12 +21,8 @@ import {
 } from '@thewhileloop/whileui/web';
 import { Glyph, Pending, Section, SectionGroup } from './sections';
 
-/**
- * Category tabs, keyed the same as `apps/showcase/App.tsx` so the two tracks
- * stay navigable in the same order. A category appears here whether or not it
- * has anything in it — an empty one shows what it is waiting on, which makes
- * this the port's progress board as well as its showcase.
- */
+// Category tabs, keyed like `apps/showcase/App.tsx`. Empty categories list what
+// they are waiting on — the port's progress board.
 
 export type CategoryKey =
   | 'primitives'
@@ -57,21 +53,15 @@ export const CATEGORIES: { key: CategoryKey; label: string }[] = [
   { key: 'platform', label: 'Platform' },
 ];
 
-/**
- * Drawer grouping, matching the native showcase exactly.
- *
- * The split is the library's own distinction, not a menu convenience:
- * components are imported dependencies that must stay themeable, blocks are
- * copy-paste compositions people edit directly. See AGENTS.md.
- */
+// Drawer grouping, matching the native showcase. Components vs Blocks is the
+// library's own distinction (AGENTS.md).
 export const DRAWER_SECTIONS: { title: string; items: CategoryKey[] }[] = [
   { title: 'Components', items: ['primitives', 'controls', 'overlays', 'forms'] },
   {
     title: 'Blocks',
     items: ['auth', 'navigation', 'layout', 'chat', 'profile', 'lists', 'commerce'],
   },
-  // DOM-track only. React Native has `Platform` built in; a WebView does not,
-  // so the capability adapter is a thing this track has to show.
+  // DOM-track only; RN has Platform built in.
   { title: 'Platform', items: ['platform'] },
 ];
 
@@ -90,10 +80,7 @@ function PrimitivesTab() {
     <>
       <SectionGroup label="Group A — presentational" />
 
-      <Section
-        title="Button"
-        subtitle="Geometry from --ui-control-* tokens. Default height is 44px, so the touch-target rule is enforced by the token system rather than by remembering it."
-      >
+      <Section title="Button" subtitle="Geometry from --ui-control-* tokens; default height 44px.">
         <div className="flex flex-col gap-3">
           {BUTTON_SIZES.map((size) => (
             <div key={size} className="flex flex-wrap items-center gap-2">
@@ -270,7 +257,7 @@ function NavigationTab() {
 
       <Section
         title="AppShell + Header + DrawerMenu"
-        subtitle="This showcase's own chrome. The sticky header above, the hamburger, and the drawer it opens are all the library's — nothing about them is local to the site."
+        subtitle="This showcase's own chrome — header, hamburger, drawer — is the library's."
       >
         <Card padding="sm">
           <CardContent>
@@ -285,7 +272,7 @@ function NavigationTab() {
 
       <Section
         title="Header"
-        subtitle="Non-sticky here so it sits in the flow. HeaderBackButton defaults to history.back(), which is also what the Android hardware key and the iOS edge swipe end up doing."
+        subtitle="Non-sticky so it sits in the flow. HeaderBackButton defaults to history.back()."
       >
         <div className="overflow-hidden rounded-xl border border-border">
           <Header
@@ -308,7 +295,7 @@ function NavigationTab() {
 
       <Section
         title="DrawerMenu — icons, badges, destructive"
-        subtitle="The props the shell does not exercise. Badges cap at 99+; a destructive item reads in the destructive colour and never as active."
+        subtitle="Props the shell doesn't exercise: icons, badges (cap 99+), destructive."
       >
         <Button variant="outline" onClick={() => setOpen(true)}>
           <ButtonText>Open demo drawer</ButtonText>
@@ -344,20 +331,14 @@ function NavigationTab() {
   );
 }
 
-/**
- * Every capability, exercised. In a browser you are seeing the web fallbacks,
- * which is the point: each one either does the honest web thing or says
- * plainly that it did nothing. Open this same tab inside a Capacitor shell
- * with `installPlatform()` wired and the results change without a line of
- * this file changing.
- */
+// Every capability, exercised. In a browser these are the web fallbacks; under
+// Capacitor the same tab reports the real hardware.
 function PlatformTab() {
   const detected = detectHost();
   const installed = currentPlatform().name;
   const mismatch = detected !== 'web' && installed === 'web';
 
-  // Entries carry their own id: the same line can legitimately appear twice,
-  // so neither the text nor the index is a stable key.
+  // Lines can repeat, so entries carry an id.
   const [log, setLog] = useState<{ id: number; line: string }[]>([]);
   const nextId = useRef(0);
   const note = (line: string) =>
@@ -368,8 +349,7 @@ function PlatformTab() {
   const [intercept, setIntercept] = useState(false);
   const [color, setColor] = useState('#4457ff');
 
-  // A demo interceptor, so the back sequence can be watched consuming — or
-  // not consuming — a press. Real components do this on open/close.
+  // Demo interceptor; real components register on open and release on close.
   useEffect(() => {
     if (!intercept) return;
     return hardwareBack.onBack(() => {
@@ -384,7 +364,7 @@ function PlatformTab() {
 
       <Section
         title="Host"
-        subtitle="Detected from the window; installed is whatever installPlatform() was given. The two disagreeing is the bug this line exists to catch."
+        subtitle="Detected from the window vs. what installPlatform() received."
       >
         <Card padding="sm">
           <CardContent className="flex flex-col gap-1 font-mono text-sm">
@@ -406,7 +386,7 @@ function PlatformTab() {
 
       <Section
         title="Hardware back"
-        subtitle="Handlers run newest-first; the first to return true consumes the press. Toggle the interceptor, then trigger, and watch which path it takes. The drawer in this showcase registers one of these while it is open."
+        subtitle="Handlers run newest-first; the first to return true consumes the press."
       >
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -436,7 +416,7 @@ function PlatformTab() {
 
       <Section
         title="Haptics"
-        subtitle="Resolves true only if the host actually buzzed. Android Chrome vibrates; iOS Safari has no API and reports false — which is correct, not a bug."
+        subtitle="Resolves true only if the host buzzed. iOS Safari has no API and reports false."
       >
         <div className="flex flex-wrap gap-2">
           {(['light', 'medium', 'heavy'] as const).map((style) => (
@@ -467,7 +447,7 @@ function PlatformTab() {
 
       <Section
         title="Secure store"
-        subtitle={`Backend: ${secureStore.backend} — secure: ${String(secureStore.secure)}. That flag is honest; check it before trusting a token to it.`}
+        subtitle={`Backend: ${secureStore.backend} — secure: ${String(secureStore.secure)}.`}
       >
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -514,7 +494,7 @@ function PlatformTab() {
 
       <Section
         title="Keyboard"
-        subtitle="Focus the field on a phone, then Hide. On the web that is a blur — the only handle a browser gives you — and it works on every mobile browser."
+        subtitle="Focus the field on a phone, then Hide. On the web, hide is a blur."
       >
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -535,7 +515,7 @@ function PlatformTab() {
 
       <Section
         title="Status bar"
-        subtitle="On the web this writes the theme-color meta tag, which tints the browser toolbar on Android. In a Capacitor shell it also sets the real bar."
+        subtitle="Web: writes the theme-color meta. Capacitor: also sets the real bar."
       >
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -561,7 +541,7 @@ function PlatformTab() {
 
       <Section
         title="Share"
-        subtitle={`share.available: ${String(share.available)}. Desktop Chrome and Safari have it; desktop Firefox does not. Dismissing the sheet resolves false, not an error.`}
+        subtitle={`share.available: ${String(share.available)}. Dismissing resolves false.`}
       >
         <Button
           variant="outline"
@@ -598,8 +578,7 @@ function PlatformTab() {
   );
 }
 
-/** A component rather than a render function, so React reconciles a tab
- *  switch as a swap of one element instead of re-evaluating a call. */
+/** A component, not a render function, so a tab switch reconciles as one element swap. */
 export function Tab({ category }: { category: CategoryKey }) {
   if (category === 'primitives') return <PrimitivesTab />;
   if (category === 'navigation') return <NavigationTab />;

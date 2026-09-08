@@ -1,25 +1,12 @@
 import { useState } from 'react';
-import { AppShell, DrawerMenu, Header, HeaderIconButton } from '@thewhileloop/whileui/web';
+import { AppShell, DrawerMenu, Header, HeaderIconButton, haptics } from '@thewhileloop/whileui/web';
 import { Glyph } from './sections';
 import { CATEGORIES, DRAWER_SECTIONS, Tab, type CategoryKey } from './tabs';
 
-/**
- * The DOM showcase — an app built with the library, not a page about it.
- *
- * Shell matched to `apps/showcase/App.tsx` so the two tracks navigate the same
- * way: a hamburger opening a side drawer grouped into Components and Blocks, a
- * horizontal chip strip for categories, and one tab of content at a time.
- *
- * The shell itself — `AppShell`, `Header`, `DrawerMenu` — now comes from the
- * library. What is still local is the category chip strip, which is not a
- * native block either; the native showcase writes it inline too. When it earns
- * a second consumer it becomes `scroll-tabs`.
- *
- * Note what is *not* here: a bottom dock. On the native track `BottomNav` and
- * `TabBar` are demoed as components inside the Navigation tab rather than used
- * as the shell's own navigation, and this follows that — a showcase that eats
- * its own bottom bar has nowhere left to show one.
- */
+// The DOM showcase: an app built with the library, shell from the library,
+// matching `apps/showcase/App.tsx`. The category chip strip stays local until a
+// second consumer wants `scroll-tabs`. No bottom dock — BottomNav and TabBar
+// are demoed as components, not used as chrome.
 
 const GUTTER = 'mx-auto w-full max-w-4xl';
 
@@ -41,6 +28,7 @@ export default function App() {
   };
 
   const go = (key: string) => {
+    void haptics.selection();
     setActive(key as CategoryKey);
     setDrawerOpen(false);
     window.scrollTo({ top: 0 });
@@ -69,9 +57,6 @@ export default function App() {
             },
           ]}
         >
-          {/* Category chips. Horizontally scrollable, so eleven categories fit
-              a 360px phone without wrapping into a second row that pushes the
-              content down. */}
           <div
             className="overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ paddingInline: 'calc(var(--ui-control-padding-x-default) * 1px)' }}

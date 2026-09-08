@@ -8,6 +8,7 @@ import {
   THEME_TOKEN_VARIABLES,
   type ThemeColors,
 } from './theme-contract';
+import { deriveThemeColors, THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './theme-derive';
 export type { ThemeColors } from './theme-contract';
 
 import { Platform } from 'react-native';
@@ -44,35 +45,35 @@ function parseThemeColor(value: string | number | undefined): string | undefined
 
 function resolveThemeToken(
   cssValue: string | number | undefined,
-  appValue: string | number | undefined,
-  fallback: string
-): string {
+  appValue: string | number | undefined
+): string | undefined {
   if (Platform.OS === 'android') {
-    return parseThemeColor(appValue) ?? parseThemeColor(cssValue) ?? fallback;
+    return parseThemeColor(appValue) ?? parseThemeColor(cssValue);
   }
-  return parseThemeColor(cssValue) ?? parseThemeColor(appValue) ?? fallback;
+  return parseThemeColor(cssValue) ?? parseThemeColor(appValue);
 }
 
 export function useThemeColors(): ThemeColors {
   const { theme } = useUniwind();
   const values = useCSSVariable(THEME_TOKEN_VARIABLES);
-  const resolved: Partial<ThemeColors> = {};
-  let index = 0;
-  const fallbackPalette = theme === 'dark' ? WHILEUI_DARK_THEME_COLORS : WHILEUI_LIGHT_THEME_COLORS;
+  const scheme = theme === 'dark' ? 'dark' : 'light';
+  const fallbackPalette =
+    scheme === 'dark' ? WHILEUI_DARK_THEME_COLORS : WHILEUI_LIGHT_THEME_COLORS;
 
+  const defined: Partial<Record<keyof ThemeColors, string>> = {};
+  let index = 0;
   for (const token of THEME_TOKEN_SPECS) {
-    const cssValue = values[index++];
-    const appValue = values[index++];
-    (resolved as Record<string, string>)[token.key] = resolveThemeToken(
-      cssValue,
-      appValue,
-      fallbackPalette[token.key]
-    );
+    const value = resolveThemeToken(values[index++], values[index++]);
+    if (value) defined[token.key] = value;
   }
 
-  resolved.placeholder = resolved.mutedForeground ?? fallbackPalette.placeholder;
+  // Tokens the app left out are derived from its own base palette, not taken
+  // from the default one — a missing soft tint must not turn the brand purple.
+  const base = {} as Record<string, string>;
+  for (const key of THEME_BASE_TOKEN_KEYS) base[key] = defined[key] ?? fallbackPalette[key];
+  const derived = deriveThemeColors(base as ThemeBaseColors, scheme);
 
-  return resolved as ThemeColors;
+  return { ...derived, ...defined, placeholder: derived.placeholder } as ThemeColors;
 }
 
 /** Icon colors derived from theme. For @expo/vector-icons which need hex values. */

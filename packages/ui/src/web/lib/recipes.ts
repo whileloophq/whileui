@@ -1,24 +1,13 @@
 import type { CSSProperties } from 'react';
 
-/**
- * DOM equivalents of `lib/recipes.ts`.
- *
- * The native track resolves visual tokens in JS (`useVisualTokens`) because
- * React Native cannot read a CSS variable from a class name. The DOM can, so
- * these recipes stay declarative: they emit `var()` references and the cascade
- * does the work. Changing a theme preset re-styles every control with no
- * re-render.
- *
- * Visual tokens are emitted unitless by `themePresetToCss` (`--ui-radius-md: 14`),
- * so every pixel token is wrapped in `calc(... * 1px)` here. That is the one
- * gotcha in the whole bridge.
- */
+// DOM mirror of `lib/recipes.ts` — keep the two in step. Emits `var()` so the
+// cascade resolves tokens. Visual tokens are unitless (`--ui-radius-md: 14`),
+// hence `calc(... * 1px)`.
 
 const px = (token: string) => `calc(var(${token}) * 1px)`;
 
 export type ControlSize = 'default' | 'sm' | 'lg' | 'icon';
 
-/** Mirror of `controlRecipe` in `lib/recipes.ts`. Keep the two in step. */
 export function controlRecipe(size: ControlSize = 'default'): CSSProperties {
   if (size === 'sm') {
     return {
@@ -59,7 +48,6 @@ export function controlRecipe(size: ControlSize = 'default'): CSSProperties {
 
 export type SurfacePadding = 'none' | 'sm' | 'default' | 'lg';
 
-/** Mirror of `surfacePadding` in `lib/recipes.ts`. */
 export function surfacePadding(padding: SurfacePadding = 'default'): CSSProperties {
   if (padding === 'none') return {};
   if (padding === 'sm') return { padding: px('--ui-surface-padding-sm') };

@@ -1,21 +1,6 @@
-/**
- * The capability adapter's contract.
- *
- * Everything an app needs from the device that a browser cannot, or can only
- * partly, supply — behind one interface with a web implementation as the
- * default and a Capacitor implementation the app installs at boot. Components
- * import from `platform/` and never know which host they are on.
- *
- * The reason this exists is not tidiness. Each capability here is something an
- * app is broken without and easy to forget — the Android hardware back key
- * closes the app if nobody handles it. Putting the whole mandatory set behind
- * one `installPlatform()` call means a new app cannot forget any of it. See
- * ROADMAP.md, "Group D".
- *
- * Every method resolves on every host. A capability that does not exist on the
- * current host is a no-op that reports `false`, never a throw — a button that
- * buzzes on a phone must not crash a laptop.
- */
+// Capability contract. The web implementation is the default; a host adapter is
+// installed at boot. Every method resolves on every host — an unsupported
+// capability is a no-op that reports `false`, never a throw.
 
 export type Host = 'web' | 'capacitor' | 'tauri';
 
@@ -25,7 +10,7 @@ export type ImpactStyle = 'light' | 'medium' | 'heavy';
 export type NotificationType = 'success' | 'warning' | 'error';
 
 export interface Haptics {
-  /** Resolves `true` if the host actually produced feedback. */
+  /** `true` if the host actually produced feedback. */
   impact(style?: ImpactStyle): Promise<boolean>;
   selection(): Promise<boolean>;
   notification(type: NotificationType): Promise<boolean>;
@@ -34,11 +19,8 @@ export interface Haptics {
 // ─── Storage ─────────────────────────────────────────────────
 
 export interface SecureStore {
-  /** Honest flag. `localStorage` and Capacitor Preferences are both `false`;
-   *  only a Keychain/Keystore-backed plugin is `true`. Auth tokens should check
-   *  this rather than assume. */
+  /** `false` for localStorage and Capacitor Preferences; `true` only for a Keychain/Keystore backend. */
   readonly secure: boolean;
-  /** Human-readable backend name, for diagnostics and the showcase. */
   readonly backend: string;
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
@@ -47,16 +29,13 @@ export interface SecureStore {
 
 // ─── Hardware back ───────────────────────────────────────────
 
-/** Return `true` to consume the press; anything else lets it fall through to
- *  the next handler and finally to the host's default. */
+/** Return `true` to consume the press. */
 export type BackHandler = () => boolean | void;
 
 export interface HardwareBackHost {
-  /** What happens when no handler consumed the press. History-based: go back
-   *  if we can, otherwise leave the app (Android) or nothing (web). */
+  /** Runs when no handler consumed the press. */
   fallback(canGoBack: boolean): void;
-  /** Wire the host's back event to the shared dispatcher. Absent on hosts with
-   *  no such event. Returns a disconnect. */
+  /** Wire the host's back event to the dispatcher. Returns a disconnect. */
   connect?(dispatch: (canGoBack: boolean) => void): () => void;
 }
 
@@ -75,8 +54,7 @@ export interface Keyboard {
 
 // ─── Status bar ──────────────────────────────────────────────
 
-/** Describes the *app's* theme, not the bar's text. `'dark'` means the UI is
- *  dark, so the bar should draw light text over it. */
+/** The app's theme, not the bar's text: `'dark'` UI wants light bar text. */
 export type StatusBarStyle = 'light' | 'dark';
 
 export interface StatusBar {
@@ -94,19 +72,18 @@ export interface ShareInput {
 
 export interface Share {
   readonly available: boolean;
-  /** Resolves `true` if the sheet was shown and not dismissed. */
+  /** `true` if the sheet was shown and not dismissed. */
   share(input: ShareInput): Promise<boolean>;
 }
 
 // ─── Deep links ──────────────────────────────────────────────
 
 export interface DeepLinks {
-  /** Fires when the app is opened, or brought forward, by a URL. Never fires
-   *  on the web, where the URL is already in `location`. */
+  /** Never fires on the web — the URL is already in `location`. */
   onOpen(callback: (url: string) => void): () => void;
 }
 
-// ─── The whole thing ─────────────────────────────────────────
+// ─── Platform ────────────────────────────────────────────────
 
 export interface Platform {
   readonly name: Host;

@@ -8,17 +8,8 @@ import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { controlRecipe } from '../lib/recipes';
 
-/**
- * DOM Button. Same API as the native track: `variant`, `size`, and a
- * `ButtonContext` so `ButtonText` inherits both without being told twice.
- *
- * The port is deliberately boring — `buttonVariants` and `buttonTextVariants`
- * are copied verbatim from `components/button/button.tsx`, because they are
- * class strings and class strings do not care what renders them. What changes
- * is only the element (`Pressable` becomes `button`) and how sizing arrives:
- * the native track computes a style object from resolved tokens, this one
- * points at CSS variables and lets the cascade resolve them.
- */
+// DOM Button. Variants copied from the native `button.tsx`; only the element
+// and how sizing arrives (CSS vars, not a computed style) differ.
 
 // ─── Context ─────────────────────────────────────────────────
 
@@ -105,7 +96,6 @@ export interface ButtonIconProps extends HTMLAttributes<HTMLSpanElement> {
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'default', style, children, ...props }, ref) => {
-    // `link` opts out of control geometry entirely — it is text, not a control.
     const tokenStyle = variant === 'link' ? undefined : controlRecipe(size ?? 'default');
 
     return (

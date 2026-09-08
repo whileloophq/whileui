@@ -2,22 +2,10 @@ import { useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '../../../lib/cn';
 import { hardwareBack } from '../../platform';
 
-/**
- * DOM DrawerMenu. Same API as `blocks/navigation/drawer-menu.tsx` on the
- * native track: `sections` of `items`, `activeKey`, `onSelect`, optional
- * `header` and `footer` slots.
- *
- * Always mounted, like the native one. Visibility is a transform plus a delayed
- * `visibility` flip, so the panel can animate out — and so a hidden drawer is
- * genuinely gone from the tab order and the accessibility tree rather than
- * merely transparent. `frosted` is deliberately absent for now, same reasoning
- * as Card: `expo-blur` and `backdrop-filter` are different enough to deserve
- * their own pass.
- *
- * Width is `--ui-drawer-width-ratio` of the viewport, capped at
- * `--ui-drawer-max-width-web` — the ~360px web default AGENTS.md sets for
- * overlays. A drawer that fills a desktop window stops reading as a drawer.
- */
+// DOM DrawerMenu, same API as the native block. Always mounted; when hidden it
+// is translated off-screen with a delayed `visibility` flip, so it animates out
+// and is inert. Width is `--ui-drawer-width-ratio` capped at
+// `--ui-drawer-max-width-web`. No `frosted` yet (see Card).
 
 export interface DrawerMenuItem {
   key: string;
@@ -32,8 +20,7 @@ export interface DrawerMenuSection {
   items: DrawerMenuItem[];
 }
 
-// `onSelect` is omitted because HTMLAttributes already declares it as a DOM
-// event handler; ours takes the selected key, matching the native API.
+// `onSelect` is omitted: HTMLAttributes declares it as a DOM event handler.
 export interface DrawerMenuProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'children' | 'onSelect'
@@ -49,8 +36,7 @@ export interface DrawerMenuProps extends Omit<
   maxWidth?: number;
 }
 
-// No motion tokens are emitted as CSS variables yet, so this is a literal.
-// When `interaction-tokens` grows a CSS-variable form, read it from there.
+// No motion tokens are emitted as CSS variables yet.
 const DURATION_MS = 200;
 
 export function DrawerMenu({
@@ -67,8 +53,7 @@ export function DrawerMenu({
 }: DrawerMenuProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // A drawer owns the screen while it is open: lock the page behind it, close
-  // on Escape, and move focus in so keyboard users are not left behind.
+  // Lock scroll, close on Escape, take focus; Android back closes the drawer.
   useEffect(() => {
     if (!visible) return;
     const previousOverflow = document.body.style.overflow;
@@ -78,10 +63,6 @@ export function DrawerMenu({
     };
     window.addEventListener('keydown', onKey);
     panelRef.current?.focus();
-    // The Android back key closes an open drawer rather than navigating — the
-    // one behaviour every Android user expects and every WebView app forgets.
-    // Registered on open, released on close, so it never intercepts anything
-    // while the drawer is shut.
     const offBack = hardwareBack.onBack(() => {
       onClose();
       return true;
@@ -126,8 +107,6 @@ export function DrawerMenu({
           maxWidth: maxWidth ?? 'calc(var(--ui-drawer-max-width-web) * 1px)',
           transform: visible ? 'translateX(0)' : 'translateX(-100%)',
           visibility: visible ? 'visible' : 'hidden',
-          // Visibility flips immediately on open and only after the slide on
-          // close, so the exit animation is seen and the hidden panel is inert.
           transition: visible
             ? `transform ${DURATION_MS}ms ease-out, visibility 0s`
             : `transform ${DURATION_MS}ms ease-in, visibility 0s ${DURATION_MS}ms`,
@@ -157,9 +136,6 @@ export function DrawerMenu({
                         type="button"
                         onClick={() => onSelect?.(item.key)}
                         aria-current={active ? 'page' : undefined}
-                        // Colour-only differentiation, never font-weight —
-                        // toggling weight changes text width and the list
-                        // jumps. See AGENTS.md.
                         className={cn(
                           'flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left font-medium transition-colors',
                           active
