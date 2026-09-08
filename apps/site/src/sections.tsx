@@ -57,9 +57,10 @@ export function Pending({ items }: { items: string[] }) {
 
 // Single-path stroke icon so the showcase needs no icon dependency. Sized by
 // its container. The real icon-dependency decision is not made here.
-export function Glyph({ d }: { d: string }) {
+export function Glyph({ d, className }: { d: string; className?: string }) {
   return (
     <svg
+      className={className}
       viewBox="0 0 24 24"
       aria-hidden="true"
       fill="none"

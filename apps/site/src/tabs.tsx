@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Button,
   ButtonText,
   Card,
@@ -8,16 +11,26 @@ import {
   CardHeader,
   CardTitle,
   DrawerMenu,
+  GoogleSignInButton,
   Header,
   HeaderBackButton,
+  Input,
+  OTPInput,
+  PageSkeleton,
+  Separator,
+  Skeleton,
+  Spinner,
   currentPlatform,
   detectHost,
   haptics,
   hardwareBack,
   keyboard,
+  network,
+  notifications,
   secureStore,
   share,
   statusBar,
+  storage,
 } from '@thewhileloop/whileui/web';
 import { Glyph, Pending, Section, SectionGroup } from './sections';
 
@@ -164,6 +177,64 @@ function PrimitivesTab() {
         </Card>
       </Section>
 
+      <Section title="Alert" subtitle="Soft-tinted variants; the icon slot lays itself out.">
+        <div className="flex flex-col gap-3">
+          <Alert>
+            <AlertTitle>Nothing is wrong</AlertTitle>
+            <AlertDescription>The default variant carries no tint.</AlertDescription>
+          </Alert>
+          <Alert variant="warning" icon={<Glyph d={WARNING} className="text-warning" />}>
+            <AlertDescription>That code has expired. Ask for a new one.</AlertDescription>
+          </Alert>
+          <Alert variant="destructive" icon={<Glyph d={WARNING} className="text-destructive" />}>
+            <AlertDescription>We could not reach the server.</AlertDescription>
+          </Alert>
+          <Alert variant="success">
+            <AlertDescription>Saved.</AlertDescription>
+          </Alert>
+          <Alert variant="info">
+            <AlertDescription>Rates were frozen when the expense was entered.</AlertDescription>
+          </Alert>
+        </div>
+      </Section>
+
+      <Section
+        title="Separator"
+        subtitle="With a label it becomes the divider above social sign-in."
+      >
+        <div className="flex flex-col gap-4">
+          <Separator />
+          <Separator label="or" />
+          <div className="flex h-10 items-center gap-4">
+            <span className="text-sm text-muted-foreground">left</span>
+            <Separator orientation="vertical" />
+            <span className="text-sm text-muted-foreground">right</span>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Spinner" subtitle="Inherits currentColor, so it is legible on any button.">
+        <div className="flex flex-wrap items-center gap-4">
+          <Spinner size="sm" />
+          <Spinner />
+          <Spinner size="lg" />
+          <Button>
+            <Spinner size="sm" />
+            <ButtonText>Signing in</ButtonText>
+          </Button>
+        </div>
+      </Section>
+
+      <Section title="Skeleton" subtitle="Pulse only on the DOM track — see the source for why.">
+        <div className="flex items-center gap-3">
+          <Skeleton className="size-12 shrink-0 rounded-full" />
+          <div className="flex flex-1 flex-col gap-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        </div>
+      </Section>
+
       <SectionGroup label="Still to port" />
       <Pending
         items={[
@@ -172,12 +243,8 @@ function PrimitivesTab() {
           'stack',
           'box',
           'view',
-          'separator',
-          'skeleton',
-          'spinner',
           'avatar',
           'progress',
-          'alert',
           'label',
           'badge',
           'aspect-ratio',
@@ -188,9 +255,124 @@ function PrimitivesTab() {
   );
 }
 
+function ControlsTab() {
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+
+  return (
+    <>
+      <SectionGroup label="Group A — controls" />
+
+      <Section title="Input" subtitle="Prefix and suffix slots; geometry from the field recipe.">
+        <div className="flex flex-col gap-3">
+          <Input
+            placeholder="Email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            prefix={<Glyph d={ENVELOPE} className="text-muted-foreground" />}
+          />
+          <Input
+            placeholder="Password"
+            type="password"
+            prefix={<Glyph d={LOCK} className="text-muted-foreground" />}
+          />
+          <Input
+            placeholder="Amount"
+            suffix={<span className="text-sm text-muted-foreground">SGD</span>}
+          />
+          <Input variant="error" placeholder="That address is not valid" />
+          <Input placeholder="Disabled" disabled />
+        </div>
+      </Section>
+
+      <Section
+        title="OTPInput"
+        subtitle="Cells are presentation; one transparent field over them takes the typing and the OS code suggestion."
+      >
+        <div className="flex flex-col gap-4">
+          <OTPInput value={code} onValueChange={setCode} />
+          <OTPInput size="compact" value={code} onValueChange={setCode} secure />
+          <OTPInput variant="error" value={code} onValueChange={setCode} />
+          <p className="text-xs text-muted-foreground">
+            Typed: <span className="font-mono">{code || '—'}</span>
+          </p>
+        </div>
+      </Section>
+
+      <SectionGroup label="Still to port" />
+      <Pending items={PENDING.controls} />
+    </>
+  );
+}
+
+function AuthTab() {
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <>
+      <SectionGroup label="Group C — auth" />
+
+      <Section
+        title="GoogleSignInButton"
+        subtitle="Google's branding fixes the colours, so it stays white in dark mode. The plugin call is the app's."
+      >
+        <div className="flex max-w-sm flex-col gap-3">
+          <GoogleSignInButton
+            loading={loading}
+            onClick={() => {
+              setLoading(true);
+              window.setTimeout(() => setLoading(false), 1200);
+            }}
+          />
+          <GoogleSignInButton disabled label="Sign in with Google" />
+        </div>
+      </Section>
+
+      <SectionGroup label="Still to port" />
+      <Pending items={PENDING.auth} />
+    </>
+  );
+}
+
+function LayoutTab() {
+  const [variant, setVariant] = useState<'dashboard' | 'list' | 'settings' | 'card' | 'generic'>(
+    'list'
+  );
+
+  return (
+    <>
+      <SectionGroup label="Group C — layout" />
+
+      <Section
+        title="PageSkeleton"
+        subtitle="The shape of the screen that is loading, not a spinner in the middle of it."
+      >
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(['dashboard', 'list', 'settings', 'card', 'generic'] as const).map((key) => (
+            <Button
+              key={key}
+              size="sm"
+              variant={variant === key ? 'default' : 'outline'}
+              onClick={() => setVariant(key)}
+            >
+              <ButtonText>{key}</ButtonText>
+            </Button>
+          ))}
+        </div>
+        <div className="overflow-hidden rounded-xl border border-border">
+          <PageSkeleton variant={variant} headerPlaceholder />
+        </div>
+      </Section>
+
+      <SectionGroup label="Still to port" />
+      <Pending items={PENDING.layout} />
+    </>
+  );
+}
+
 const PENDING: Record<Exclude<CategoryKey, 'primitives'>, string[]> = {
   controls: [
-    'input',
     'textarea',
     'checkbox',
     'radio-group',
@@ -200,7 +382,6 @@ const PENDING: Record<Exclude<CategoryKey, 'primitives'>, string[]> = {
     'select',
     'segmented-control',
     'numeric-input',
-    'otp-input',
   ],
   overlays: [
     'dialog',
@@ -222,7 +403,6 @@ const PENDING: Record<Exclude<CategoryKey, 'primitives'>, string[]> = {
     'empty-state',
     'error-state',
     'loading-screen',
-    'page-skeleton',
     'content-skeleton',
     'action-bar',
     'onboarding-screen',
@@ -246,6 +426,11 @@ const INBOX =
 const SEND = 'M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z';
 const ARCHIVE = 'M21 8v13H3V8M1 3h22v5H1zM10 12h4';
 const MORE = 'M12 5v.01M12 12v.01M12 19v.01';
+const WARNING =
+  'M12 9v4M12 17v.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z';
+const ENVELOPE = 'M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zM22 6l-10 7L2 6';
+const LOCK =
+  'M5 11h14a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7a2 2 0 012-2zM8 11V7a4 4 0 018 0v4';
 
 function NavigationTab() {
   const [open, setOpen] = useState(false);
@@ -345,8 +530,12 @@ function PlatformTab() {
 
   const storeKey = 'whileui.demo';
   const [storeValue, setStoreValue] = useState('');
+  const [plainValue, setPlainValue] = useState('');
   const [intercept, setIntercept] = useState(false);
   const [color, setColor] = useState('#4457ff');
+  const [online, setOnline] = useState(network.online);
+
+  useEffect(() => network.onChange(setOnline), []);
 
   // Demo interceptor; real components register on open and release on close.
   useEffect(() => {
@@ -492,6 +681,110 @@ function PlatformTab() {
       </Section>
 
       <Section
+        title="Storage"
+        subtitle="Unencrypted key-value: localStorage on the web, Preferences under Capacitor. Where a theme choice lives."
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            className="flex-1"
+            style={{ minWidth: 160 }}
+            placeholder="value"
+            value={plainValue}
+            onChange={(event) => setPlainValue(event.target.value)}
+          />
+          <Button
+            size="sm"
+            onClick={() => void storage.set(storeKey, plainValue).then(() => note(`storage.set`))}
+          >
+            <ButtonText>Save</ButtonText>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              void storage.get(storeKey).then((value) => {
+                setPlainValue(value ?? '');
+                note(`storage.get → ${JSON.stringify(value)}`);
+              })
+            }
+          >
+            <ButtonText>Load</ButtonText>
+          </Button>
+        </div>
+      </Section>
+
+      <Section
+        title="Network"
+        subtitle="Turn the wifi off: the badge follows, because onChange fires from the host."
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className={
+              online
+                ? 'rounded-full bg-success-soft px-3 py-1 text-sm font-medium text-success'
+                : 'rounded-full bg-destructive-soft px-3 py-1 text-sm font-medium text-destructive'
+            }
+          >
+            {online ? 'online' : 'offline'}
+          </span>
+          <span className="text-sm text-muted-foreground">network.online</span>
+        </div>
+      </Section>
+
+      <Section
+        title="Notifications"
+        subtitle="Local and scheduled only. The web asks the browser; Capacitor schedules on the device."
+      >
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              void notifications
+                .requestPermission()
+                .then((granted) => note(`requestPermission → ${granted}`))
+            }
+          >
+            <ButtonText>Ask permission</ButtonText>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              void notifications
+                .schedule([
+                  {
+                    id: 1,
+                    title: 'WhileUI',
+                    body: 'Scheduled ten seconds ago.',
+                    at: new Date(Date.now() + 10_000),
+                  },
+                ])
+                .then(() => note('scheduled #1 in 10s'))
+            }
+          >
+            <ButtonText>Schedule</ButtonText>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => void notifications.cancel([1]).then(() => note('cancelled #1'))}
+          >
+            <ButtonText>Cancel</ButtonText>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() =>
+              void notifications.pending().then((ids) => note(`pending → [${ids.join(', ')}]`))
+            }
+          >
+            <ButtonText>Pending</ButtonText>
+          </Button>
+        </div>
+      </Section>
+
+      <Section
         title="Keyboard"
         subtitle="Focus the field on a phone, then Hide. On the web, hide is a blur."
       >
@@ -580,6 +873,9 @@ function PlatformTab() {
 /** A component, not a render function, so a tab switch reconciles as one element swap. */
 export function Tab({ category }: { category: CategoryKey }) {
   if (category === 'primitives') return <PrimitivesTab />;
+  if (category === 'controls') return <ControlsTab />;
+  if (category === 'auth') return <AuthTab />;
+  if (category === 'layout') return <LayoutTab />;
   if (category === 'navigation') return <NavigationTab />;
   if (category === 'platform') return <PlatformTab />;
   return (
