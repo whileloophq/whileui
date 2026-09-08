@@ -6,11 +6,10 @@ Beautiful, accessible, themeable components built with [Uniwind](https://uniwind
 
 **Requirements:** React 19+, React Native 0.81+, Expo 52+ (if using Expo). Supports React Native Web.
 
-> **Two tracks, one token layer.** This README documents the React Native track
-> (native-first apps such as sidekick-app: Expo for iOS/Android,
-> `react-native-web` for web). The DOM track — `@thewhileloop/whileui/web`, for
-> web-first apps such as split-loop via Capacitor and Tauri — is documented in
-> its own section below. See [ROADMAP.md](./ROADMAP.md).
+> **Two tracks, one token layer.** This README documents the React Native track.
+> The DOM track — `@thewhileloop/whileui/web`: browser, Capacitor, Tauri — is
+> the one current apps use (sidekick-app, split-loop) and has its own section
+> below. See [ROADMAP.md](./ROADMAP.md).
 
 ## Installation
 

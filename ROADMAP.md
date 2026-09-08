@@ -23,16 +23,16 @@ stores through a shell — a WebView, not a native renderer — and for an app l
 that a React-Native-first library is indirection: it carries `react-native-web`
 for portability it never exercises and loses semantic HTML to get it.
 
-So there are two tracks, both live, sharing one token layer:
+So there are two tracks sharing one token layer:
 
-- **DOM** — web-first apps. split-loop. Browser, Capacitor for iOS/Android,
-  Tauri for desktop; one build.
-- **React Native** — native-first apps. sidekick-app: Expo for iOS and Android,
-  `react-native-web` for web, and an iOS build offered on Apple-silicon Macs
-  from App Store Connect.
+- **DOM** — every current app: sidekick-app (migrating off Expo, 2026-09) and
+  split-loop. Browser, Capacitor for iOS/Android, Tauri for desktop; one build.
+  Mac is Tauri, or the iOS Capacitor build offered on Apple-silicon Macs.
+- **React Native** — no active consumer once sidekick-app has migrated. Kept
+  for a native-first app if one appears; not developed speculatively.
 
-A component that both need — SearchBar, FAB, charts — is built on both from the
-same variants. Neither track is held back for the other.
+New components are built on the DOM track. A native version follows only when a
+native consumer needs it.
 
 ## Three targets, one renderer
 
@@ -136,7 +136,7 @@ One package, subpath exports, which is already how this package is built.
   ├── /platform/tauri
   └── /vite                        Vite config helper
 
-@thewhileloop/whileui-native       React Native. Native-first apps.
+@thewhileloop/whileui-native       React Native. No active consumer; kept.
 ```
 
 Radix and Motion are peer dependencies **wrapped by WhileUI**, so an app never
@@ -258,8 +258,19 @@ Nothing in Groups A–D gets built speculatively. Each piece is pulled into
 existence by a real screen in a real app that needs it — the loop the native track
 already describes as _build in the app first, extract once proven_.
 
-The first consumer is Split-Loop, which is being migrated screen by screen
-behind a Capacitor shell. Its screens map directly onto the groups above:
+The first consumer is sidekick-app, being rebuilt from Expo to React DOM behind
+a Capacitor shell, screen by screen. Its screens pull:
+
+| sidekick-app screen   | Pulls into existence                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| `auth/`               | `Input`, `OTPInput`, `Alert`, `Spinner`, `Separator`, `SocialConnections`                |
+| dashboard             | `SmartInput` (typewriter placeholder), `Progress`, `PageSkeleton`, `Badge`, `MetricCard` |
+| `SideNav`, `Header`   | `DrawerMenu`, `Header` — exist; plus `ThemeToggle`                                       |
+| `ActivityDetailSheet` | `Sheet`, `Textarea`, `AlertDialog`                                                       |
+| history, settings     | `Switch`, `Select`, `SegmentedControl`, `DataRow`, `DatePickerModal`, chart primitives   |
+| `_layout`             | `ErrorBoundary`, `AppProvider`, `platform/` (secure store, push, haptics)                |
+
+split-loop follows, behind its own Capacitor shell. Its screens:
 
 | Split-Loop screen | Pulls into existence                                |
 | ----------------- | --------------------------------------------------- |

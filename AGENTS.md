@@ -8,15 +8,41 @@ Where the two disagree, the roadmap wins and these rules are stale — fix them.
 
 ## Two tracks
 
-- **DOM** — web-first apps (split-loop): browser, Capacitor mobile, Tauri
-  desktop. One build, no per-target UI branching.
-- **React Native** — native-first apps (sidekick-app): Expo for iOS/Android,
-  `react-native-web` for web.
+- **DOM** — the track every current app is on or moving to: sidekick-app
+  (migrating from Expo, 2026-09) and split-loop. Browser, Capacitor mobile,
+  Tauri desktop; one build, no per-target UI branching.
+- **React Native** — no active consumer once sidekick-app finishes migrating.
+  Kept for a native-first app if one appears; not developed speculatively.
 
-Both are live and share the token layer. Same names and variants where a
-component exists on both; never hold one track back for the other. Rules marked
-**[RN]** apply only to the native track. Everything else — tokens, `tv()`
-variants, UI standards, touch targets, press feedback — applies to both.
+Both share the token layer. Same names and variants where a component exists on
+both; the DOM track is never held back for the native one. Rules marked **[RN]**
+apply only to the native track. Everything else — tokens, `tv()` variants, UI
+standards, touch targets, press feedback — applies to both.
+
+## Map and commands
+
+Bun workspace (`bun@1.3.9`). Never run `yarn` here.
+
+| Path                                     | What                                                                                                  |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `packages/ui/src/components/`, `blocks/` | React Native track                                                                                    |
+| `packages/ui/src/web/`                   | DOM track: `components/`, `blocks/`, `platform/`, `lib/recipes.ts`                                    |
+| `packages/ui/src/lib/`                   | Shared. Token contracts, presets, `theme-derive`, `cn`, `tv` are renderer-free; the rest are RN hooks |
+| `packages/ui/src/tokens.ts`              | Renderer-free entry → `@thewhileloop/whileui/tokens`                                                  |
+| `apps/showcase/`                         | Expo showcase (RN track), port 8082                                                                   |
+| `apps/site/`                             | Vite showcase (DOM track), port 8083. `scripts/gen-theme.ts` generates its theme CSS                  |
+| `ROADMAP.md`, `TODO.md`                  | Direction, task list. `TODO.md` is gitignored — local only                                            |
+
+```bash
+bun install
+bun run typecheck             # all workspaces via turbo; packages/ui checks both tsconfigs
+bun run build                 # packages/ui: tsc -p tsconfig.json && tsc -p tsconfig.web.json
+cd apps/site && bun run dev   # DOM showcase (runs gen:theme first)
+cd apps/showcase && bun run dev
+bunx react-doctor .           # run in apps/site after significant changes
+```
+
+A consumer on a local link resolves `packages/ui/dist/` — rebuild after edits.
 
 ## Core Rules
 
@@ -71,6 +97,14 @@ comments as much as to docs — everything here is public and permanent.
 5. If new flow: add to README Flow Patterns table
 
 **Do not skip steps 2–4.** Missing doc or showcase entry = incomplete.
+
+### When Extracting From an App
+
+A block extracted from an app is not done until the app imports it. In the same
+change, switch the app's call site to the block — or add a dated entry to that
+app's backlog. The showcase demo proves the block renders; only a consumer
+proves it is used. Four commerce blocks were built for sidekick's paywall and
+never imported; that is the failure this rule exists to prevent.
 
 ### When Changing Props or Removing
 
