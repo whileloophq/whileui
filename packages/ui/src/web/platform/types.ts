@@ -18,13 +18,17 @@ export interface Haptics {
 
 // ─── Storage ─────────────────────────────────────────────────
 
-export interface SecureStore {
-  /** `false` for localStorage and Capacitor Preferences; `true` only for a Keychain/Keystore backend. */
-  readonly secure: boolean;
-  readonly backend: string;
+/** Key-value storage for settings, queues, caches. Not for secrets. */
+export interface Storage {
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
   remove(key: string): Promise<void>;
+}
+
+export interface SecureStore extends Storage {
+  /** `false` for localStorage and Capacitor Preferences; `true` only for a Keychain/Keystore backend. */
+  readonly secure: boolean;
+  readonly backend: string;
 }
 
 // ─── Hardware back ───────────────────────────────────────────
@@ -83,15 +87,45 @@ export interface DeepLinks {
   onOpen(callback: (url: string) => void): () => void;
 }
 
+// ─── Network ─────────────────────────────────────────────────
+
+export interface Network {
+  readonly online: boolean;
+  onChange(callback: (online: boolean) => void): () => void;
+}
+
+// ─── Local notifications ─────────────────────────────────────
+
+export interface LocalNotification {
+  id: number;
+  title: string;
+  body: string;
+  /** Fire once at this time… */
+  at?: Date;
+  /** …or every day at this local time. */
+  daily?: { hour: number; minute: number };
+}
+
+export interface Notifications {
+  requestPermission(): Promise<boolean>;
+  /** `false` where scheduling is impossible (a plain browser). */
+  schedule(notifications: LocalNotification[]): Promise<boolean>;
+  cancel(ids: number[]): Promise<void>;
+  pending(): Promise<number[]>;
+}
+
 // ─── Platform ────────────────────────────────────────────────
 
 export interface Platform {
   readonly name: Host;
   readonly haptics: Haptics;
+  readonly storage: Storage;
   readonly secureStore: SecureStore;
   readonly hardwareBack: HardwareBackHost;
   readonly keyboard: Keyboard;
   readonly statusBar: StatusBar;
   readonly share: Share;
   readonly deepLinks: DeepLinks;
+  readonly network: Network;
+  readonly notifications: Notifications;
 }

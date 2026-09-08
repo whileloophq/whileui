@@ -3,6 +3,8 @@
 
 export * from './components/button';
 export * from './components/card';
+export * from './components/error-boundary';
+export * from './lib/theme-provider';
 
 export * from './blocks/layout/app-shell';
 export * from './blocks/navigation/header';

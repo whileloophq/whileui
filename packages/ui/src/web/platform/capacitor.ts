@@ -1,4 +1,4 @@
-import type { Platform } from './types';
+import type { LocalNotification, Platform } from './types';
 import { createWebPlatform } from './web';
 
 // Capacitor implementation with no Capacitor dependency: the app passes in the
@@ -10,10 +10,12 @@ import { createWebPlatform } from './web';
 //   import { App } from '@capacitor/app';
 //   import { Haptics } from '@capacitor/haptics';
 //   import { Keyboard } from '@capacitor/keyboard';
+//   import { LocalNotifications } from '@capacitor/local-notifications';
+//   import { Network } from '@capacitor/network';
 //   import { Preferences } from '@capacitor/preferences';
 //   import { Share } from '@capacitor/share';
 //   import { StatusBar } from '@capacitor/status-bar';
-//   installPlatform(createCapacitorPlatform({ App, Haptics, Keyboard, Preferences, Share, StatusBar }));
+//   installPlatform(createCapacitorPlatform({ App, Haptics, Keyboard, LocalNotifications, Network, Preferences, Share, StatusBar }));
 
 // Capacitor 5+ returns a Promise from addListener; earlier versions were sync.
 type Handle = { remove(): Promise<void> | void };
@@ -35,13 +37,14 @@ export interface CapacitorDeps {
     selectionChanged?(): Promise<void>;
     notification?(options: { type: 'SUCCESS' | 'WARNING' | 'ERROR' }): Promise<void>;
   };
-  /** `@capacitor/preferences` — unencrypted. Prefer `secureStorage` for tokens. */
+  /** `@capacitor/preferences` — key-value storage. Unencrypted: also the
+   *  `secureStore` fallback unless `secureStorage` is given. */
   Preferences?: {
     get(options: { key: string }): Promise<{ value: string | null }>;
     set(options: { key: string; value: string }): Promise<void>;
     remove(options: { key: string }): Promise<void>;
   };
-  /** A Keychain/Keystore-backed store. Wins over `Preferences`. */
+  /** A Keychain/Keystore-backed store. Wins over `Preferences` for `secureStore`. */
   secureStorage?: {
     name: string;
     get(key: string): Promise<string | null>;
@@ -62,11 +65,59 @@ export interface CapacitorDeps {
   Share?: {
     share(options: { title?: string; text?: string; url?: string }): Promise<unknown>;
   };
+  /** `@capacitor/network`. */
+  Network?: {
+    getStatus(): Promise<{ connected: boolean }>;
+    addListener(
+      eventName: 'networkStatusChange',
+      listener: (status: { connected: boolean }) => void
+    ): MaybePromise<Handle>;
+  };
+  /** `@capacitor/local-notifications`. */
+  LocalNotifications?: {
+    requestPermissions(): Promise<{ display: string }>;
+    schedule(options: {
+      notifications: Array<{
+        id: number;
+        title: string;
+        body: string;
+        schedule?: {
+          at?: Date;
+          on?: { hour: number; minute: number };
+          repeats?: boolean;
+          allowWhileIdle?: boolean;
+        };
+      }>;
+    }): Promise<unknown>;
+    cancel(options: { notifications: Array<{ id: number }> }): Promise<void>;
+    getPending(): Promise<{ notifications: Array<{ id: number }> }>;
+  };
 }
 
 export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
   const web = createWebPlatform();
-  const { App, Haptics, Preferences, secureStorage, Keyboard, StatusBar, Share } = deps;
+  const {
+    App,
+    Haptics,
+    Preferences,
+    secureStorage,
+    Keyboard,
+    StatusBar,
+    Share,
+    Network,
+    LocalNotifications,
+  } = deps;
+
+  const preferences = Preferences
+    ? {
+        get: async (key: string) => (await Preferences.get({ key })).value,
+        set: (key: string, value: string) => Preferences.set({ key, value }),
+        remove: (key: string) => Preferences.remove({ key }),
+      }
+    : null;
+
+  let online = true;
+  if (Network) void Network.getStatus().then((s) => (online = s.connected));
 
   return {
     name: 'capacitor',
@@ -92,6 +143,8 @@ export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
         }
       : web.haptics,
 
+    storage: preferences ?? web.storage,
+
     secureStore: secureStorage
       ? {
           secure: true,
@@ -100,14 +153,8 @@ export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
           set: (key, value) => secureStorage.set(key, value),
           remove: (key) => secureStorage.remove(key),
         }
-      : Preferences
-        ? {
-            secure: false,
-            backend: 'Capacitor Preferences (unencrypted)',
-            get: async (key) => (await Preferences.get({ key })).value,
-            set: (key, value) => Preferences.set({ key, value }),
-            remove: (key) => Preferences.remove({ key }),
-          }
+      : preferences
+        ? { ...preferences, secure: false, backend: 'Capacitor Preferences (unencrypted)' }
         : web.secureStore,
 
     hardwareBack: {
@@ -187,6 +234,50 @@ export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
             ),
         }
       : web.deepLinks,
+
+    network: Network
+      ? {
+          get online() {
+            return online;
+          },
+          onChange: (callback) =>
+            subscribe(
+              Network.addListener('networkStatusChange', (status) => {
+                online = status.connected;
+                callback(status.connected);
+              })
+            ),
+        }
+      : web.network,
+
+    notifications: LocalNotifications
+      ? {
+          requestPermission: async () =>
+            (await LocalNotifications.requestPermissions()).display === 'granted',
+          schedule: async (items) => {
+            await LocalNotifications.schedule({
+              notifications: items.map(toCapacitorNotification),
+            });
+            return true;
+          },
+          cancel: (ids) => LocalNotifications.cancel({ notifications: ids.map((id) => ({ id })) }),
+          pending: async () =>
+            (await LocalNotifications.getPending()).notifications.map((n) => n.id),
+        }
+      : web.notifications,
+  };
+}
+
+function toCapacitorNotification(n: LocalNotification) {
+  return {
+    id: n.id,
+    title: n.title,
+    body: n.body,
+    schedule: n.daily
+      ? { on: n.daily, repeats: true, allowWhileIdle: true }
+      : n.at
+        ? { at: n.at }
+        : undefined,
   };
 }
 

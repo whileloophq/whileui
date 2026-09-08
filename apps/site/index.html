@@ -5,17 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>WhileUI — DOM track</title>
     <script>
-      // Applied before first paint so a dark-mode load never flashes light.
-      // `?theme=` wins because demo iframes are told which theme to boot in;
-      // otherwise fall back to the stored choice, then to the OS.
+      // Same key ThemeProvider persists to, read before first paint so dark mode
+      // never flashes light. Anything but "light"/"dark" means follow the OS.
       (function () {
-        var param = new URLSearchParams(location.search).get('theme');
-        var stored = localStorage.getItem('whileui.theme');
-        var dark = param
-          ? param === 'dark'
-          : stored
-            ? stored === 'dark'
-            : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var mode = localStorage.getItem('whileui.theme');
+        var dark =
+          mode === 'dark' ||
+          (mode !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
         if (dark) document.documentElement.classList.add('dark');
       })();
     </script>

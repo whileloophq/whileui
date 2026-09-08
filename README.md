@@ -414,8 +414,10 @@ import { AppShell, Header, DrawerMenu, Button, Card } from '@thewhileloop/whileu
 | `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`                                                                                                                                                                 | ✓      |
 | `AppShell` — `header`, `footer`, `bottomNav`, `loading` + `skeleton`                                                                                                                                                                              | ✓      |
 | `Header`, `HeaderIconButton`, `HeaderBackButton`                                                                                                                                                                                                  | ✓      |
+| `ThemeProvider` / `useTheme` — `.dark` on `<html>`, mode persisted via `platform.storage`, follows the OS in `system`, keeps status bar and theme-color in step | ✓ |
+| `ErrorBoundary` — `fallback(error, reset)` render prop, themed default | ✓ |
 | `DrawerMenu` — sections, `activeKey`, `onSelect`, `header`/`footer` slots                                                                                                                                                                         | ✓      |
-| `platform/` — `haptics`, `secureStore`, `hardwareBack`, `keyboard`, `statusBar`, `share`, `deepLinks`. Web fallbacks by default; `installPlatform(createCapacitorPlatform({ App, Haptics, … }))` once at boot. Zero Capacitor deps in the library | ✓      |
+| `platform/` — `haptics`, `storage`, `secureStore`, `hardwareBack`, `keyboard`, `statusBar`, `share`, `deepLinks`, `network`, `notifications` (local, scheduled). Web fallbacks by default; `installPlatform(createCapacitorPlatform({ App, Haptics, … }))` once at boot. Zero Capacitor deps in the library | ✓      |
 
 Everything else is listed, per category, in the DOM showcase: `cd apps/site && bun run dev` (port 8083). The showcase's own shell is `AppShell` + `Header` + `DrawerMenu`.
 

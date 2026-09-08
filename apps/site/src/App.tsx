@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { AppShell, DrawerMenu, Header, HeaderIconButton, haptics } from '@thewhileloop/whileui/web';
+import {
+  AppShell,
+  DrawerMenu,
+  Header,
+  HeaderIconButton,
+  haptics,
+  useTheme,
+} from '@thewhileloop/whileui/web';
 import { Glyph } from './sections';
 import { CATEGORIES, DRAWER_SECTIONS, Tab, type CategoryKey } from './tabs';
 
@@ -18,14 +25,8 @@ const MOON = 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z';
 export default function App() {
   const [active, setActive] = useState<CategoryKey>('primitives');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
-
-  const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('whileui.theme', next ? 'dark' : 'light');
-  };
+  const { resolved, toggle } = useTheme();
+  const dark = resolved === 'dark';
 
   const go = (key: string) => {
     void haptics.selection();
@@ -53,7 +54,7 @@ export default function App() {
               label: dark ? 'Switch to light' : 'Switch to dark',
               icon: <Glyph d={dark ? SUN : MOON} />,
               tone: 'secondary',
-              onPress: toggleTheme,
+              onPress: toggle,
             },
           ]}
         >

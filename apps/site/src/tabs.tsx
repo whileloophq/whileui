@@ -221,7 +221,6 @@ const PENDING: Record<Exclude<CategoryKey, 'primitives'>, string[]> = {
   layout: [
     'empty-state',
     'error-state',
-    'error-boundary',
     'loading-screen',
     'page-skeleton',
     'content-skeleton',

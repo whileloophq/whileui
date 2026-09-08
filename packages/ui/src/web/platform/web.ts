@@ -2,6 +2,12 @@ import type { Platform } from './types';
 
 // Browser implementation and the default.
 export function createWebPlatform(): Platform {
+  const local = {
+    get: async (key: string) => localStorage.getItem(key),
+    set: async (key: string, value: string) => localStorage.setItem(key, value),
+    remove: async (key: string) => localStorage.removeItem(key),
+  };
+
   return {
     name: 'web',
 
@@ -13,13 +19,9 @@ export function createWebPlatform(): Platform {
       notification: async (type) => vibrate(type === 'error' ? [30, 40, 30] : [15, 30, 15]),
     },
 
-    secureStore: {
-      secure: false,
-      backend: 'localStorage',
-      get: async (key) => localStorage.getItem(key),
-      set: async (key, value) => localStorage.setItem(key, value),
-      remove: async (key) => localStorage.removeItem(key),
-    },
+    storage: local,
+
+    secureStore: { ...local, secure: false, backend: 'localStorage' },
 
     hardwareBack: {
       fallback: (canGoBack) => {
@@ -75,6 +77,30 @@ export function createWebPlatform(): Platform {
 
     deepLinks: {
       onOpen: () => () => undefined,
+    },
+
+    network: {
+      get online() {
+        return typeof navigator === 'undefined' ? true : navigator.onLine;
+      },
+      onChange: (callback) => {
+        const on = () => callback(true);
+        const off = () => callback(false);
+        window.addEventListener('online', on);
+        window.addEventListener('offline', off);
+        return () => {
+          window.removeEventListener('online', on);
+          window.removeEventListener('offline', off);
+        };
+      },
+    },
+
+    // A page cannot schedule a notification for later without a service worker.
+    notifications: {
+      requestPermission: async () => false,
+      schedule: async () => false,
+      cancel: async () => undefined,
+      pending: async () => [],
     },
   };
 }

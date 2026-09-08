@@ -3,10 +3,13 @@ import type {
   DeepLinks,
   Haptics,
   Keyboard,
+  Network,
+  Notifications,
   Platform,
   SecureStore,
   Share,
   StatusBar,
+  Storage,
 } from './types';
 import { createWebPlatform } from './web';
 
@@ -70,6 +73,12 @@ export const haptics: Haptics = {
   notification: (type) => current.haptics.notification(type),
 };
 
+export const storage: Storage = {
+  get: (key) => current.storage.get(key),
+  set: (key, value) => current.storage.set(key, value),
+  remove: (key) => current.storage.remove(key),
+};
+
 export const secureStore: SecureStore = {
   get secure() {
     return current.secureStore.secure;
@@ -101,4 +110,18 @@ export const share: Share = {
 
 export const deepLinks: DeepLinks = {
   onOpen: (callback) => current.deepLinks.onOpen(callback),
+};
+
+export const network: Network = {
+  get online() {
+    return current.network.online;
+  },
+  onChange: (callback) => current.network.onChange(callback),
+};
+
+export const notifications: Notifications = {
+  requestPermission: () => current.notifications.requestPermission(),
+  schedule: (items) => current.notifications.schedule(items),
+  cancel: (ids) => current.notifications.cancel(ids),
+  pending: () => current.notifications.pending(),
 };
