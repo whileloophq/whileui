@@ -51,6 +51,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           disabled={disabled}
           className={cn(
             'min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed',
+            // An autofilled field is painted a fixed pale blue that
+            // `background-color` cannot touch, which is how a dark theme ends up
+            // with one white row. A thick inset shadow is what covers it, and
+            // `-webkit-text-fill-color` is what the text obeys afterwards.
+            'autofill:shadow-[inset_0_0_0_1000px_var(--color-muted)] autofill:caret-foreground autofill:[-webkit-text-fill-color:var(--color-foreground)]',
             inputClassName
           )}
           style={{
