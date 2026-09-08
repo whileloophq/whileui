@@ -35,8 +35,9 @@ Bun workspace (`bun@1.3.9`). Never run `yarn` here.
 
 ```bash
 bun install
-bun run typecheck             # all workspaces via turbo; packages/ui checks both tsconfigs
+bun run typecheck             # all workspaces via turbo; packages/ui checks all three tsconfigs
 bun run build                 # packages/ui: tsc -p tsconfig.json && tsc -p tsconfig.web.json
+bun run test                  # vitest + jsdom, DOM track only (src/web/**/*.test.tsx)
 cd apps/site && bun run dev   # DOM showcase (runs gen:theme first)
 cd apps/showcase && bun run dev
 bunx react-doctor .           # run in apps/site after significant changes
@@ -52,6 +53,18 @@ A consumer on a local link resolves `packages/ui/dist/` — rebuild after edits.
 - **Docs are mandatory** — README is the source of truth. Incomplete doc updates = task incomplete. Never leave docs stale.
 - **Avoid deprecated APIs** — Check for deprecation warnings, use recommended replacements. If a package marks an API deprecated, find the new import path or alternative.
 - Don't bloat the codebase.
+
+### Testing a DOM component
+
+A component whose behaviour is caret, focus or key handling gets a test beside
+it (`src/web/**/*.test.tsx`, vitest + jsdom + Testing Library, `bun run test`).
+Rendering is checked by eye in `apps/site`; the things you cannot see are what
+the test is for.
+
+**Prove the test fails against the broken version.** jsdom has no layout, so a
+click never lands the caret anywhere but the end — a test that only clicks and
+types would have passed against the OTP field nobody could edit. Stash the fix,
+watch it fail, restore. If it still passes, the test is not the one you needed.
 
 ### Attribution
 

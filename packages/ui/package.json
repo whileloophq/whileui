@@ -63,7 +63,8 @@
     "prepack": "cp ../../README.md README.md",
     "postpack": "rm -f README.md",
     "prepare": "bun run build",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.web.json --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.web.json --noEmit && tsc -p tsconfig.test.json",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@rn-primitives/hooks": ">=1.0.0",
@@ -100,10 +101,15 @@
     "tailwind-variants": "^0.3.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/culori": "^4.0.1",
     "@types/react": "~19.1.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "expo-image": "^2.0.0",
+    "jsdom": "^30.0.1",
     "react-native-screens": "^4.23.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^5.0.0"
   }
 }

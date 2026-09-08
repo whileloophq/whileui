@@ -1,0 +1,10 @@
+{
+  // Same settings as the DOM build, but checking the test files the build
+  // deliberately excludes from `dist`.
+  "extends": "./tsconfig.web.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/web/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

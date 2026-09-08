@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type HTMLAttributes } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent as ReactChangeEvent,
+  type HTMLAttributes,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import { cn } from '../../lib/cn';
 import { tv } from '../../lib/tv';
 import { tokenPx, typographyRecipe } from '../lib/recipes';
@@ -53,6 +60,7 @@ function OTPInput({
   const val = isControlled ? controlledValue : internalValue;
   const [focused, setFocused] = useState(false);
   const cellsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (variant !== 'error') return;
@@ -74,6 +82,46 @@ function OTPInput({
     if (!isControlled) setInternalValue(cleaned);
     onValueChange?.(cleaned);
     if (cleaned.length === length) onComplete?.(cleaned);
+  };
+
+  // There is deliberately no `maxLength`: it truncates the raw string before
+  // this ever runs, so pasting "code: 123 456" would keep four digits. Writing
+  // the cleaned value back keeps the DOM in step in the case React will not —
+  // an ignored keystroke leaves the controlled value unchanged, so there is no
+  // re-render to overwrite what the browser already put in the field.
+  const handleChange = (event: ReactChangeEvent<HTMLInputElement>) => {
+    const el = event.currentTarget;
+    const cleaned = el.value.replace(/[^0-9]/g, '').slice(0, length);
+    if (el.value !== cleaned) el.value = cleaned;
+    update(cleaned);
+  };
+
+  // The field is one text input drawn as cells, so a caret anywhere but the end
+  // is a trap: with the code full every keystroke is ignored and Backspace at
+  // offset 0 deletes nothing — the field looks frozen. Clicking a cell is a
+  // request to type, not to place a caret, so it always goes to the end and
+  // Backspace always takes the last digit.
+  const pinCaret = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    const end = el.value.length;
+    if (el.selectionStart !== end || el.selectionEnd !== end) el.setSelectionRange(end, end);
+  };
+
+  useEffect(() => {
+    if (focused) pinCaret();
+  }, [val, focused]);
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      event.preventDefault();
+      update(val.slice(0, -1));
+      return;
+    }
+    // Caret movement has nowhere to go.
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault();
+    }
   };
 
   const isError = variant === 'error';
@@ -130,17 +178,23 @@ function OTPInput({
 
       <input
         // Invisible, full-size and on top: taps anywhere focus the field.
+        ref={inputRef}
         value={val}
-        onChange={(event) => update(event.target.value)}
-        onFocus={() => setFocused(true)}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onFocus={() => {
+          setFocused(true);
+          pinCaret();
+        }}
         onBlur={() => setFocused(false)}
+        onClick={pinCaret}
+        onSelect={pinCaret}
         inputMode="numeric"
         autoComplete="one-time-code"
-        maxLength={length}
         autoFocus={autoFocus}
         disabled={disabled}
         aria-label={`Enter ${length}-digit verification code`}
-        className="absolute inset-0 h-full w-full cursor-default bg-transparent text-center tracking-[1em] text-transparent caret-transparent outline-none disabled:cursor-not-allowed"
+        className="absolute inset-0 h-full w-full cursor-default bg-transparent text-center text-transparent caret-transparent outline-none disabled:cursor-not-allowed"
       />
     </div>
   );
