@@ -1,3 +1,4 @@
+import { formatHex, parse } from 'culori';
 import type { LocalNotification, Platform } from './types';
 import { createWebPlatform } from './web';
 
@@ -210,8 +211,14 @@ export function createCapacitorPlatform(deps: CapacitorDeps): Platform {
           // Capacitor's `Style` names the background, same as ours — no inversion.
           setStyle: (style) => StatusBar.setStyle({ style: style === 'dark' ? 'DARK' : 'LIGHT' }),
           setBackgroundColor: async (color) => {
-            // Android only; iOS draws the bar over the WebView.
-            if (StatusBar.setBackgroundColor) await StatusBar.setBackgroundColor({ color });
+            // Android only; iOS draws the bar over the WebView. The plugin takes
+            // hex and nothing else, while a caller reading a Tailwind v4 token
+            // hands over `oklch(...)` — so convert here, where the constraint
+            // lives, rather than making every caller know about it.
+            const hex = toHex(color);
+            if (hex && StatusBar.setBackgroundColor) {
+              await StatusBar.setBackgroundColor({ color: hex });
+            }
             await web.statusBar.setBackgroundColor(color);
           },
         }
@@ -285,6 +292,12 @@ function toCapacitorNotification(n: LocalNotification) {
         ? { at: n.at }
         : undefined,
   };
+}
+
+/** Any CSS colour to `#rrggbb`, or null if it cannot be read. */
+function toHex(color: string): string | null {
+  const parsed = parse(color);
+  return parsed ? formatHex(parsed) : null;
 }
 
 function subscribe(handle: MaybePromise<Handle>): () => void {

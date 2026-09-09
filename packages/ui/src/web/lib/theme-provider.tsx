@@ -58,11 +58,12 @@ export function ThemeProvider({
       const next = resolve(mode);
       document.documentElement.classList.toggle('dark', next === 'dark');
       setResolved(next);
-      void statusBar.setStyle(next);
+      const ignore = () => {};
+      statusBar.setStyle(next).catch(ignore);
       const background = getComputedStyle(document.documentElement)
         .getPropertyValue('--color-background')
         .trim();
-      if (background) void statusBar.setBackgroundColor(background);
+      if (background) statusBar.setBackgroundColor(background).catch(ignore);
     };
     apply();
     if (mode !== 'system') return;
