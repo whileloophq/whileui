@@ -32,10 +32,16 @@ export interface CapacitorDeps {
     exitApp(): Promise<void>;
     minimizeApp?(): Promise<void>;
   };
+  // Optionality has to match the real plugin, not just the value type. A string
+  // enum member is assignable to its literal ('LIGHT' satisfies `ImpactStyle`),
+  // but `@capacitor/haptics` declares `style?:`, and `ImpactStyle | undefined`
+  // does not satisfy a required field — so a required option here rejects the
+  // actual plugin. `StatusBar.setStyle` keeps its required `style` because the
+  // plugin declares it required.
   Haptics?: {
-    impact(options: { style: 'LIGHT' | 'MEDIUM' | 'HEAVY' }): Promise<void>;
+    impact(options?: { style?: 'LIGHT' | 'MEDIUM' | 'HEAVY' }): Promise<void>;
     selectionChanged?(): Promise<void>;
-    notification?(options: { type: 'SUCCESS' | 'WARNING' | 'ERROR' }): Promise<void>;
+    notification?(options?: { type?: 'SUCCESS' | 'WARNING' | 'ERROR' }): Promise<void>;
   };
   /** `@capacitor/preferences` — key-value storage. Unencrypted: also the
    *  `secureStore` fallback unless `secureStorage` is given. */
