@@ -105,6 +105,12 @@ export function DrawerMenu({
         style={{
           width: 'calc(var(--ui-drawer-width-ratio) * 100vw)',
           maxWidth: maxWidth ?? 'calc(var(--ui-drawer-max-width-web) * 1px)',
+          // The panel is edge to edge, so it owns its safe areas: without this
+          // its header sits under the status bar in a native shell. Blocks that
+          // cover the screen do this themselves — an app should never be doing
+          // inset arithmetic to use one.
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
           transform: visible ? 'translateX(0)' : 'translateX(-100%)',
           visibility: visible ? 'visible' : 'hidden',
           transition: visible
