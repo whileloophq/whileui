@@ -10,10 +10,9 @@ documents win and these rules are stale — fix them.
 
 ## One renderer, three targets
 
-React Native is the only renderer. iOS, Android and React Native Web are all
-production targets: iOS and Android set the interaction baseline, web must stay
-keyboard-operable, accessible and responsive. Do not add a parallel DOM or
-Capacitor implementation.
+Why React Native is the only renderer, and why iOS, Android and web are all production
+targets, is `ROADMAP.md` > Active renderer. The rule when editing: do not add a parallel
+DOM or Capacitor implementation.
 
 One public contract, not one implementation. A `.native.tsx` / `.web.tsx` split
 is correct when the browser has a different semantic primitive, when the native
@@ -70,19 +69,11 @@ A consumer on a local link resolves `packages/ui/dist/` — rebuild after edits.
 
 ### Testing interactive components
 
-Each layer proves something the one below cannot — the full table is in
-`PLAN.md` > Evidence model. In short:
-
-- **Unit (`jest-expo` + RNTL)** for state, callbacks, accessibility props, refs,
-  cleanup, and a regression case for every fixed defect. It cannot prove OS
-  keyboards, Android back, portal layering, gesture arbitration or real focus.
-- **Showcase** for hands-on focus, keyboard, gesture and safe-area behaviour;
-  interaction-sensitive changes are verified on both iOS and Android.
-- **Device and browser E2E** for anything in that "cannot prove" list. A
-  component reaches `stable` only with evidence at the level where it can fail.
-
-A clean React Doctor report is a static signal, not proof that gesture work
-stayed off the JS thread.
+Each layer proves something the one below cannot; the table is `PLAN.md` > Evidence
+model. What it means in practice: `jest-expo` + RNTL cannot prove OS keyboards, Android
+back, portal layering, gesture arbitration or real focus, so a change touching any of
+those owes evidence from Maestro, Playwright or a named showcase step. Every fixed
+defect owes a regression test at the layer that found it.
 
 ### Public repo hygiene
 
@@ -160,23 +151,16 @@ Notes:
 
 **Cross-references:** Fix broken links.
 
-### When Adding a Component (all required)
+### When Adding a Component or Block (all required)
 
-1. Export from `packages/ui/src/components/<name>/index.ts` and `packages/ui/src/index.ts`
-2. Add to `README.md` components table
-3. Add to README API Reference if notable props
+1. Export from its own `index.ts` — `packages/ui/src/components/<name>/` or
+   `packages/ui/src/blocks/<category>/` — and re-export from `packages/ui/src/index.ts`
+2. Add it to the README components or blocks table
+3. Document its props — README API Reference for a component, Blocks API for a block
 4. Add a demo to `apps/showcase`
-5. Declare its maturity level (`PLAN.md` > Maturity and lifecycle). Anything new starts `experimental`; a showcase demo alone never makes it `stable`
-
-**Do not skip steps 2–4.** Missing doc or showcase entry = incomplete.
-
-### When Adding a Block (all required)
-
-1. Export from `packages/ui/src/blocks/<category>/index.ts` and `packages/ui/src/index.ts`
-2. Add to `README.md` blocks table
-3. Add to README Blocks API section with key props
-4. Add a demo to `apps/showcase`
-5. If new flow: add to README Flow Patterns table
+5. Declare its maturity level (`PLAN.md` > Maturity and lifecycle). Anything new starts
+   `experimental`; a showcase demo alone never makes it `stable`
+6. A block that introduces a new flow also goes in the README Flow Patterns table
 
 **Do not skip steps 2–4.** Missing doc or showcase entry = incomplete.
 
@@ -212,27 +196,17 @@ never imported; that is the failure this rule exists to prevent.
 
 ### Design Tokens (in `@theme` block of `global.css`)
 
-All visual properties are controlled via design tokens. To redesign the theme, modify `global.css` only — no component changes needed.
+All visual properties are controlled via design tokens. To redesign the theme, modify
+`global.css` only — no component changes needed. The token categories and the utilities
+they drive are documented in README > Theming.
 
 The TypeScript contracts (`theme-contract.ts`, `visual-token-contract.ts`, `theme-derive.ts`, `theme-presets.ts`) are canonical for token **names, types and derivation**. An app's CSS variable block is generated from a preset via `themePresetToCss` into a `theme.generated.css` it imports; generated files are never hand-edited. An app's own `@theme` scale, fonts and custom variants stay hand-authored — we generate the contract, not the design.
 
-| Token Category     | Example Variables                                     | Controls                                 |
-| ------------------ | ----------------------------------------------------- | ---------------------------------------- |
-| **Spacing**        | `--spacing`, `--spacing-1` through `--spacing-96`     | `p-*`, `m-*`, `gap-*`, `w-*`, `h-*`      |
-| **Typography**     | `--text-xs` through `--text-6xl`                      | `text-sm`, `text-base`, `text-xl`, etc.  |
-| **Letter Spacing** | `--tracking-tighter` through `--tracking-widest`      | `tracking-tight`, `tracking-wide`        |
-| **Line Height**    | `--leading-none` through `--leading-loose`            | `leading-none`, `leading-tight`          |
-| **Border Radius**  | `--radius-none` through `--radius-full`               | `rounded-sm`, `rounded-lg`, `rounded-xl` |
-| **Shadows**        | `--shadow-sm` through `--shadow-2xl`, `--shadow-none` | `shadow-sm`, `shadow-lg`, `shadow-xl`    |
-| **Font**           | `--font-sans`                                         | Base font family                         |
-
 ### Theme Color Tokens (per `@variant`)
 
-Required in both `light` and `dark` (and any custom theme):
-
-- `background`, `foreground`, `card`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, `ring`
-- `success`, `warning`, `info` (status colors)
-- Each token needs `*-foreground` variant for text on that background
+`theme-contract.ts` is the canonical list — every token, in both `light` and `dark` and
+any custom theme. Read it there rather than from a copy that goes stale. Each colour
+token needs its `*-foreground` pair for text on that background.
 
 ### Font Weight Mapping
 
@@ -294,6 +268,21 @@ const ButtonContext = createContext({ variant: 'default', size: 'default' });
 - **Other RN primitives requiring hex**: Spinner defaults to `useThemeColors().foreground`. Input, Textarea, NumericInput, SmartInput default `placeholderTextColor` to `mutedForeground`. Add optional override props when needed.
 - **Custom fonts on Android**: Pass only `fontFamily` in style—never `fontWeight`. Passing both triggers `setTypeface(_, BOLD)` and synthetic bold, distorting B/D/P/R. Use `FontProvider` + `useResolveFontFamily` (Text, ButtonText, Label).
 
+### Content width is nobody's job by default
+
+A phone-first layout stretches to whatever the viewport is. That is right at 390px and
+wrong at 1512px — line lengths run away and related controls drift apart. Nothing owned
+this until `Container`, so every screen in every app had the bug.
+
+- Screens get `<Container size="lg">`; forms and auth get `sm`.
+- A **scroll view puts the column on its content container**, not on itself —
+  `contentContainerClassName="w-full max-w-5xl self-center"` — otherwise the scrollbar
+  floats in the middle of the column instead of sitting at the window edge.
+- **Prefer a constraint that is inert on the other platform over a platform branch.**
+  Every `Container` size is wider than any phone, so the cap never engages on iOS or
+  Android and it renders as a plain `View`. One component, no `.native` / `.web` split,
+  no `Platform.OS`. Reach for this before reaching for a seam.
+
 ### Responsive & Multi-Target
 
 Use `Platform.OS` only for behaviour that truly differs,
@@ -308,20 +297,14 @@ interaction.
 - Controls (Button, Input, Select): `h-10`
 - Cards: `rounded-xl`
 
-### Touch Targets (Fitts's Law)
+### Touch Targets
 
-Platform minimums differ; a single universal number is wrong.
-
-| Target  | Minimum interactive area                                                     |
-| ------- | ---------------------------------------------------------------------------- |
-| iOS     | ≥ 44 × 44 pt                                                                 |
-| Android | ≥ 48 × 48 dp                                                                 |
-| Web     | WCAG 2.2 AA target size (≥ 24 CSS px); design ≥ 44 CSS px for touch controls |
+Per-platform minimums and the drag-alternative rule live in `PLAN.md` > Accessibility
+and input contract. What that contract means in this codebase:
 
 - Keep the visual size; reach the minimum with `hitSlop` or padding.
 - Icon-only buttons: `h-11 w-11` (44px) plus `hitSlop` to clear 48dp on Android.
 - Small buttons: `h-9` minimum (36px visual) — `hitSlop` is mandatory, not optional.
-- Any drag or swipe action needs an equivalent non-drag path (WCAG 2.2).
 
 ### Preventing Layout Shift
 
@@ -362,6 +345,10 @@ Add to this file when you discover:
 
 ### Tooling gotchas
 
+- **A linked consumer on a different React Native version silently loses Uniwind's `className` props from our types:** Symptom: the app accepts `contentContainerClassName` on a bare `ScrollView` but rejects it on a WhileUI component whose props `extend ScrollViewProps` — with no hint that a version is involved. Cause: Uniwind adds those props by augmenting `react-native` (`declare module 'react-native'`), and an augmentation attaches to the copy of `react-native` that resolves from the augmenting file. A `link:`ed package sits outside the app, so its `.d.ts` resolves the _library's_ `react-native`, which the app's Uniwind never touched. Two copies, two `ScrollViewProps`. Measured: app on 0.81.5 and library on 0.86.3 reproduced it; aligning both to 0.86.3 fixed it with no code change. This is what `PLAN.md` > Supported stack exists to prevent — a product that lags the library's stack gets type errors that look like library bugs.
+- **TypeScript 6 no longer auto-includes `@types/*`:** Symptom: every `describe`, `it` and `expect` becomes `Cannot find name` the moment the SDK bump pulls in TS 6, while `@types/jest` is installed and correct. Fix: name them — `"types": ["jest", "node"]`. Measured: 132 errors → 0. A workspace that only consumes the library's _source_ should instead `exclude` its `*.test.tsx` rather than take a jest dependency it has no other use for.
+- **A workspace `typescript` pin shadows the root one, and a stale copy survives `bun install`:** `packages/ui` and `apps/showcase` each declared their own `typescript`, so bumping the root changed nothing — `bunx tsc --version` still reported the old one. Worse, after the pins were corrected, `bun install` reported "no changes" while `node_modules/typescript` still held the old version, because the lockfile no longer referenced it and bun does not clean what it does not track. Check the effective version with `bunx tsc --version` **in each workspace**, and `rm -rf` the stale directory if it disagrees with the lockfile.
+- **`execFileSync` truncates stdout at 64 kB:** Symptom: `verify:package` dies with `SyntaxError: Unterminated string in JSON at position 65536`, which reads like a broken tool. Cause: Node's default `maxBuffer`, hit once `attw`'s report grew — adding a single export was enough. Fix: pass `maxBuffer` explicitly. Any helper that shells out and parses the output needs it.
 - **`"type": "module"` breaks `.js` configs:** `jest.config.js` and `babel.config.js` are parsed as ESM and fail on `module.exports`. Use `.cjs`.
 - **SDK bumps must carry non-bundled packages too:** Expo pins what it bundles, but `uniwind`, `tailwindcss` and similar are on their own. Leaving one behind breaks Metro (`Invariant Violation: Unexpectedly escaped traversal`) while typecheck stays green. After any SDK bump, run an actual `expo export` — `tsc` does not exercise the bundler.
 - **RN 0.86 removed `StyleSheet.absoluteFillObject`:** Use `StyleSheet.absoluteFill`, which is now the same plain (frozen) style object.
@@ -398,71 +385,13 @@ Add to this file when you discover:
 
 ## Custom Themes (Starter Kits)
 
-Create reusable theme presets that can be switched at runtime:
+Registering an `extraThemes` entry in `metro.config.js`, defining it under
+`@layer theme` in `global.css`, and switching with `Uniwind.setTheme()` are documented
+step by step in README > Theming, along with frosted/translucent surfaces. The required
+token list is `theme-contract.ts`. Two rules that are easy to miss:
 
-### 1. Register in metro.config.js
-
-```js
-// metro.config.js
-module.exports = withUniwindConfig(config, {
-  cssEntryFile: './global.css',
-  extraThemes: ['noir', 'minimalist', 'brand-accent'],
-});
-```
-
-### 2. Define theme in global.css
-
-```css
-@layer theme {
-  :root.noir,
-  .noir {
-    @variant light {
-      --color-background: oklch(1 0 0);
-      --color-foreground: oklch(0 0 0);
-      --color-primary: oklch(0 0 0);
-      /* ... other variables */
-      --radius-sm: 0px;
-      --radius-md: 0px;
-    }
-    @variant dark {
-      /* dark mode variables */
-    }
-  }
-}
-```
-
-### 3. Switch at runtime
-
-```tsx
-import { Uniwind } from 'uniwind';
-
-// Switch to custom theme
-Uniwind.setTheme('noir');
-
-// Switch back to default light/dark
-Uniwind.setTheme('light');
-Uniwind.setTheme('dark');
-```
-
-### Frosted / translucent surfaces
-
-Apps that want a frosted or translucent look for floating panels (modals, sheets, toolbars) can override surface tokens in their theme with semi-transparent values, e.g. `--color-surface-elevated: oklch(0.98 0.01 95 / 0.4)`. Optional tokens: `surface-translucent`, `surface-translucent-border`. No "glass" in core names. See README Theming > Frosted / Translucent Theme.
-
-- **Android translucent surfaces:** Frosted panels usually need denser tint than iOS/web. Tune `--ui-frosted-android-tint-alpha-scale` (default `1.18`) before making Android-only component overrides.
-
-### Required Theme Variables
-
-All themes must define these variables for components to work:
-
-- `--color-background`, `--color-foreground`
-- `--color-card`, `--color-card-foreground`
-- `--color-primary`, `--color-primary-foreground`
-- `--color-secondary`, `--color-secondary-foreground`
-- `--color-accent`, `--color-accent-foreground`
-- `--color-muted`, `--color-muted-foreground`
-- `--color-destructive`, `--color-destructive-foreground`
-- `--color-border`, `--color-input`, `--color-ring`
-- `--color-success`, `--color-success-foreground`
-- `--color-warning`, `--color-warning-foreground`
-- `--color-info`, `--color-info-foreground`
-- `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`
+- A custom theme must define **every** token in the contract, or components fall back to
+  unstyled values at runtime with no build error.
+- **Android translucent surfaces** usually need denser tint than iOS or web. Tune
+  `--ui-frosted-android-tint-alpha-scale` (default `1.18`) before reaching for an
+  Android-only component override.

@@ -49,9 +49,9 @@ is a constraint on the roadmap.
 One known-good stack at a time, pinned to the current Expo SDK. No N-1 matrix, no bare
 React Native promise, no Old Architecture support.
 
-**The package and showcase run this stack as of 2026-09-12** (Phase 0 moved them from
-SDK 54 / RN 0.81.5 / React 19.1, and tightened the published peer ranges in the same
-change). The proving product has not moved yet — it is the remaining Phase 0 item.
+**The package, the showcase and the proving product all run this stack as of
+2026-09-13.** Phase 0 moved them together from SDK 54 / RN 0.81.5 / React 19.1 and
+tightened the published peer ranges in the same change.
 
 For anything Expo bundles, take the version from that SDK's `bundledNativeModules.json`,
 never from npm `latest`. For everything else — `uniwind`, `tailwindcss`, tooling — track
@@ -69,7 +69,7 @@ Metro breaks.
 | Styling      | `uniwind@^1.12` + `tailwindcss@^4`                                               |
 | Behavior     | `@rn-primitives/*`, pinned exactly                                               |
 | Test runtime | `jest-expo@~57.0.x` + React Native Testing Library                               |
-| Toolchain    | `bun@1.3.9`, TypeScript 5.9                                                      |
+| Toolchain    | `bun@1.3.9`, TypeScript 6.0.3                                                    |
 | Browsers     | Chromium and WebKit gated per PR; Firefox on release                             |
 | Devices      | Current iOS simulator, current Android emulator, one physical lower-tier Android |
 
@@ -124,7 +124,10 @@ Web is a production target, not a preview. Every stable interactive component ow
   `focusRing` on `:focus-visible`, asserted by tabbing the showcase in `e2e/keyboard.spec.ts`;
 - `Escape` dismissing the topmost dismissible overlay, with focus returning to its
   trigger;
-- working layout from 320 px to desktop widths;
+- working layout across the **whole** range, asserted at both ends. Narrow is overflow
+  (`e2e/responsive.spec.ts` at 320 and 390 px); wide is the opposite failure — content
+  stretching edge to edge — which passed every gate for as long as only narrow widths
+  were tested. A range tested at one end is not a range;
 - browser globals confined to narrow web adapters;
 - SSR safety where free; SSR-first rendering is not a release requirement.
 
@@ -268,8 +271,9 @@ Two corrections to earlier drafts of this plan:
 ## Distribution contract
 
 The library is published and consumed through npm even by our own apps, so publishing
-mistakes are product bugs. Current peer ranges (`expo >=52`, `reanimated >=3`) are
-looser than the stack we actually support and will be tightened.
+mistakes are product bugs. Peer ranges track the supported stack above — `expo >=57`,
+`react-native >=0.86`, `react >=19.2`, `reanimated >=4.5`, `worklets >=0.10` — and are
+tightened in the same change as an SDK bump, never left behind at the old floor.
 
 - **Test the packed tarball, not the workspace.** `bun run verify:package` packs one and
   inspects it away from any `node_modules`. A workspace symlink hides missing `files`,
@@ -343,7 +347,7 @@ cross-platform and distribution problems before three phases of work sit on top 
 
 ### Phase 0 — Baseline and stack upgrade
 
-Status as of 2026-09-12: everything below is done except the proving product's upgrade.
+Status as of 2026-09-13: done.
 
 - [x] Move `packages/ui` and `apps/showcase` to the Expo 57 stack above, and tighten the
       published peer ranges to match.
@@ -356,8 +360,14 @@ Status as of 2026-09-12: everything below is done except the proving product's u
       Baseline). React Doctor and release traces move to Phase 1, which sets up the
       tooling they need.
 - [x] Delete `apps/site` remnants and the docs naming the removed DOM track.
-- [ ] Move the proving product to the same stack. Until then the library is ahead of its
-      consumer, which is the one state this policy is meant to avoid.
+- [x] Move the proving product to the same stack. It typechecks at zero errors against
+      the library and bundles for iOS and Android. The lag was not free: while it sat on
+      RN 0.81 against a library on 0.86, two copies of `react-native` resolved and
+      Uniwind's `className` augmentations silently disappeared from our types, producing
+      errors that looked like library bugs (`AGENTS.md` > Tooling gotchas). Three of the
+      four breaks were invisible to `tsc` or to unit tests — the `expo-router` /
+      `react-navigation` incompatibility only ever appeared in a Metro export, which is
+      why `bundle:native` is a gate and not a convenience.
 - [ ] Freeze new components until the stable kernel has evidence.
 
 **Exit:** both apps run on the new stack; a tracked stability inventory and reproducible
@@ -391,7 +401,7 @@ baseline commands exist.
       consumer of ours needs it.
 - [x] Playwright smoke on the showcase in Chromium and WebKit: tab order, keyboard
       activation, `Escape`, focus return, and an axe scan of every category. Runs against
-      the **exported** bundle, not the dev server. 32 tests. The scan is a ratchet —
+      the **exported** bundle, not the dev server. 78 tests. The scan is a ratchet —
       per-category violation allowances that may only go down — because fixing every
       finding in one pass was not realistic. Seven of ten categories are at zero, and
       the catalog went from 13 violations and 185 role-less focusable elements to 7 and 20. Both remaining sets are showcase demo markup, not library code.
