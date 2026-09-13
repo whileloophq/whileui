@@ -8,8 +8,6 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfacePadding, typographyStyle, type ShadowTier } from '../../lib/recipes';
 
-// ─── Card ────────────────────────────────────────────────────
-
 const cardVariants = tv({
   base: 'border border-border bg-card',
   variants: {
@@ -93,8 +91,6 @@ const Card = React.forwardRef<View, CardProps>(
 
 Card.displayName = 'Card';
 
-// ─── CardHeader ──────────────────────────────────────────────
-
 export interface CardHeaderProps extends ViewProps {}
 
 const CardHeader = React.forwardRef<View, CardHeaderProps>(({ className, ...props }, ref) => {
@@ -102,8 +98,6 @@ const CardHeader = React.forwardRef<View, CardHeaderProps>(({ className, ...prop
 });
 
 CardHeader.displayName = 'CardHeader';
-
-// ─── CardTitle ───────────────────────────────────────────────
 
 export interface CardTitleProps extends TextProps {}
 
@@ -123,8 +117,6 @@ const CardTitle = React.forwardRef<React.ComponentRef<typeof Text>, CardTitlePro
 
 CardTitle.displayName = 'CardTitle';
 
-// ─── CardDescription ────────────────────────────────────────
-
 export interface CardDescriptionProps extends TextProps {}
 
 const CardDescription = React.forwardRef<React.ComponentRef<typeof Text>, CardDescriptionProps>(
@@ -143,8 +135,6 @@ const CardDescription = React.forwardRef<React.ComponentRef<typeof Text>, CardDe
 
 CardDescription.displayName = 'CardDescription';
 
-// ─── CardContent ─────────────────────────────────────────────
-
 export interface CardContentProps extends ViewProps {}
 
 const CardContent = React.forwardRef<View, CardContentProps>(({ className, ...props }, ref) => {
@@ -153,8 +143,6 @@ const CardContent = React.forwardRef<View, CardContentProps>(({ className, ...pr
 
 CardContent.displayName = 'CardContent';
 
-// ─── CardFooter ──────────────────────────────────────────────
-
 export interface CardFooterProps extends ViewProps {}
 
 const CardFooter = React.forwardRef<View, CardFooterProps>(({ className, ...props }, ref) => {
@@ -162,7 +150,5 @@ const CardFooter = React.forwardRef<View, CardFooterProps>(({ className, ...prop
 });
 
 CardFooter.displayName = 'CardFooter';
-
-// ─── Exports ─────────────────────────────────────────────────
 
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, cardVariants };

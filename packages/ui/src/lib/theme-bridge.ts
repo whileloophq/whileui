@@ -74,8 +74,16 @@ export function useThemeBridge({
       return;
     }
 
-    (async () => {
-      const next = await resolveThemeMode(adapter, initialMode);
+    // `loadThemeMode` is the consumer's storage. If it rejects — a corrupt store, a
+    // keychain prompt the user dismissed — the app must still render in the initial
+    // mode; leaving `hydrated` false would strand anything gated on it forever.
+    void (async () => {
+      let next: ThemeMode;
+      try {
+        next = await resolveThemeMode(adapter, initialMode);
+      } catch {
+        next = initialMode;
+      }
       if (!mounted) {
         return;
       }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 import { View, Modal, Pressable, Text, type ViewProps, type PressableProps } from 'react-native';
 import { cn } from '../../lib/cn';
@@ -6,8 +6,6 @@ import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-s
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { controlRecipe, shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface MenubarMenuContextValue {
   open: boolean;
@@ -18,8 +16,6 @@ const MenubarMenuContext = createContext<MenubarMenuContextValue>({
   open: false,
   setOpen: () => {},
 });
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface MenubarProps extends ViewProps {
   className?: string;
@@ -50,8 +46,6 @@ export interface MenubarSeparatorProps extends ViewProps {
   className?: string;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function Menubar({ className, style, ...props }: MenubarProps) {
   const visual = useVisualTokens();
   return (
@@ -65,9 +59,8 @@ function Menubar({ className, style, ...props }: MenubarProps) {
 
 function MenubarMenu({ children }: MenubarMenuProps) {
   const [open, setOpen] = useState(false);
-  return (
-    <MenubarMenuContext.Provider value={{ open, setOpen }}>{children}</MenubarMenuContext.Provider>
-  );
+  const contextValue = useMemo(() => ({ open, setOpen }), [open]);
+  return <MenubarMenuContext.Provider value={contextValue}>{children}</MenubarMenuContext.Provider>;
 }
 
 function MenubarTrigger({ className, style, ...props }: MenubarTriggerProps) {
@@ -76,6 +69,7 @@ function MenubarTrigger({ className, style, ...props }: MenubarTriggerProps) {
   const tokenStyle = controlRecipe(visual, 'sm');
   return (
     <Pressable
+      accessibilityRole="button"
       className={cn('active:bg-accent', className)}
       style={(state) => [tokenStyle, typeof style === 'function' ? style(state) : style]}
       onPress={() => setOpen(true)}
@@ -125,8 +119,18 @@ function MenubarContent({
       navigationBarTranslucent
       onRequestClose={() => setOpen(false)}
     >
-      <Pressable className="flex-1 justify-end" onPress={() => setOpen(false)}>
+      {/* Both of these are containers. Pressable defaults to `accessible: true`, which on
+          iOS collapses every descendant into a single accessibility element — the menu
+          items inside would be unreachable. */}
+      <Pressable
+        accessible={false}
+        importantForAccessibility="no"
+        className="flex-1 justify-end"
+        onPress={() => setOpen(false)}
+      >
         <Pressable
+          accessible={false}
+          accessibilityRole="menu"
           className={cn(
             'w-full border-border p-2 pb-8 relative overflow-hidden',
             frosted ? 'bg-transparent' : 'bg-popover',
@@ -155,6 +159,7 @@ function MenubarItem({ className, style, ...props }: MenubarItemProps) {
   };
   return (
     <Pressable
+      accessibilityRole="menuitem"
       className={cn('flex flex-row items-center active:bg-accent', className)}
       style={(state) => [tokenStyle, typeof style === 'function' ? style(state) : style]}
       onPress={(e) => {
@@ -171,7 +176,13 @@ function MenubarLabel({ className, children, ...props }: MenubarLabelProps) {
   return (
     <View className={cn('px-2 py-1.5', className)} {...props}>
       {typeof children === 'string' ? (
-        <Text className="font-semibold text-foreground" style={typographyStyle(visual, 'label')}>
+        <Text
+          // A menu section label is a heading — without this it announces as plain text
+          // and rotor navigation cannot find it.
+          accessibilityRole="header"
+          className="font-semibold text-foreground"
+          style={typographyStyle(visual, 'label')}
+        >
           {children}
         </Text>
       ) : (

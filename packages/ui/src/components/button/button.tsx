@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import {
   Pressable,
   Text,
@@ -8,13 +8,12 @@ import {
   type ViewProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useResolveFontFamily } from '../../lib/font-context';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, typographyStyle, type TypographyRole } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface ButtonContextValue {
   variant: VariantProps<typeof buttonVariants>['variant'];
@@ -25,8 +24,6 @@ const ButtonContext = createContext<ButtonContextValue>({
   variant: 'default',
   size: 'default',
 });
-
-// ─── Variants ────────────────────────────────────────────────
 
 const buttonVariants = tv({
   base: 'flex-row items-center justify-center gap-2',
@@ -99,8 +96,6 @@ const buttonTextVariants = tv({
   },
 });
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface ButtonProps
   extends Omit<PressableProps, 'children'>, VariantProps<typeof buttonVariants> {
   children?: React.ReactNode;
@@ -114,12 +109,11 @@ export interface ButtonTextProps extends TextProps {
   className?: string;
 }
 
+// Placement comes from where the icon sits among the button's children — React Native
+// has no `order`, so a `position` prop could only ever have been decorative.
 export interface ButtonIconProps extends ViewProps {
   className?: string;
-  position?: 'left' | 'right';
 }
-
-// ─── Components ──────────────────────────────────────────────
 
 const Button = React.forwardRef<React.ComponentRef<typeof Pressable>, ButtonProps>(
   (
@@ -141,12 +135,14 @@ const Button = React.forwardRef<React.ComponentRef<typeof Pressable>, ButtonProp
       pressedVariant: variant === 'link' ? 'none' : 'strong',
     });
     const tokenStyle = getButtonStyleTokens(visual, size, variant);
+    const contextValue = useMemo(() => ({ variant, size }), [size, variant]);
 
     return (
-      <ButtonContext.Provider value={{ variant, size }}>
+      <ButtonContext.Provider value={contextValue}>
         <Pressable
-          ref={ref as any}
-          className={cn(buttonVariants({ variant, size }), className)}
+          ref={ref}
+          accessibilityRole={variant === 'link' ? 'link' : 'button'}
+          className={cn(buttonVariants({ variant, size }), focusRing, className)}
           style={(state) => {
             const baseStyle =
               typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle;
@@ -163,8 +159,6 @@ const Button = React.forwardRef<React.ComponentRef<typeof Pressable>, ButtonProp
 );
 
 Button.displayName = 'Button';
-
-// ─── Sub-components ──────────────────────────────────────────
 
 function ButtonText({
   className,
@@ -192,12 +186,10 @@ function ButtonText({
 
 ButtonText.displayName = 'ButtonText';
 
-function ButtonIcon({ className, position, ...props }: ButtonIconProps) {
+function ButtonIcon({ className, ...props }: ButtonIconProps) {
   return <View className={cn('items-center justify-center', className)} {...props} />;
 }
 
 ButtonIcon.displayName = 'ButtonIcon';
-
-// ─── Exports ─────────────────────────────────────────────────
 
 export { Button, ButtonText, ButtonIcon, buttonVariants, buttonTextVariants };

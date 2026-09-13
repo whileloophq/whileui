@@ -6,8 +6,6 @@ import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/i
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface HeaderAction {
   key: string;
   icon: React.ReactNode;
@@ -23,8 +21,6 @@ export interface HeaderProps extends ViewProps {
   transparent?: boolean;
   border?: boolean;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export function Header({
   title,
@@ -58,10 +54,8 @@ export function Header({
       ]}
       {...props}
     >
-      {/* Left */}
       <View className="min-w-12">{leftAction}</View>
 
-      {/* Center */}
       <View className="flex-1 items-center">
         {centerContent || (
           <View className="items-center">
@@ -87,11 +81,11 @@ export function Header({
         )}
       </View>
 
-      {/* Right */}
       <View className="min-w-12 flex-row items-center justify-end gap-2">
         {rightActions?.map((action) => (
           <Pressable
             key={action.key}
+            accessibilityRole="button"
             onPress={action.onPress}
             className="rounded-full p-2 active:bg-accent"
             style={withInteractivePressableStyle(undefined, interaction, {
@@ -105,8 +99,6 @@ export function Header({
     </View>
   );
 }
-
-// ─── Header Back Button ──────────────────────────────────────
 
 export interface HeaderBackButtonProps extends Omit<PressableProps, 'children'> {
   icon?: React.ReactNode;

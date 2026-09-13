@@ -217,6 +217,7 @@ export function DateRangePickerModal({
     <>
       {trigger ? (
         <Pressable
+          accessibilityRole="button"
           onPress={handleOpen}
           className={cn('w-full flex-row items-center border-border bg-muted', className)}
           style={fieldRecipe(visual, 'default')}
@@ -233,12 +234,17 @@ export function DateRangePickerModal({
         navigationBarTranslucent
         onRequestClose={handleBackdropPress}
       >
+        {/* Containers only. Pressable defaults to `accessible: true`, which on iOS
+            collapses the calendar and its controls into one accessibility element. */}
         <Pressable
+          accessible={false}
+          importantForAccessibility="no"
           className="flex-1 justify-end"
           style={{ backgroundColor: colors.overlay }}
           onPress={handleBackdropPress}
         >
           <Pressable
+            accessible={false}
             className={cn(
               'border border-border relative overflow-hidden',
               frosted ? 'bg-transparent' : 'bg-background'

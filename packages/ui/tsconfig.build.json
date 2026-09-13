@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // `files` ships `dist` only, so every map pointed at a `src` that is not in the
+    // package — 302 files and about half the tarball, all dead on arrival. Ship `src`
+    // instead if we ever want consumers stepping into library source; until then this
+    // is weight with no reader.
+    "sourceMap": false,
+    "declarationMap": false
+  },
+  "exclude": ["node_modules", "dist", "src/test", "src/**/*.test.ts", "src/**/*.test.tsx"]
+}

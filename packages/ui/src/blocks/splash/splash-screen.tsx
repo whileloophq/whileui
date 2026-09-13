@@ -14,8 +14,6 @@ import { cn } from '../../lib/cn';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface SplashScreenProps extends ViewProps {
   /** App name displayed below logo */
   appName?: string;
@@ -35,11 +33,7 @@ export interface SplashScreenProps extends ViewProps {
   loadingText?: string;
 }
 
-// ─── Animated Components ─────────────────────────────────────
-
 const AnimatedView = Animated.createAnimatedComponent(View);
-
-// ─── Loading Dot Component ───────────────────────────────────
 
 function LoadingDot({ delay }: { delay: number }) {
   const scale = useSharedValue(0.6);
@@ -68,7 +62,7 @@ function LoadingDot({ delay }: { delay: number }) {
         false
       )
     );
-  }, [delay]);
+  }, [delay, opacity, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -79,8 +73,6 @@ function LoadingDot({ delay }: { delay: number }) {
     <AnimatedView style={animatedStyle} className="h-2 w-2 rounded-full bg-muted-foreground" />
   );
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export function SplashScreen({
   appName,
@@ -95,14 +87,12 @@ export function SplashScreen({
   ...props
 }: SplashScreenProps) {
   const visual = useVisualTokens();
-  // Animation values
   const opacity = useSharedValue(0);
   const scale = useSharedValue(variant === 'scale' ? 0.8 : 1);
   const translateY = useSharedValue(variant === 'slide' ? 30 : 0);
   const loadingOpacity = useSharedValue(0);
 
   useEffect(() => {
-    // Main content animation
     opacity.value = withTiming(1, {
       duration: duration * 0.6,
       easing: Easing.out(Easing.cubic),
@@ -122,17 +112,24 @@ export function SplashScreen({
       });
     }
 
-    // Loading indicator fade in
     if (showLoading) {
       loadingOpacity.value = withDelay(duration * 0.5, withTiming(1, { duration: 400 }));
     }
 
-    // Callback after animation
     if (onAnimationComplete) {
       const timer = setTimeout(onAnimationComplete, duration);
       return () => clearTimeout(timer);
     }
-  }, [variant, duration, showLoading, onAnimationComplete]);
+  }, [
+    duration,
+    loadingOpacity,
+    onAnimationComplete,
+    opacity,
+    scale,
+    showLoading,
+    translateY,
+    variant,
+  ]);
 
   const containerStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -146,15 +143,12 @@ export function SplashScreen({
   return (
     <View className={cn('flex-1 items-center justify-center bg-background', className)} {...props}>
       <AnimatedView style={containerStyle} className="items-center">
-        {/* Logo */}
         {logo && <View className="mb-6">{logo}</View>}
 
-        {/* App Name */}
         {appName && (
           <Text className="text-4xl font-bold text-foreground tracking-tight">{appName}</Text>
         )}
 
-        {/* Tagline */}
         {tagline && (
           <Text
             className="mt-2 text-muted-foreground text-center px-8"
@@ -165,7 +159,6 @@ export function SplashScreen({
         )}
       </AnimatedView>
 
-      {/* Loading Indicator */}
       {showLoading && (
         <AnimatedView style={loadingStyle} className="absolute bottom-20 items-center">
           <View className="flex-row items-center gap-2">
@@ -183,8 +176,6 @@ export function SplashScreen({
     </View>
   );
 }
-
-// ─── Preset Variants ─────────────────────────────────────────
 
 export interface MinimalSplashProps extends Omit<SplashScreenProps, 'variant'> {}
 

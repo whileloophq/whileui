@@ -1,13 +1,12 @@
 import React from 'react';
 import { TextInput, type TextInputProps, type TextStyle } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle, type TypographyRole } from '../../lib/recipes';
-
-// ─── Variants ────────────────────────────────────────────────
 
 const textareaVariants = tv({
   base: 'w-full border-border bg-muted text-foreground',
@@ -29,14 +28,10 @@ const TEXTAREA_TEXT_ROLE: Record<string, TypographyRole> = {
   lg: 'body',
 };
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface TextareaProps
   extends Omit<TextInputProps, 'style'>, VariantProps<typeof textareaVariants> {
   className?: string;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 const Textarea = React.forwardRef<React.ComponentRef<typeof TextInput>, TextareaProps>(
   ({ className, size = 'default', placeholderTextColor, ...props }, ref) => {
@@ -64,7 +59,7 @@ const Textarea = React.forwardRef<React.ComponentRef<typeof TextInput>, Textarea
     return (
       <TextInput
         ref={ref}
-        className={cn(textareaVariants({ size }), 'outline-none', className)}
+        className={cn(textareaVariants({ size }), focusRing, className)}
         style={style}
         multiline
         textAlignVertical="top"
@@ -76,7 +71,5 @@ const Textarea = React.forwardRef<React.ComponentRef<typeof TextInput>, Textarea
 );
 
 Textarea.displayName = 'Textarea';
-
-// ─── Exports ─────────────────────────────────────────────────
 
 export { Textarea, textareaVariants };

@@ -6,10 +6,10 @@ Beautiful, accessible, themeable components built with [Uniwind](https://uniwind
 
 **Requirements:** React 19+, React Native 0.81+, Expo 52+ (if using Expo). Supports React Native Web.
 
-> **Two tracks, one token layer.** This README documents the React Native track.
-> The DOM track — `@thewhileloop/whileui/web`: browser, Capacitor, Tauri — is
-> the one current apps use (sidekick-app, split-loop) and has its own section
-> below. See [ROADMAP.md](./ROADMAP.md).
+WhileUI has one renderer: React Native. iOS, Android and React Native Web are all
+production targets — iOS and Android set the interaction baseline. See
+[ROADMAP.md](./ROADMAP.md) for the product boundary and extraction rules, and
+[PLAN.md](./PLAN.md) for the supported stack and production contracts.
 
 ## Installation
 
@@ -228,7 +228,6 @@ function MyScreen() {
 | **Pressable** | Themed pressable wrapper         |
 | **Stack**     | Vertical flex layout with gap    |
 | **Row**       | Horizontal flex layout with gap  |
-| **Box**       | Flexible container with variants |
 
 ### Form Controls
 
@@ -310,37 +309,37 @@ Copy from `apps/showcase/templates/auth/`:
 
 ### Navigation
 
-| Block                 | Description                                       |
-| --------------------- | ------------------------------------------------- |
-| **AppShell**          | Layout shell with header/footer/bottomNav slots   |
-| **NavigationSidebar** | Sidebar nav with grouped sections and footer slot |
-| **Header**            | Top app bar with back/actions                     |
-| **BottomNav**         | Tab-style bottom navigation bar                   |
-| **FloatingBottomNav** | Elevated bottom nav with safe area support        |
-| **TabBar**            | Top tab bar with indicator                        |
-| **DrawerMenu**        | Drawer with sections and items                    |
+| Block                 | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| **AppShell**          | Layout shell with header/footer/bottomNav slots |
+| **Header**            | Top app bar with back/actions                   |
+| **BottomNav**         | Tab-style bottom navigation bar                 |
+| **FloatingBottomNav** | Elevated bottom nav with safe area support      |
+| **TabBar**            | Top tab bar with indicator                      |
+| **DrawerMenu**        | Drawer with sections and items                  |
 
 ### Layout
 
-| Block                       | Description                                                             |
-| --------------------------- | ----------------------------------------------------------------------- |
-| **ActionBar**               | Sticky bottom action row with safe-area padding                         |
-| **ConfirmActionSheet**      | Reusable destructive confirmation sheet                                 |
-| **Sheet**                   | Bottom sheet modal with header/content/footer slots                     |
-| **FormModalScreen**         | Modal scaffold for forms with loading states                            |
-| **ContentSkeleton**         | Page/content placeholder with variants (list, card, generic)            |
-| **PageSkeleton**            | Variant-based page layouts (dashboard, list, settings, card, generic)   |
-| **ScreenSkeleton**          | Header slot/placeholder + PageSkeleton content in one block             |
-| **ErrorBoundary**           | React ErrorBoundary that renders ErrorState by default                  |
-| **EmptyState**              | Empty content placeholder                                               |
-| **ErrorState**              | Error display with retry                                                |
-| **LoadingScreen**           | Full-screen loading indicator                                           |
-| **PullToRefreshScrollView** | Themed ScrollView with RefreshControl (useThemeTokens for colors)       |
-| **SmartInput**              | Keyboard-aware compose input: left/center/right slots, bar/card variant |
-| **OnboardingScreen**        | Onboarding flow screen                                                  |
-| **SplashScreen**            | Branded splash (fade/scale/slide variants)                              |
-| **MinimalSplash**           | Minimal monochrome splash                                               |
-| **BrandedSplash**           | Splash with brand imagery                                               |
+| Block                       | Description                                                           |
+| --------------------------- | --------------------------------------------------------------------- |
+| **ActionBar**               | Sticky bottom action row with safe-area padding                       |
+| **ConfirmActionSheet**      | Reusable destructive confirmation sheet                               |
+| **Sheet**                   | Bottom sheet modal with header/content/footer slots                   |
+| **FormModalScreen**         | Modal scaffold for forms with loading states                          |
+| **ContentSkeleton**         | Page/content placeholder with variants (list, card, generic)          |
+| **PageSkeleton**            | Variant-based page layouts (dashboard, list, settings, card, generic) |
+| **ScreenSkeleton**          | Header slot/placeholder + PageSkeleton content in one block           |
+| **ErrorBoundary**           | React ErrorBoundary that renders ErrorState by default                |
+| **EmptyState**              | Empty content placeholder                                             |
+| **ErrorState**              | Error display with retry                                              |
+| **LoadingScreen**           | Full-screen loading indicator                                         |
+| **PullToRefreshScrollView** | Themed ScrollView with RefreshControl (useThemeTokens for colors)     |
+| **KeyboardAwareScreen**     | One screen-level keyboard policy for bottom-docked controls           |
+| **DockedInput**             | Safe-area-aware bottom dock that reports its complete height          |
+| **SmartInput**              | Compose input with slots, variants, and optional rotating examples    |
+| **SplashScreen**            | Branded splash (fade/scale/slide variants)                            |
+| **MinimalSplash**           | Minimal monochrome splash                                             |
+| **BrandedSplash**           | Splash with brand imagery                                             |
 
 ### Chat
 
@@ -367,7 +366,6 @@ Copy from `apps/showcase/templates/profile/`:
 | -------------------- | ----------------------------------- |
 | **ListItem**         | Title/subtitle row                  |
 | **NotificationItem** | Notification row with metadata      |
-| **SwipeableItem**    | Swipe actions list item             |
 | **TimelineFeed**     | Vertical feed with connecting lines |
 
 ### Commerce
@@ -398,52 +396,19 @@ Copy from `apps/showcase/templates/profile/`:
 | **DatePickerInline**     | Inline calendar for forms or dashboards           |
 | **DateRangePickerModal** | Range selection modal with period marking         |
 
-## DOM Track (web, Capacitor, Tauri)
-
-For web-first apps, via Capacitor and Tauri — see [ROADMAP.md](./ROADMAP.md). Same tokens
-and the same `variant`/`size` API as the native components above, rendering
-plain DOM. No `react-native-web`.
-
-```ts
-import { AppShell, Header, DrawerMenu, Button, Card } from '@thewhileloop/whileui/web';
-```
-
-| Ported                                                                                                                                                                                                                                                                                                      | Status |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `Button`, `ButtonText`, `ButtonIcon`                                                                                                                                                                                                                                                                        | ✓      |
-| `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`                                                                                                                                                                                                                           | ✓      |
-| `Input` — `prefix`/`suffix` slots, `variant="error"`, `inputClassName`                                                                                                                                                                                                                                      | ✓      |
-| `OTPInput` — cells over one transparent field, so OS code suggestion works                                                                                                                                                                                                                                  | ✓      |
-| `Alert`, `AlertTitle`, `AlertDescription` — five variants, `icon` slot                                                                                                                                                                                                                                      | ✓      |
-| `Separator` — `orientation`, optional `label` for the "or" divider                                                                                                                                                                                                                                          | ✓      |
-| `Spinner` — inherits `currentColor`; `color` only to override                                                                                                                                                                                                                                               | ✓      |
-| `Skeleton` — pulse (no shimmer on the DOM: it would need a stylesheet)                                                                                                                                                                                                                                      | ✓      |
-| `PageSkeleton` — `dashboard`, `list`, `settings`, `card`, `generic`                                                                                                                                                                                                                                         | ✓      |
-| `GoogleSignInButton` — brand-fixed colours, `loading`; the plugin call is the app's                                                                                                                                                                                                                         | ✓      |
-| `AppShell` — `header`, `footer`, `bottomNav`, `loading` + `skeleton`                                                                                                                                                                                                                                        | ✓      |
-| `Header`, `HeaderIconButton`, `HeaderBackButton`                                                                                                                                                                                                                                                            | ✓      |
-| `ThemeProvider` / `useTheme` — `.dark` on `<html>`, mode persisted via `platform.storage`, follows the OS in `system`, keeps status bar and theme-color in step                                                                                                                                             | ✓      |
-| `ErrorBoundary` — `fallback(error, reset)` render prop, themed default                                                                                                                                                                                                                                      | ✓      |
-| `DrawerMenu` — sections, `activeKey`, `onSelect`, `header`/`footer` slots                                                                                                                                                                                                                                   | ✓      |
-| `platform/` — `haptics`, `storage`, `secureStore`, `hardwareBack`, `keyboard`, `statusBar`, `share`, `deepLinks`, `network`, `notifications` (local, scheduled). Web fallbacks by default; `installPlatform(createCapacitorPlatform({ App, Haptics, … }))` once at boot. Zero Capacitor deps in the library | ✓      |
-
-Everything else is listed, per category, in the DOM showcase: `cd apps/site && bun run dev` (port 8083). The showcase's own shell is `AppShell` + `Header` + `DrawerMenu`.
-
 **Tokens without a renderer.** `@thewhileloop/whileui/tokens` exports the theme
 and visual contracts, the presets, and `deriveThemeColors(base, scheme)` — give it
 the 25 base colours an app defines and it returns all 52, using the same ratios
-as the default presets. Safe in a build script on either track (no React, RN or
-Uniwind imports); `useThemeColors()` uses it too, so a missing `--color-primary-soft`
+as the default presets. Safe in a build script (no React, RN or Uniwind
+imports); `useThemeColors()` uses it too, so a missing `--color-primary-soft`
 derives from the app's own primary instead of falling back to the default palette.
 
-**One gotcha.** Visual tokens are emitted unitless (`--ui-radius-md: 14`) because the native track consumes them as numbers. On the DOM every pixel token needs `calc(var(--x) * 1px)`; `packages/ui/src/web/lib/recipes.ts` does this for you.
-
-## Layout Primitives (Stack, Row, Box)
+## Layout Primitives (Stack, Row)
 
 Use `Stack` for vertical layouts, `Row` for horizontal layouts. Both support `gap`, `align`, and `justify` variants.
 
 ```tsx
-import { Stack, Row, Box } from '@thewhileloop/whileui';
+import { Stack, Row } from '@thewhileloop/whileui';
 
 <Stack gap="lg">
   <Text>Title</Text>
@@ -463,8 +428,6 @@ import { Stack, Row, Box } from '@thewhileloop/whileui';
 | gap     | `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| '2xl'`           | Spacing between children |
 | align   | `'start' \| 'center' \| 'end' \| 'stretch' \| 'baseline'`           | Cross-axis alignment     |
 | justify | `'start' \| 'center' \| 'end' \| 'between' \| 'around' \| 'evenly'` | Main-axis alignment      |
-
-`Box` provides optional padding and margin variants for consistent spacing.
 
 ## Full-Screen Composition
 
@@ -847,6 +810,33 @@ const adapter: ThemeBridgeAdapter = {
 const { mode, resolvedTheme, setMode, cycleMode } = useThemeBridge({ adapter });
 ```
 
+## Focus rings
+
+Every interactive component draws a themed focus ring on web. It uses `:focus-visible`,
+so it appears for keyboard users and not after a mouse click, and it is driven by the
+`--color-ring` token — restyle it with your theme, not with component overrides.
+
+Use the same treatment on your own controls:
+
+```tsx
+import { focusRing, focusRingInset, cn } from '@thewhileloop/whileui';
+
+<Pressable className={cn('rounded-full px-4 py-2', focusRing)} onPress={onPress}>
+  <Text>Custom control</Text>
+</Pressable>;
+```
+
+| Export           | Use for                                                                         |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `focusRing`      | Standalone controls — buttons, inputs, cards, nav items                         |
+| `focusRingInset` | Controls flush inside a track, where an offset ring would clip (segments, tabs) |
+
+**Do not use a bare `outline-none`.** It removes the browser's indicator and leaves
+keyboard users with nothing, which fails WCAG 2.4.7. `focusRing` removes the default and
+supplies a themed replacement in the same class. The one exemption is a visually hidden
+input, where a visible proxy shows the focus instead — `OTPInput` does this with its
+blinking cursor.
+
 ## Tech Stack
 
 - **Styling**: [Uniwind](https://uniwind.dev) (free tier) + Tailwind CSS v4
@@ -867,7 +857,8 @@ import { Button, ButtonText, ButtonIcon } from '@thewhileloop/whileui';
     <Icon />
   </ButtonIcon>
   <ButtonText>Click me</ButtonText>
-  <ButtonIcon position="right">
+  {/* Placement is child order — a trailing ButtonIcon renders after the label. */}
+  <ButtonIcon>
     <Icon />
   </ButtonIcon>
 </Button>;
@@ -1433,6 +1424,40 @@ import {
 
 ## Menubar
 
+```tsx
+import {
+  Menubar,
+  MenubarMenu,
+  MenubarTrigger,
+  MenubarContent,
+  MenubarLabel,
+  MenubarItem,
+  MenubarSeparator,
+} from '@thewhileloop/whileui';
+
+<Menubar>
+  <MenubarMenu>
+    <MenubarTrigger>
+      <Text className="text-foreground text-sm">File</Text>
+    </MenubarTrigger>
+    <MenubarContent>
+      <MenubarLabel>Project</MenubarLabel>
+      <MenubarItem>
+        <Text className="text-foreground">New Project</Text>
+      </MenubarItem>
+      <MenubarSeparator />
+      <MenubarItem>
+        <Text className="text-foreground">Export</Text>
+      </MenubarItem>
+    </MenubarContent>
+  </MenubarMenu>
+</Menubar>;
+```
+
+`MenubarLabel` is a non-interactive section heading. It takes a string or elements, and
+announces as a heading to assistive technology — as do `DropdownMenuLabel` and
+`ContextMenuLabel`.
+
 `MenubarContent` supports the same frosted props as `PopoverContent` (default blur preset: medium).
 
 ---
@@ -1543,9 +1568,24 @@ import { ActionBar, Button, ButtonText } from '@thewhileloop/whileui';
 </ActionBar>;
 ```
 
+## KeyboardAwareScreen and DockedInput
+
+Use one keyboard-aware root for the screen, then place the composer in a bottom dock. Feed the dock height into the scroll content inset so the last item remains visible.
+
+```tsx
+import { DockedInput, KeyboardAwareScreen, SmartInput } from '@thewhileloop/whileui';
+
+<KeyboardAwareScreen>
+  <ScrollView contentContainerStyle={{ paddingBottom: inputHeight }} />
+  <DockedInput onHeightChange={setInputHeight}>
+    <SmartInput variant="card" safeArea={false} />
+  </DockedInput>
+</KeyboardAwareScreen>;
+```
+
 ## SmartInput
 
-Keyboard-aware compose input. `variant`: "bar" (sticky bottom) or "card" (floating). Slots: `leftSlot`, `centerSlot` (intent selector), `rightSlot`. `submitBehavior`: "newline" (default) or "submit"/"blurAndSubmit". Forwards ref to `TextInput`.
+Compose input for use inline or inside `DockedInput`. `variant`: "bar" or "card". Slots: `leftSlot`, `centerSlot` (intent selector), `rightSlot`. `submitBehavior`: "newline" (default) or "submit"/"blurAndSubmit". `placeholderExamples` animates rotating prompts and respects the platform reduced-motion setting. Forwards ref to `TextInput`.
 
 ```tsx
 import { SmartInput, Button, ButtonText } from '@thewhileloop/whileui';
@@ -1553,7 +1593,7 @@ import { SmartInput, Button, ButtonText } from '@thewhileloop/whileui';
 <SmartInput
   value={message}
   onChangeText={setMessage}
-  placeholder="Type a message..."
+  placeholderExamples={['Log breakfast', 'Add a 30 minute walk', 'Set weight to 72 kg']}
   leftSlot={
     <Button variant="ghost" size="icon">
       <Icon name="add" />
@@ -1726,28 +1766,6 @@ import {
 | blurIntensity | `number`                                                           | medium preset          |
 | blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'surfaceTranslucent'` |
 
-## NavigationSidebar
-
-```tsx
-import { NavigationSidebar } from '@thewhileloop/whileui';
-
-<NavigationSidebar
-  sections={[
-    {
-      title: 'Workspace',
-      items: [
-        { key: 'overview', label: 'Overview', icon: <Icon /> },
-        { key: 'billing', label: 'Billing', icon: <Icon />, badge: 2 },
-      ],
-    },
-  ]}
-  activeKey="overview"
-  onSelect={(key) => {}}
-  header={<Text>Acme Inc.</Text>}
-  footer={<Text className="text-xs text-muted-foreground">v1.0.0</Text>}
-/>;
-```
-
 ## Header
 
 ```tsx
@@ -1874,11 +1892,11 @@ import { PullToRefreshScrollView } from '@thewhileloop/whileui';
 </PullToRefreshScrollView>;
 ```
 
-| Prop         | Type         | Description                                |
-| ------------ | ------------ | ------------------------------------------ |
-| refreshing   | `boolean`    | Whether refresh is in progress             |
-| onRefresh    | `() => void` | Called when user pulls to refresh          |
-| refreshColor | `string`     | Optional hex override; defaults to primary |
+| Prop         | Type                          | Description                                                                                                     |
+| ------------ | ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| refreshing   | `boolean`                     | Whether refresh is in progress                                                                                  |
+| onRefresh    | `() => void \| Promise<void>` | Called when user pulls to refresh. Not awaited — drive the spinner with `refreshing`, and catch your own errors |
+| refreshColor | `string`                      | Optional hex override; defaults to primary                                                                      |
 
 ## EmptyState
 
@@ -2113,13 +2131,12 @@ Tracked work items for future releases.
 
 - [x] ProductCard, ListItem, NotificationItem, MetricCard, SubscriptionCard, PricingCard
 - [x] AppShell, Chat, FormModalScreen, CheckoutSummary (already had `loading`)
-- [ ] Add `loading` to remaining blocks: Header, BottomNav, DrawerMenu, TimelineFeed, SwipeableItem
+- [ ] Add `loading` to remaining blocks: Header, BottomNav, DrawerMenu, TimelineFeed
 
 ### Documentation Gaps
 
 - [ ] Add `## API` sections for: Textarea, Toggle, ToggleGroup, Label, Separator, Skeleton, AspectRatio, Collapsible, Text, View, Pressable
-- [ ] Add `## API` sections for blocks: FloatingBottomNav, TabBar, FormModalScreen, ErrorState, LoadingScreen, OnboardingScreen, ListItem, NotificationItem, MetricCard, SmartImage, TimelineFeed
-- [ ] Build `apps/site/` (docs website) with `registry.ts`, `demos.tsx`, `block-demos.tsx`, `props-data.ts`
+- [ ] Add `## API` sections for blocks: FloatingBottomNav, TabBar, FormModalScreen, ErrorState, LoadingScreen, ListItem, NotificationItem, MetricCard, SmartImage, TimelineFeed
 
 ### Infrastructure
 

@@ -7,8 +7,6 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfacePadding, surfaceRadius } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface HoverCardProps {
   onOpenChange?: (open: boolean) => void;
   openDelay?: number;
@@ -27,8 +25,6 @@ export interface HoverCardContentProps
   className?: string;
   portalHost?: string;
 }
-
-// ─── Components ──────────────────────────────────────────────
 
 function HoverCard({ onOpenChange, openDelay, closeDelay, children }: HoverCardProps) {
   return (

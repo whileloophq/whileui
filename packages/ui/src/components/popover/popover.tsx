@@ -3,11 +3,10 @@ import { Platform, StyleSheet, type ViewStyle } from 'react-native';
 import * as PopoverPrimitive from '@rn-primitives/popover';
 import { cn } from '../../lib/cn';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import { useOverlayInsets, type OverlayInsets } from '../../lib/overlay-insets';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfacePadding, surfaceRadius } from '../../lib/recipes';
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface PopoverProps {
   onOpenChange?: (open: boolean) => void;
@@ -24,6 +23,8 @@ export interface PopoverContentProps
   extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>, FrostedSurfaceProps {
   className?: string;
   portalHost?: string;
+  /** Collision padding. Defaults to safe area plus a margin so the panel never sits flush against an edge. */
+  insets?: Partial<OverlayInsets>;
 }
 
 export interface PopoverCloseProps extends React.ComponentPropsWithoutRef<
@@ -31,8 +32,6 @@ export interface PopoverCloseProps extends React.ComponentPropsWithoutRef<
 > {
   className?: string;
 }
-
-// ─── Components ──────────────────────────────────────────────
 
 function Popover({ onOpenChange, children }: PopoverProps) {
   return <PopoverPrimitive.Root onOpenChange={onOpenChange}>{children}</PopoverPrimitive.Root>;
@@ -55,6 +54,7 @@ const PopoverContent = React.forwardRef<
       className,
       align = 'center',
       sideOffset = 4,
+      insets,
       portalHost,
       children,
       style,
@@ -74,6 +74,13 @@ const PopoverContent = React.forwardRef<
     });
     const visual = useVisualTokens();
     const colors = useThemeColors();
+    // Keeps the panel off the screen edge and out from under the notch.
+    const defaultInsets = useOverlayInsets();
+    const resolvedInsets = { ...defaultInsets, ...insets };
+    // NOTE: native only. `@rn-primitives/popover`'s web build destructures `insets`
+    // away (`insets: _insets`) and hands Radix a fixed allowlist that has no room for
+    // `collisionPadding`, so a web popover next to an edge still lands flush against it.
+    // Fixing that needs a `.web.tsx` talking to Radix directly.
     const resolvedStyle = StyleSheet.flatten([
       Platform.OS === 'web' ? undefined : contentStyles,
       {
@@ -95,6 +102,7 @@ const PopoverContent = React.forwardRef<
             ref={ref}
             align={align}
             sideOffset={sideOffset}
+            insets={resolvedInsets}
             className={cn(
               'z-50 w-72 border-border relative overflow-hidden',
               frosted ? 'bg-transparent' : 'bg-popover',

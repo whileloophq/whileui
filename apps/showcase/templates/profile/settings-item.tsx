@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { View, Pressable, type PressableProps } from 'react-native';
-import { Text, Switch, cn } from '@thewhileloop/whileui';
+import { Text, Switch, cn, focusRing } from '@thewhileloop/whileui';
 
 export interface SettingsItemProps extends Omit<PressableProps, 'children'> {
   icon?: React.ReactNode;
@@ -39,6 +39,7 @@ export function SettingsItem({
         'flex-row items-center px-4 py-3',
         showBorder && 'border-b border-border',
         !isToggle && 'active:bg-muted',
+        focusRing,
         className
       )}
       disabled={isToggle}
@@ -58,7 +59,12 @@ export function SettingsItem({
       </View>
 
       {type === 'toggle' && onToggle && (
-        <Switch checked={toggleValue || false} onCheckedChange={onToggle} />
+        <Switch
+          checked={toggleValue || false}
+          onCheckedChange={onToggle}
+          // The row's label is a sibling Text, not something the switch owns.
+          accessibilityLabel={label}
+        />
       )}
 
       {type === 'navigate' && (

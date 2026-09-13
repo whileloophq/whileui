@@ -15,8 +15,6 @@ import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
-// ─── Variants ─────────────────────────────────────────────────
-
 const otpCellVariants = tv({
   base: 'items-center justify-center border bg-muted',
   variants: {
@@ -31,8 +29,6 @@ const otpCellVariants = tv({
   defaultVariants: { size: 'default', state: 'idle' },
 });
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface OTPInputProps extends Omit<ViewProps, 'children'> {
   length?: number;
   value?: string;
@@ -45,8 +41,6 @@ export interface OTPInputProps extends Omit<ViewProps, 'children'> {
   autoFocus?: boolean;
   className?: string;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 function OTPInput({
   length = 6,
@@ -140,7 +134,9 @@ function OTPInput({
         })}
       </Animated.View>
 
-      {/* Transparent full-size TextInput — tappable but invisible */}
+      {/* Keep the native input full-size so every cell is tappable. Opacity is
+          required because Android can still paint composing text even when its
+          text color is transparent. */}
       <TextInput
         value={val}
         onChangeText={update}
@@ -160,6 +156,7 @@ function OTPInput({
           left: 0,
           right: 0,
           bottom: 0,
+          opacity: 0,
           color: 'transparent',
         }}
         accessibilityLabel={`Enter ${length}-digit verification code`}
@@ -167,8 +164,6 @@ function OTPInput({
     </View>
   );
 }
-
-// ─── Cursor Blink ─────────────────────────────────────────────
 
 function CursorBlink({ color }: { color: string }) {
   const opacity = useSharedValue(1);

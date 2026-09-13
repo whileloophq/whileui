@@ -38,6 +38,9 @@ function Spinner({ className, size, color, ...props }: SpinnerProps) {
       size={activityIndicatorSize}
       color={color ?? colors.foreground}
       className={cn(spinnerVariants({ size }), className)}
+      // `ActivityIndicator` renders `role="progressbar"`, and a progressbar with no name
+      // fails WCAG 4.1.2. Override with what is loading when you know it.
+      accessibilityLabel="Loading"
       {...props}
     />
   );

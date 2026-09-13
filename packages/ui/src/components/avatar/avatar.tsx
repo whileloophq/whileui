@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Image, Text, type ViewProps, type ImageProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
-
-// ─── Variants ────────────────────────────────────────────────
 
 const avatarVariants = tv({
   base: 'relative flex shrink-0 overflow-hidden rounded-full',
@@ -22,8 +20,6 @@ const avatarVariants = tv({
   },
 });
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface AvatarProps extends ViewProps, VariantProps<typeof avatarVariants> {
   className?: string;
 }
@@ -37,8 +33,6 @@ export interface AvatarFallbackProps extends ViewProps {
   className?: string;
 }
 
-// ─── Context ─────────────────────────────────────────────────
-
 const AvatarContext = React.createContext<{
   imageLoaded: boolean;
   setImageLoaded: (loaded: boolean) => void;
@@ -47,15 +41,14 @@ const AvatarContext = React.createContext<{
   setImageLoaded: () => {},
 });
 
-// ─── Components ──────────────────────────────────────────────
-
 const Avatar = React.forwardRef<React.ComponentRef<typeof View>, AvatarProps>(
   ({ className, size, ...props }, ref) => {
     const [imageLoaded, setImageLoaded] = useState(false);
+    const contextValue = useMemo(() => ({ imageLoaded, setImageLoaded }), [imageLoaded]);
 
     return (
-      <AvatarContext.Provider value={{ imageLoaded, setImageLoaded }}>
-        <View ref={ref as any} className={cn(avatarVariants({ size }), className)} {...props} />
+      <AvatarContext.Provider value={contextValue}>
+        <View ref={ref} className={cn(avatarVariants({ size }), className)} {...props} />
       </AvatarContext.Provider>
     );
   }
@@ -113,7 +106,5 @@ function AvatarFallback({ className, children, ...props }: AvatarFallbackProps) 
 }
 
 AvatarFallback.displayName = 'AvatarFallback';
-
-// ─── Exports ─────────────────────────────────────────────────
 
 export { Avatar, AvatarImage, AvatarFallback, avatarVariants };

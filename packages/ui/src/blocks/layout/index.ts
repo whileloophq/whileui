@@ -1,4 +1,6 @@
 export { AppShell, type AppShellProps } from './app-shell';
+export { KeyboardAwareScreen, type KeyboardAwareScreenProps } from './keyboard-aware-screen';
+export { DockedInput, type DockedInputProps } from './docked-input';
 export { ActionBar, type ActionBarProps } from './action-bar';
 export {
   ConfirmActionSheet,
@@ -33,8 +35,3 @@ export type {
   SheetCloseProps,
 } from './sheet';
 export { SmartInput, type SmartInputProps } from './smart-input';
-export {
-  OnboardingScreen,
-  type OnboardingScreenProps,
-  type OnboardingSlide,
-} from './onboarding-screen';

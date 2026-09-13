@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Pressable, View, type ViewProps } from 'react-native';
 import Animated, { SlideInUp, SlideOutUp } from 'react-native-reanimated';
 import { Text } from '../text';
@@ -7,8 +7,6 @@ import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface ToastData {
   id: string;
@@ -29,8 +27,6 @@ interface ToastContextValue {
   dismissAll: () => void;
 }
 
-// ─── Context ─────────────────────────────────────────────────
-
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 export function useToast() {
@@ -41,13 +37,23 @@ export function useToast() {
   return context;
 }
 
-// ─── Provider ────────────────────────────────────────────────
-
 export interface ToastProviderProps {
   children: React.ReactNode;
 }
 
 let toastId = 0;
+
+const TEXT_COLOR_BY_VARIANT = {
+  default: 'text-foreground',
+  destructive: 'text-destructive-foreground',
+  success: 'text-success-foreground',
+} as const;
+
+const DESCRIPTION_COLOR_BY_VARIANT = {
+  default: 'text-muted-foreground',
+  destructive: 'text-destructive-foreground-muted',
+  success: 'text-success-foreground-muted',
+} as const;
 
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
@@ -66,14 +72,13 @@ export function ToastProvider({ children }: ToastProviderProps) {
     setToasts([]);
   }, []);
 
-  return (
-    <ToastContext.Provider value={{ toasts, toast, dismiss, dismissAll }}>
-      {children}
-    </ToastContext.Provider>
+  const contextValue = useMemo(
+    () => ({ toasts, toast, dismiss, dismissAll }),
+    [dismiss, dismissAll, toast, toasts]
   );
-}
 
-// ─── Toast Variants ──────────────────────────────────────────
+  return <ToastContext.Provider value={contextValue}>{children}</ToastContext.Provider>;
+}
 
 const toastVariants = tv({
   base: 'w-full flex-row items-center justify-between border',
@@ -88,8 +93,6 @@ const toastVariants = tv({
     variant: 'default',
   },
 });
-
-// ─── Toast Item ──────────────────────────────────────────────
 
 export interface ToastProps extends ViewProps, VariantProps<typeof toastVariants> {
   toast: ToastData;
@@ -108,18 +111,8 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
     }
   }, [duration, onDismiss]);
 
-  const textColorByVariant = {
-    default: 'text-foreground',
-    destructive: 'text-destructive-foreground',
-    success: 'text-success-foreground',
-  } as const;
-  const descColorByVariant = {
-    default: 'text-muted-foreground',
-    destructive: 'text-destructive-foreground-muted',
-    success: 'text-success-foreground-muted',
-  } as const;
-  const textColor = textColorByVariant[variant];
-  const descColor = descColorByVariant[variant];
+  const textColor = TEXT_COLOR_BY_VARIANT[variant];
+  const descColor = DESCRIPTION_COLOR_BY_VARIANT[variant];
 
   return (
     <Animated.View
@@ -152,6 +145,7 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
       <View className="flex-row items-center gap-2">
         {action && (
           <Pressable
+            accessibilityRole="button"
             onPress={() => {
               action.onPress();
               onDismiss();
@@ -169,7 +163,12 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
             </Text>
           </Pressable>
         )}
-        <Pressable onPress={onDismiss} className="p-1">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss"
+          onPress={onDismiss}
+          className="p-1"
+        >
           <Text className={cn(textColor)} style={typographyStyle(visual, 'emphasis')}>
             ×
           </Text>
@@ -178,8 +177,6 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
     </Animated.View>
   );
 }
-
-// ─── Toast Container ─────────────────────────────────────────
 
 export interface ToastContainerProps extends ViewProps {
   position?: 'top' | 'bottom';
@@ -211,7 +208,5 @@ export function ToastContainer({
     </View>
   );
 }
-
-// ─── Exports ─────────────────────────────────────────────────
 
 export { Toast, toastVariants };

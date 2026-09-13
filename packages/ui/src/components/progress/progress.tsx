@@ -32,6 +32,10 @@ const Progress = React.forwardRef<View, ProgressProps>(
         className={cn(progressVariants({ size }), className)}
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 0, max: 100, now: clampedValue }}
+        // A progress bar announcing "60 percent" of nothing is not useful, and a
+        // progressbar with no name fails WCAG 4.1.2. Callers should say what is
+        // progressing; this is the floor, not the answer.
+        accessibilityLabel="Progress"
         {...props}
       >
         <View

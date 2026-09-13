@@ -23,7 +23,6 @@ export interface ThemePreset {
   visual: Partial<VisualTokens>;
 }
 
-// ─── Preset: Soft (package default look) ─────────────────────
 // Rounded, airy, frosted. Matches the contract fallbacks.
 
 export const WHILEUI_PRESET_SOFT: ThemePreset = {
@@ -34,7 +33,6 @@ export const WHILEUI_PRESET_SOFT: ThemePreset = {
   visual: {},
 };
 
-// ─── Preset: Atelier (editorial, sharp, tactile) ─────────────
 // Compact geometry, hairline-plus borders, real drop shadows, warm ink.
 
 const ATELIER_LIGHT: ThemeColors = {
@@ -202,8 +200,6 @@ export const WHILEUI_THEME_PRESETS: readonly ThemePreset[] = [
   WHILEUI_PRESET_SOFT,
   WHILEUI_PRESET_ATELIER,
 ];
-
-// ─── CSS generation ──────────────────────────────────────────
 
 function formatCssNumber(value: number | boolean): string {
   if (typeof value === 'boolean') return value ? '1' : '0';

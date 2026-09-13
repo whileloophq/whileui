@@ -2,15 +2,15 @@
 name: review-perspectives
 description: >-
   Perspective-based self-review of the current branch using the repo's review cards in
-  docs/review-perspectives/. Reviews the branch diff against main from all five
-  perspectives in parallel and reports only improvements (CR/QUESTION), never what is
+  docs/review-perspectives/. Reviews the branch diff against main from every applicable
+  perspective in parallel and reports only improvements (CR/QUESTION), never what is
   satisfied. Optionally takes a GitHub issue number or URL for intent context. Use before
   opening or updating a PR.
 ---
 
 # Perspective-Based Branch Review
 
-Review the current branch from the five perspectives in `docs/review-perspectives/`,
+Review the current branch from the perspectives in `docs/review-perspectives/`,
 reporting only what could be improved. This is the author's self-review; it does not
 replace a human one.
 
@@ -33,13 +33,23 @@ If `docs/review-perspectives/` does not exist, say so and stop.
 
 ## 4. Fan out — one subagent per card
 
-Launch **five subagents in parallel, one Agent call per card, in a single message**:
+Launch **one Agent call per applicable card, all in a single message**. Always run
+these six:
 
 1. Token discipline — `01-tokens.md`
 2. Renderer boundary — `02-renderer-boundary.md`
 3. Docs and showcase — `03-docs-and-showcase.md`
 4. Bloat — `04-bloat.md`
 5. Accessibility and touch — `05-accessibility-touch.md`
+6. Comments and docstrings — `06-comments-and-docstrings.md`
+
+Add these two when the diff qualifies:
+
+7. Verification — `07-verification.md`, when the diff changes behaviour, fixes a
+   defect, or touches tests.
+8. Distribution — `08-distribution.md`, when the diff touches `package.json`, the
+   export map, dependencies, `src/index.ts`, `src/tokens.ts`, `src/vite.ts`,
+   `fixtures/`, `global.css` or `metro.config.js`.
 
 Each prompt includes: branch name, merge-base SHA, changed-file list (the agent reads
 the diff itself — do not paste it), the issue if found, and these instructions:

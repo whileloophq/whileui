@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import {
   Pressable,
   Text,
@@ -9,6 +9,7 @@ import {
   type ViewProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRingInset } from '../../lib/focus-ring';
 import { tv } from '../../lib/tv';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
@@ -193,17 +194,20 @@ function SegmentedControl({
   );
   const shouldWrap = wrap === 'auto' ? itemCount > 3 : wrap;
 
-  const handleValueChange = (nextValue: string) => {
-    if (disabled || value === nextValue) {
-      return;
-    }
-    setInternalValue(nextValue);
-    onValueChange?.(nextValue);
-  };
+  const handleValueChange = useCallback(
+    (nextValue: string) => {
+      if (disabled || value === nextValue) {
+        return;
+      }
+      setInternalValue(nextValue);
+      onValueChange?.(nextValue);
+    },
+    [disabled, onValueChange, value]
+  );
 
   const contextValue = useMemo(
     () => ({ value, onValueChange: handleValueChange, variant, size, wrap: shouldWrap, disabled }),
-    [value, variant, size, shouldWrap, disabled]
+    [disabled, handleValueChange, shouldWrap, size, value, variant]
   );
 
   return (
@@ -243,9 +247,10 @@ function SegmentedControlItem({
     ? { flexBasis: `${visual.segmentedWrapBasisRatio * 100}%` as DimensionValue }
     : undefined;
   const tokenStyle = getSegmentedItemStyle(visual, colors, size, variant, selected);
+  const contextValue = useMemo(() => ({ selected, size }), [selected, size]);
 
   return (
-    <SegmentedControlItemContext.Provider value={{ selected, size }}>
+    <SegmentedControlItemContext.Provider value={contextValue}>
       <Pressable
         className={cn(
           segmentedControlItemVariants({
@@ -255,11 +260,16 @@ function SegmentedControlItem({
             disabled: finalDisabled,
             wrap,
           }),
+          focusRingInset,
           className
         )}
         onPress={() => onValueChange(itemValue)}
         accessibilityRole="radio"
-        accessibilityState={{ selected, disabled: finalDisabled }}
+        // A radio is checked, not selected. `selected` maps to `aria-selected`, which is
+        // not a valid attribute on `role="radio"` — assistive technology could not tell
+        // which segment was active. `checked` also carries the state correctly on native.
+        accessibilityState={{ checked: selected, disabled: finalDisabled }}
+        aria-checked={selected}
         disabled={finalDisabled}
         style={(state) => {
           const baseStyle =

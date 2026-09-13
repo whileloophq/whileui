@@ -13,7 +13,6 @@ import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-
 import { useCSSVariable, useUniwind } from 'uniwind';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { withTiming } from 'react-native-reanimated';
 import {
   useFonts,
   PlusJakartaSans_400Regular,
@@ -25,7 +24,7 @@ import {
 import * as ExpoSplashScreen from 'expo-splash-screen';
 import './global.css';
 
-ExpoSplashScreen.preventAutoHideAsync();
+void ExpoSplashScreen.preventAutoHideAsync();
 import {
   SignInForm,
   SignUpForm,
@@ -87,7 +86,6 @@ import {
   AspectRatio,
   Avatar,
   AvatarFallback,
-  AvatarImage,
   Accordion,
   AccordionItem,
   AccordionTrigger,
@@ -160,20 +158,19 @@ import {
   MenubarLabel,
   MenubarSeparator,
   OTPInput,
-  // Toast
   ToastProvider,
   ToastContainer,
   useToast,
-  // Navigation Blocks
   BottomNav,
   FloatingBottomNav,
   Header,
   HeaderBackButton,
   TabBar,
   DrawerMenu,
-  // Layout Blocks
   AppShell,
   ActionBar,
+  KeyboardAwareScreen,
+  DockedInput,
   SmartInput,
   Chat,
   type ChatMessage,
@@ -193,11 +190,9 @@ import {
   PullToRefreshScrollView,
   SplashScreen,
   FormModalScreen,
-  // Lists Blocks
   ListItem,
   NotificationItem,
   TimelineFeed,
-  // Commerce Blocks
   ProductCard,
   PricingCard,
   CheckoutSummary,
@@ -207,9 +202,7 @@ import {
   UsageBar,
   PlanToggle,
   UpgradeBanner,
-  // Media Blocks
   SmartImage,
-  // Date Picker Blocks
   DatePickerModal,
   DatePickerTrigger,
   DatePickerInline,
@@ -217,6 +210,7 @@ import {
   DateRangePickerTrigger,
   type DateRange,
   cn,
+  focusRing,
   useIconColors,
 } from '@thewhileloop/whileui';
 
@@ -233,7 +227,7 @@ type CategoryKey =
   | 'lists'
   | 'commerce';
 
-const categories: { key: CategoryKey; label: string; icon: string }[] = [
+const categories: { key: CategoryKey; label: string; icon: keyof typeof Feather.glyphMap }[] = [
   { key: 'primitives', label: 'All Components', icon: 'box' },
   { key: 'controls', label: 'Controls', icon: 'sliders' },
   { key: 'overlays', label: 'Overlays', icon: 'layers' },
@@ -247,18 +241,17 @@ const categories: { key: CategoryKey; label: string; icon: string }[] = [
   { key: 'commerce', label: 'Commerce', icon: 'shopping-bag' },
 ];
 
-// ─── Haptic Feedback ─────────────────────────────────────────
 const triggerHaptic = (type: 'light' | 'medium' | 'selection' = 'light') => {
   if (Platform.OS === 'web') return;
   switch (type) {
     case 'light':
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       break;
     case 'medium':
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       break;
     case 'selection':
-      Haptics.selectionAsync();
+      void Haptics.selectionAsync();
       break;
   }
 };
@@ -307,10 +300,10 @@ function ThemedBackdrop() {
   const fallbackBg = dark ? 'rgba(31, 28, 36, 1)' : 'rgba(254, 251, 251, 1)';
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <View
         style={[
-          StyleSheet.absoluteFillObject,
+          StyleSheet.absoluteFill,
           {
             backgroundColor: resolveBackdropColor(baseToken, fallbackBg),
           },
@@ -320,12 +313,16 @@ function ThemedBackdrop() {
         source={bgSource}
         resizeMode="cover"
         blurRadius={imageBlurRadius}
-        imageStyle={{ opacity: imageOpacity }}
-        style={StyleSheet.absoluteFillObject}
+        // React Native Web's ImageBackground copies width/height off the outer style,
+        // and `absoluteFill` has neither — so its Image falls back to the asset's intrinsic
+        // 1024x1024 and the backdrop stops dead partway across a wider window. `imageStyle`
+        // is applied last, so the size has to be stated here.
+        imageStyle={{ opacity: imageOpacity, width: '100%', height: '100%' }}
+        style={StyleSheet.absoluteFill}
       />
       <View
         style={[
-          StyleSheet.absoluteFillObject,
+          StyleSheet.absoluteFill,
           {
             backgroundColor: resolveBackdropColor(
               tintToken,
@@ -342,7 +339,7 @@ function ThemedBackdrop() {
       />
       <View
         style={[
-          StyleSheet.absoluteFillObject,
+          StyleSheet.absoluteFill,
           {
             backgroundColor: resolveBackdropColor(
               veilToken,
@@ -370,6 +367,30 @@ const showcaseThemeAdapter: ThemeBridgeAdapter = {
   },
 };
 
+const SHOWCASE_FONT_MAP = {
+  'font-normal': 'PlusJakartaSans_400Regular',
+  'font-medium': 'PlusJakartaSans_500Medium',
+  'font-semibold': 'PlusJakartaSans_600SemiBold',
+  'font-bold': 'PlusJakartaSans_700Bold',
+  'font-extrabold': 'PlusJakartaSans_800ExtraBold',
+};
+
+const TAB_BAR_ITEMS = [
+  { key: 'all', label: 'All' },
+  { key: 'following', label: 'Following' },
+  { key: 'popular', label: 'Trending' },
+  { key: 'recent', label: 'New' },
+];
+
+const EXAMPLE_CHAT_MESSAGE: ChatMessage = {
+  id: 'example',
+  role: 'assistant',
+  content:
+    'I can help with summaries, explanations, translations, and more. Try a suggestion below or type your own question.',
+  secondary: 'Example message',
+  contentSize: 'default',
+};
+
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_400Regular,
@@ -381,7 +402,7 @@ export default function App() {
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
-      ExpoSplashScreen.hideAsync();
+      void ExpoSplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
@@ -389,17 +410,9 @@ export default function App() {
     return null;
   }
 
-  const fontMap = {
-    'font-normal': 'PlusJakartaSans_400Regular',
-    'font-medium': 'PlusJakartaSans_500Medium',
-    'font-semibold': 'PlusJakartaSans_600SemiBold',
-    'font-bold': 'PlusJakartaSans_700Bold',
-    'font-extrabold': 'PlusJakartaSans_800ExtraBold',
-  };
-
   return (
     <SafeAreaProvider>
-      <FontProvider value={fontMap}>
+      <FontProvider value={SHOWCASE_FONT_MAP}>
         <ToastProvider>
           <AppContent />
           <PortalHost />
@@ -425,7 +438,6 @@ function AppContent() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const colors = useIconColors();
 
-  // Show splash screen on first load
   if (showSplash) {
     return (
       <SafeAreaProvider>
@@ -483,7 +495,6 @@ function AppContent() {
     }
   };
 
-  // Chat as separate full-page — no header/tabs, just chat UI
   if (activeTab === 'chat') {
     return (
       <SafeAreaProvider>
@@ -525,19 +536,17 @@ function AppContent() {
               },
               {
                 title: 'Other Blocks',
-                items: categories
-                  .filter((c) => c.key !== 'chat')
-                  .map((cat) => ({
-                    key: cat.key,
-                    label: cat.label,
-                    icon: (
-                      <Feather
-                        name={cat.icon as any}
-                        size={20}
-                        color={activeTab === cat.key ? colors.primary : colors.muted}
-                      />
-                    ),
-                  })),
+                items: categories.flatMap((cat) =>
+                  cat.key === 'chat'
+                    ? []
+                    : [
+                        {
+                          key: cat.key,
+                          label: cat.label,
+                          icon: <Feather name={cat.icon} size={20} color={colors.muted} />,
+                        },
+                      ]
+                ),
               },
             ]}
             activeKey={activeTab}
@@ -579,16 +588,20 @@ function AppContent() {
         />
         <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
           <View className="flex-1 web:max-w-4xl web:w-full web:self-center">
-            {/* ─── Header ──────────────────────────────── */}
             <View className="px-5 pt-4 pb-2">
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3">
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Open menu"
                     onPress={() => {
                       triggerHaptic('light');
                       setDrawerOpen(true);
                     }}
-                    className="w-10 h-10 rounded-xl bg-muted items-center justify-center active:opacity-70"
+                    className={cn(
+                      'w-10 h-10 rounded-xl bg-muted items-center justify-center active:opacity-70',
+                      focusRing
+                    )}
                   >
                     <Feather name="menu" size={20} color={colors.foreground} />
                   </Pressable>
@@ -600,11 +613,16 @@ function AppContent() {
                   </View>
                 </View>
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Change theme"
                   onPress={() => {
                     triggerHaptic('medium');
                     cycleMode();
                   }}
-                  className="w-10 h-10 rounded-xl bg-secondary items-center justify-center active:opacity-70"
+                  className={cn(
+                    'w-10 h-10 rounded-xl bg-secondary items-center justify-center active:opacity-70',
+                    focusRing
+                  )}
                 >
                   <Feather
                     name={themeMode === 'system' ? 'monitor' : theme === 'light' ? 'moon' : 'sun'}
@@ -615,7 +633,6 @@ function AppContent() {
               </View>
             </View>
 
-            {/* ─── Category Tabs ───────────────────────── */}
             <View className="mt-3 mb-3">
               <ScrollView
                 horizontal
@@ -625,17 +642,22 @@ function AppContent() {
                 {categories.map((cat) => (
                   <Pressable
                     key={cat.key}
+                    // A filter chip row, not a tablist —  would need a
+                    // parent, and the scroll container sits between them.
+                    accessibilityRole="button"
+                    aria-pressed={activeTab === cat.key}
                     onPress={() => {
                       triggerHaptic('selection');
                       setActiveTab(cat.key);
                     }}
                     className={cn(
                       'flex-row items-center gap-2 rounded-full px-4 py-2.5',
+                      focusRing,
                       activeTab === cat.key ? 'bg-primary' : 'bg-muted'
                     )}
                   >
                     <Feather
-                      name={cat.icon as any}
+                      name={cat.icon}
                       size={14}
                       color={activeTab === cat.key ? colors.primaryForeground : colors.muted}
                     />
@@ -667,7 +689,6 @@ function AppContent() {
         </SafeAreaView>
         <ToastContainer position="top" className="mt-12" />
 
-        {/* ─── App Drawer ─────────────────────────── */}
         <DrawerMenu
           visible={drawerOpen}
           onClose={() => setDrawerOpen(false)}
@@ -831,7 +852,6 @@ function AppContent() {
   );
 }
 
-// ─── Section Component ──────────────────────────────────────
 function SectionGroup({ label }: { label: string }) {
   return (
     <View className="mb-4 mt-6">
@@ -862,7 +882,6 @@ function Section({
   );
 }
 
-// ─── Primitives Tab ──────────────────────────────────────────
 function PrimitivesTab({
   themeMode,
   onThemeModeChange,
@@ -902,7 +921,6 @@ function PrimitivesTab({
         </View>
       </Section>
 
-      {/* Buttons */}
       <Section title="Buttons" subtitle="6 variants × 4 sizes">
         <View className="flex-row flex-wrap gap-2">
           <Button>
@@ -969,7 +987,6 @@ function PrimitivesTab({
         </View>
       </Section>
 
-      {/* Theme Bridge */}
       <Section title="Theme Bridge" subtitle="Official light/dark/system sync helper">
         <Text className="text-sm text-muted-foreground">
           Active mode: <Text className="text-foreground font-medium">{themeMode}</Text>
@@ -991,7 +1008,6 @@ function PrimitivesTab({
         </SegmentedControl>
       </Section>
 
-      {/* Cards */}
       <Section
         title="Cards & Badges"
         subtitle="Card padding ergonomics, unstyled shell, and badges"
@@ -1067,7 +1083,6 @@ function PrimitivesTab({
   );
 }
 
-// ─── Controls Tab ────────────────────────────────────────────
 function ControlsTab() {
   const [radioVal, setRadioVal] = useState('option-1');
   const [massUnit, setMassUnit] = useState('kg');
@@ -1122,11 +1137,11 @@ function ControlsTab() {
         </View>
         <RadioGroup value={radioVal} onValueChange={setRadioVal}>
           <View className="flex-row items-center gap-2">
-            <RadioGroupItem value="option-1" />
+            <RadioGroupItem value="option-1" accessibilityLabel="Free plan" />
             <Label onPress={() => setRadioVal('option-1')}>Free plan</Label>
           </View>
           <View className="flex-row items-center gap-2">
-            <RadioGroupItem value="option-2" />
+            <RadioGroupItem value="option-2" accessibilityLabel="Pro plan" />
             <Label onPress={() => setRadioVal('option-2')}>Pro plan</Label>
           </View>
         </RadioGroup>
@@ -1212,10 +1227,8 @@ function ControlsTab() {
   );
 }
 
-// ─── Overlays Tab ────────────────────────────────────────────
 function OverlaysTab() {
   const { toast } = useToast();
-  const colors = useIconColors();
   const [overlaySheetOpen, setOverlaySheetOpen] = useState(false);
   const [overlaySiblingDeleteOpen, setOverlaySiblingDeleteOpen] = useState(false);
 
@@ -1291,7 +1304,6 @@ function OverlaysTab() {
         </View>
       </Section>
 
-      {/* Overlays */}
       <Section title="Overlays" subtitle="Dialogs, popovers, and menus">
         <View className="flex-row flex-wrap gap-2">
           <Dialog>
@@ -1346,20 +1358,24 @@ function OverlaysTab() {
             presentationStyle="fullScreen"
             onRequestClose={() => setOverlaySheetOpen(false)}
           >
-            <SafeAreaView className="flex-1 bg-background p-4" edges={['top', 'bottom']}>
-              <View className="flex-row justify-between items-center mb-6">
-                <Text className="text-lg font-semibold text-foreground">Fullscreen sheet</Text>
-                <Button variant="ghost" onPress={() => setOverlaySheetOpen(false)}>
-                  <ButtonText>Close</ButtonText>
+            {/* `className` does nothing on react-native-safe-area-context's SafeAreaView —
+                it is a native view Uniwind does not wrap. Styling goes on a child. */}
+            <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+              <View className="flex-1 bg-background p-4">
+                <View className="flex-row justify-between items-center mb-6">
+                  <Text className="text-lg font-semibold text-foreground">Fullscreen sheet</Text>
+                  <Button variant="ghost" onPress={() => setOverlaySheetOpen(false)}>
+                    <ButtonText>Close</ButtonText>
+                  </Button>
+                </View>
+                <Text className="text-sm text-muted-foreground mb-4">
+                  Sibling AlertDialog uses presentation=&quot;native&quot; so confirm appears above
+                  this Modal.
+                </Text>
+                <Button variant="destructive" onPress={() => setOverlaySiblingDeleteOpen(true)}>
+                  <ButtonText>Delete item</ButtonText>
                 </Button>
               </View>
-              <Text className="text-sm text-muted-foreground mb-4">
-                Sibling AlertDialog uses presentation=&quot;native&quot; so confirm appears above
-                this Modal.
-              </Text>
-              <Button variant="destructive" onPress={() => setOverlaySiblingDeleteOpen(true)}>
-                <ButtonText>Delete item</ButtonText>
-              </Button>
             </SafeAreaView>
           </Modal>
 
@@ -1454,7 +1470,6 @@ function OverlaysTab() {
         </View>
       </Section>
 
-      {/* Disclosure */}
       <Section title="Disclosure" subtitle="Accordions, collapsibles, and tabs">
         <Accordion type="single" collapsible>
           <AccordionItem value="item-1">
@@ -1551,7 +1566,6 @@ function OverlaysTab() {
         </Tabs>
       </Section>
 
-      {/* Data Display */}
       <Section title="Data Display" subtitle="Avatars, aspect ratios, and hover cards">
         <View className="flex-row gap-3 items-center">
           <Avatar>
@@ -1599,6 +1613,7 @@ function OverlaysTab() {
               <Text className="text-foreground text-sm">File</Text>
             </MenubarTrigger>
             <MenubarContent>
+              <MenubarLabel>Project</MenubarLabel>
               <MenubarItem>
                 <Text className="text-foreground">New Project</Text>
               </MenubarItem>
@@ -1723,7 +1738,6 @@ function SecurePinDemo() {
   );
 }
 
-// ─── Forms Tab ────────────────────────────────────────────────
 function FormsBlocksTab() {
   const [email, setEmail] = useState('');
   const [weight, setWeight] = useState<number | null>(72.4);
@@ -1801,11 +1815,19 @@ function FormsBlocksTab() {
 
         <View className="flex-row items-center gap-6">
           <View className="flex-row items-center gap-2">
-            <Checkbox checked={checkVal} onCheckedChange={setCheckVal} />
+            <Checkbox
+              checked={checkVal}
+              onCheckedChange={setCheckVal}
+              accessibilityLabel="Terms & Privacy"
+            />
             <Label onPress={() => setCheckVal(!checkVal)}>Terms & Privacy</Label>
           </View>
           <View className="flex-row items-center gap-2">
-            <Switch checked={switchVal} onCheckedChange={setSwitchVal} />
+            <Switch
+              checked={switchVal}
+              onCheckedChange={setSwitchVal}
+              accessibilityLabel="Notify me"
+            />
             <Label onPress={() => setSwitchVal(!switchVal)}>Notify me</Label>
           </View>
         </View>
@@ -1819,7 +1841,7 @@ function FormsBlocksTab() {
           value={selectedDate}
           onValueChange={(d) => {
             setSelectedDate(d);
-            d && toast({ title: 'Date selected', description: d });
+            if (d) toast({ title: 'Date selected', description: d });
           }}
           open={datePickerOpen}
           onOpenChange={setDatePickerOpen}
@@ -1833,7 +1855,7 @@ function FormsBlocksTab() {
           value={selectedDate}
           onValueChange={(d) => {
             setSelectedDate(d);
-            d && toast({ title: 'Date selected', description: d });
+            if (d) toast({ title: 'Date selected', description: d });
           }}
         />
       </Section>
@@ -1846,7 +1868,7 @@ function FormsBlocksTab() {
           value={selectedRange}
           onValueChange={(r) => {
             setSelectedRange(r);
-            r && toast({ title: 'Range selected', description: `${r.start} – ${r.end}` });
+            if (r) toast({ title: 'Range selected', description: `${r.start} – ${r.end}` });
           }}
           open={dateRangePickerOpen}
           onOpenChange={setDateRangePickerOpen}
@@ -1918,7 +1940,6 @@ function FormsBlocksTab() {
   );
 }
 
-// ─── Auth Blocks Tab ────────────────────────────────────────
 function AuthBlocksTab() {
   return (
     <View className="gap-6">
@@ -1949,7 +1970,6 @@ function AuthBlocksTab() {
   );
 }
 
-// ─── Navigation Blocks Tab ──────────────────────────────────
 function NavigationBlocksTab() {
   const [activeNav, setActiveNav] = useState('home');
   const [activeTabBar, setActiveTabBar] = useState('all');
@@ -1983,13 +2003,6 @@ function NavigationBlocksTab() {
       label: 'Profile',
       icon: <Feather name="user" size={22} color={colors.muted} />,
     },
-  ];
-
-  const tabBarItems = [
-    { key: 'all', label: 'All' },
-    { key: 'following', label: 'Following' },
-    { key: 'popular', label: 'Trending' },
-    { key: 'recent', label: 'New' },
   ];
 
   return (
@@ -2031,12 +2044,12 @@ function NavigationBlocksTab() {
       </Section>
 
       <Section title="Tab Bar" subtitle="Content filtering tabs">
-        <TabBar items={tabBarItems} activeKey={activeTabBar} onSelect={setActiveTabBar} />
+        <TabBar items={TAB_BAR_ITEMS} activeKey={activeTabBar} onSelect={setActiveTabBar} />
       </Section>
 
       <Section title="Tab Bar — Pills" subtitle="Pill-style variant">
         <TabBar
-          items={tabBarItems}
+          items={TAB_BAR_ITEMS}
           activeKey={activeTabBar}
           onSelect={setActiveTabBar}
           variant="pills"
@@ -2046,7 +2059,6 @@ function NavigationBlocksTab() {
   );
 }
 
-// ─── Chat Blocks Tab ────────────────────────────────────────
 function ChatBlocksTab({
   onBack,
   onMenuPress,
@@ -2059,14 +2071,6 @@ function ChatBlocksTab({
   const fallbackColors = useIconColors();
   const iconColors = colors ?? fallbackColors;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const exampleMessage: ChatMessage = {
-    id: 'example',
-    role: 'assistant',
-    content:
-      'I can help with summaries, explanations, translations, and more. Try a suggestion below or type your own question.',
-    secondary: 'Example message',
-    contentSize: 'default',
-  };
   const [inputValue, setInputValue] = useState('');
   const { toast } = useToast();
 
@@ -2101,11 +2105,13 @@ function ChatBlocksTab({
         }}
         emptyTitle="How can I help?"
         emptyDescription="Ask anything. Supports text, images & attachments."
-        exampleMessage={exampleMessage}
+        exampleMessage={EXAMPLE_CHAT_MESSAGE}
         header={
           <View className="flex-row items-center gap-3 border-b border-border bg-background px-4 py-3">
             {onBack && (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Back"
                 onPress={onBack}
                 className="w-10 h-10 items-center justify-center rounded-xl active:opacity-70 -ml-1"
               >
@@ -2118,6 +2124,8 @@ function ChatBlocksTab({
             </View>
             {onMenuPress && (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open menu"
                 onPress={onMenuPress}
                 className="w-10 h-10 items-center justify-center rounded-xl bg-muted active:opacity-70"
               >
@@ -2145,7 +2153,6 @@ function ChatBlocksTab({
   );
 }
 
-// ─── Crashable child for ErrorBoundary demo ───────────────────
 function CrashableChild() {
   const [shouldCrash, setShouldCrash] = useState(false);
   if (shouldCrash) throw new Error('Demo error: something went wrong!');
@@ -2156,7 +2163,6 @@ function CrashableChild() {
   );
 }
 
-// ─── Layout Blocks Tab ──────────────────────────────────────
 function LayoutBlocksTab() {
   const [showLoading, setShowLoading] = useState(false);
   const [shellLoading, setShellLoading] = useState(true);
@@ -2207,32 +2213,36 @@ function LayoutBlocksTab() {
 
       <Section
         title="Smart Input"
-        subtitle="Standalone keyboard-aware input bar with left/right slots"
+        subtitle="Screen-owned keyboard handling, a safe-area dock, and rotating examples"
       >
-        <SmartInput
-          variant="card"
-          value={smartInputValue}
-          onChangeText={setSmartInputValue}
-          placeholder="Type a message..."
-          safeArea={false}
-          leftSlot={
-            <Button variant="ghost" size="icon" onPress={() => triggerHaptic('light')}>
-              <Feather name="plus" size={20} color={colors.foreground} />
-            </Button>
-          }
-          rightSlot={
-            <Button
-              size="icon"
-              onPress={() => {
-                triggerHaptic('medium');
-                toast({ title: 'Sent', description: smartInputValue || '(empty)' });
-                setSmartInputValue('');
-              }}
-            >
-              <Feather name="send" size={18} color={colors.primaryForeground} />
-            </Button>
-          }
-        />
+        <KeyboardAwareScreen className="relative h-36 overflow-hidden rounded-xl border border-border">
+          <DockedInput safeArea={false}>
+            <SmartInput
+              variant="card"
+              value={smartInputValue}
+              onChangeText={setSmartInputValue}
+              placeholderExamples={['Plan a morning walk', 'Log two glasses of water']}
+              safeArea={false}
+              leftSlot={
+                <Button variant="ghost" size="icon" onPress={() => triggerHaptic('light')}>
+                  <Feather name="plus" size={20} color={colors.foreground} />
+                </Button>
+              }
+              rightSlot={
+                <Button
+                  size="icon"
+                  onPress={() => {
+                    triggerHaptic('medium');
+                    toast({ title: 'Sent', description: smartInputValue || '(empty)' });
+                    setSmartInputValue('');
+                  }}
+                >
+                  <Feather name="send" size={18} color={colors.primaryForeground} />
+                </Button>
+              }
+            />
+          </DockedInput>
+        </KeyboardAwareScreen>
       </Section>
 
       <Section
@@ -2489,7 +2499,6 @@ function LayoutBlocksTab() {
   );
 }
 
-// ─── Profile Blocks Tab ─────────────────────────────────────
 function ProfileBlocksTab() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
@@ -2556,7 +2565,6 @@ function ProfileBlocksTab() {
   );
 }
 
-// ─── Lists Blocks Tab ───────────────────────────────────────
 function ListsBlocksTab() {
   const colors = useIconColors();
 
@@ -2645,7 +2653,6 @@ function ListsBlocksTab() {
   );
 }
 
-// ─── Commerce Blocks Tab ────────────────────────────────────
 function CommerceBlocksTab() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);

@@ -4,16 +4,12 @@ import { cn } from '../../lib/cn';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, surfaceRadius } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface ContentSkeletonProps extends ViewProps {
   /** Layout preset. `list` = avatar + lines rows, `card` = card with image/body, `generic` = simple page lines. */
   variant?: 'list' | 'card' | 'generic';
   /** Number of list rows (list variant only). Default 4. */
   rows?: number;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 function ListRow() {
   const visual = useVisualTokens();

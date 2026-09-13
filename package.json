@@ -10,17 +10,32 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "typecheck": "turbo typecheck",
-    "lint": "turbo lint",
+    "typecheck": "turbo typecheck && tsc -p e2e/tsconfig.json && tsc -p fixtures/type-smoke/tsconfig.json",
+    "lint": "eslint . --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "test": "turbo test",
-    "clean": "turbo clean && rm -rf node_modules"
+    "clean": "turbo clean && rm -rf node_modules",
+    "test:web": "turbo build && playwright test -c e2e/playwright.config.ts",
+    "bundle:native": "bun run --cwd apps/showcase build:native",
+    "verify": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build && bun run verify:package && bun run bundle:native && bun run test:web",
+    "verify:package": "node scripts/verify-package.mjs",
+    "changeset": "changeset",
+    "release:version": "changeset version && bun install",
+    "release": "bun run verify && changeset publish",
+    "test:native": "maestro --platform ios test e2e/maestro && maestro --platform android test e2e/maestro"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@changesets/cli": "^3.0.2",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
+    "eslint": "^10.10.0",
+    "eslint-plugin-jest": "^29.16.6",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^3.8.1",
-    "react-doctor": "^0.0.29",
     "turbo": "^2.4.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.70.0"
   }
 }

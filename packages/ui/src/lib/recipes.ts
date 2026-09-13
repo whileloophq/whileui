@@ -14,9 +14,6 @@ export type SurfacePaddingSize = 'none' | 'sm' | 'default' | 'lg';
 export type ShadowTier = 'none' | 'sm' | 'md' | 'lg';
 export type TypographyRole = 'caption' | 'label' | 'body' | 'emphasis' | 'title' | 'headline';
 
-// ─── Control recipe ──────────────────────────────────────────
-// Interactive controls: buttons, toggles, segmented items, menu triggers.
-
 export function controlRecipe(visual: VisualTokens, size: ControlSize = 'default'): ViewStyle {
   if (size === 'sm') {
     return {
@@ -55,9 +52,6 @@ export function controlRecipe(visual: VisualTokens, size: ControlSize = 'default
   };
 }
 
-// ─── Field recipe ────────────────────────────────────────────
-// Form field shells: input, textarea, select trigger, otp cell.
-
 export function fieldRecipe(visual: VisualTokens, size: ControlSize = 'default'): ViewStyle {
   const base = controlRecipe(visual, size);
   return {
@@ -65,9 +59,6 @@ export function fieldRecipe(visual: VisualTokens, size: ControlSize = 'default')
     borderWidth: visual.borderWidthControl,
   };
 }
-
-// ─── Surface recipe ──────────────────────────────────────────
-// Elevated containers: card, popover, menu content, dialog, toast.
 
 export interface SurfaceRecipeOptions {
   padding?: SurfacePaddingSize;
@@ -103,9 +94,6 @@ export function surfaceRecipe(visual: VisualTokens, options: SurfaceRecipeOption
     ...(bordered ? { borderWidth: visual.borderWidthHairline } : null),
   };
 }
-
-// ─── Shadow recipe ───────────────────────────────────────────
-// Elevation tiers shared by cards, menus, modals, toasts.
 
 export function shadowStyle(
   visual: VisualTokens,
@@ -150,7 +138,6 @@ export function shadowStyle(
   };
 }
 
-// ─── Typography recipe ───────────────────────────────────────
 // Component-owned text sizes. Font family/weight stays on className
 // (font-medium etc.) so app font mappings keep working.
 
@@ -173,8 +160,6 @@ export function typographyStyle(visual: VisualTokens, role: TypographyRole): Tex
     };
   return { fontSize: visual.fontSizeBase, letterSpacing: visual.letterSpacingBody };
 }
-
-// ─── Hooks ───────────────────────────────────────────────────
 
 export function useControlRecipe(size: ControlSize = 'default'): ViewStyle {
   return controlRecipe(useVisualTokens(), size);

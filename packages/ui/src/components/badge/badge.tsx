@@ -1,12 +1,10 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { View, type ViewProps, type TextProps } from 'react-native';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface BadgeContextValue {
   variant: VariantProps<typeof badgeVariants>['variant'];
@@ -70,8 +68,9 @@ export interface BadgeTextProps extends TextProps, VariantProps<typeof badgeText
 
 function Badge({ className, variant = 'default', children, style, ...props }: BadgeProps) {
   const visual = useVisualTokens();
+  const contextValue = useMemo(() => ({ variant }), [variant]);
   return (
-    <BadgeContext.Provider value={{ variant }}>
+    <BadgeContext.Provider value={contextValue}>
       <View
         className={cn(badgeVariants({ variant }), className)}
         style={[

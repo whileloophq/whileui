@@ -2,16 +2,17 @@ import { RefreshControl, ScrollView, type ScrollViewProps } from 'react-native';
 import { useThemeColors } from '../../lib/theme-colors';
 import { cn } from '../../lib/cn';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface PullToRefreshScrollViewProps extends ScrollViewProps {
   refreshing: boolean;
-  onRefresh: () => void;
+  /**
+   * Refreshing is almost always async, so the signature says so. Nothing here awaits it —
+   * the spinner is driven by `refreshing`, which the owner controls — so a handler that
+   * can reject must catch its own errors.
+   */
+  onRefresh: () => void | Promise<void>;
   /** Override tint/colors. Defaults to theme primary. */
   refreshColor?: string;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export function PullToRefreshScrollView({
   refreshing,
@@ -30,7 +31,7 @@ export function PullToRefreshScrollView({
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
-          onRefresh={onRefresh}
+          onRefresh={() => void onRefresh()}
           tintColor={tintColor}
           colors={[tintColor]}
         />

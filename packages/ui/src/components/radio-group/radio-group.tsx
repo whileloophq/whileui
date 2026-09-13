@@ -1,9 +1,8 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { useVisualTokens } from '../../lib/visual-tokens';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface RadioGroupContextValue {
   value: string;
@@ -14,8 +13,6 @@ const RadioGroupContext = createContext<RadioGroupContextValue>({
   value: '',
   onValueChange: () => {},
 });
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface RadioGroupProps extends ViewProps {
   defaultValue?: string;
@@ -29,8 +26,6 @@ export interface RadioGroupItemProps extends PressableProps {
   className?: string;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function RadioGroup({
   defaultValue = '',
   value: controlledValue,
@@ -42,13 +37,20 @@ function RadioGroup({
   const [internalValue, setInternalValue] = useState(defaultValue);
   const value = controlledValue ?? internalValue;
 
-  const handleValueChange = (newValue: string) => {
-    setInternalValue(newValue);
-    onValueChange?.(newValue);
-  };
+  const handleValueChange = useCallback(
+    (newValue: string) => {
+      setInternalValue(newValue);
+      onValueChange?.(newValue);
+    },
+    [onValueChange]
+  );
+  const contextValue = useMemo(
+    () => ({ value, onValueChange: handleValueChange }),
+    [handleValueChange, value]
+  );
 
   return (
-    <RadioGroupContext.Provider value={{ value, onValueChange: handleValueChange }}>
+    <RadioGroupContext.Provider value={contextValue}>
       <View className={cn('gap-2', className)} {...props}>
         {children}
       </View>
@@ -65,9 +67,13 @@ function RadioGroupItem({ value: itemValue, className, ...props }: RadioGroupIte
 
   return (
     <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ checked: isSelected }}
+      aria-checked={isSelected}
       className={cn(
         'items-center justify-center',
         isSelected ? 'border-primary' : 'border-border',
+        focusRing,
         className
       )}
       style={{

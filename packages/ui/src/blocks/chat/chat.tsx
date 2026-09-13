@@ -15,8 +15,6 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle, type TypographyRole } from '../../lib/recipes';
 import { tv } from '../../lib/tv';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -62,8 +60,6 @@ export interface ChatProps {
   messagesClassName?: string;
 }
 
-// ─── ChatMessage Variants ────────────────────────────────────
-
 const CONTENT_SIZE_ROLE: Record<'sm' | 'default' | 'lg', TypographyRole> = {
   sm: 'label',
   default: 'body',
@@ -81,8 +77,6 @@ const chatMessageBubbleVariants = tv({
   },
   defaultVariants: { role: 'assistant' },
 });
-
-// ─── ChatMessage ─────────────────────────────────────────────
 
 export function ChatMessageBubble({
   message,
@@ -137,16 +131,14 @@ export function ChatMessageBubble({
   );
 }
 
-// ─── ChatSuggestions ──────────────────────────────────────────
-
 export function ChatSuggestions({ suggestions, onSelect, className }: ChatSuggestionsProps) {
   const visual = useVisualTokens();
 
   return (
     <View className={cn('flex-row flex-wrap justify-center gap-2 px-4 py-6', className)}>
-      {suggestions.map((text, i) => (
+      {suggestions.map((text) => (
         <Pressable
-          key={`${text}-${i}`}
+          key={text}
           onPress={() => onSelect(text)}
           accessibilityRole="button"
           accessibilityLabel={`Suggestion: ${text}`}
@@ -167,8 +159,6 @@ export function ChatSuggestions({ suggestions, onSelect, className }: ChatSugges
 }
 
 const EMPTY_SUGGESTIONS: string[] = [];
-
-// ─── Chat ────────────────────────────────────────────────────
 
 export function Chat({
   messages,
@@ -281,8 +271,6 @@ export function Chat({
     </KeyboardAvoidingView>
   );
 }
-
-// ─── ChatSendButton ───────────────────────────────────────────
 
 function ChatSendButton({ onPress, disabled }: { onPress: () => void; disabled?: boolean }) {
   const interaction = useInteractionTokens();

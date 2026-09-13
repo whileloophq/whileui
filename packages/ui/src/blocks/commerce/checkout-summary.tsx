@@ -6,8 +6,6 @@ import { cn } from '../../lib/cn';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface CheckoutLineItem {
   label: string;
   value: string;
@@ -25,8 +23,6 @@ export interface CheckoutSummaryProps extends ViewProps {
   onCheckout?: () => void;
   loading?: boolean;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export function CheckoutSummary({
   items,
@@ -65,11 +61,13 @@ export function CheckoutSummary({
         Order Summary
       </Text>
 
-      {/* Items */}
       {items.length > 0 && (
         <View className="mb-4 gap-2">
-          {items.map((item, index) => (
-            <View key={index} className="flex-row items-center justify-between">
+          {items.map((item) => (
+            <View
+              key={`${item.label}:${item.value}`}
+              className="flex-row items-center justify-between"
+            >
               <Text
                 className={cn(
                   item.emphasized ? 'font-medium text-foreground' : 'text-muted-foreground'
@@ -94,7 +92,6 @@ export function CheckoutSummary({
 
       <Separator className="my-3" />
 
-      {/* Subtotal */}
       <View className="flex-row items-center justify-between">
         <Text className="text-muted-foreground" style={label}>
           Subtotal
@@ -104,7 +101,6 @@ export function CheckoutSummary({
         </Text>
       </View>
 
-      {/* Shipping */}
       {shipping && (
         <View className="mt-2 flex-row items-center justify-between">
           <Text className="text-muted-foreground" style={label}>
@@ -116,7 +112,6 @@ export function CheckoutSummary({
         </View>
       )}
 
-      {/* Tax */}
       {tax && (
         <View className="mt-2 flex-row items-center justify-between">
           <Text className="text-muted-foreground" style={label}>
@@ -142,7 +137,6 @@ export function CheckoutSummary({
 
       <Separator className="my-3" />
 
-      {/* Total */}
       <View className="flex-row items-center justify-between">
         <Text className="font-semibold text-foreground" style={body}>
           Total

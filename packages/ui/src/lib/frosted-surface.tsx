@@ -37,6 +37,10 @@ interface BlurViewProps {
 }
 
 type BlurViewComponent = React.ComponentType<BlurViewProps>;
+// Consumers register their own BlurView — expo-blur's, or something else entirely — and
+// its props are theirs, not ours. Props are contravariant, so `any` is the only type
+// that accepts every component a caller could legitimately hand us.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RegisteredBlurViewComponent = React.ComponentType<any>;
 
 let cachedBlurViewComponent: BlurViewComponent | null | undefined;
@@ -128,7 +132,7 @@ function resolveBlurIntensity(
 function getInsetAbsoluteFillStyle(): ViewStyle {
   const inset = Math.max(0, StyleSheet.hairlineWidth);
   if (inset <= 0) {
-    return StyleSheet.absoluteFillObject as ViewStyle;
+    return StyleSheet.absoluteFill as ViewStyle;
   }
   return {
     position: 'absolute',
@@ -163,7 +167,7 @@ function FrostedOverlay({
       : undefined;
   const showHighlight = highlightHeight > 0;
   const blurFill = getInsetAbsoluteFillStyle();
-  const tintFill = StyleSheet.absoluteFillObject as ViewStyle;
+  const tintFill = StyleSheet.absoluteFill as ViewStyle;
   const highlightInset = Math.max(0, StyleSheet.hairlineWidth);
 
   if (!BlurView && Platform.OS === 'web') {
@@ -218,6 +222,9 @@ function FrostedOverlay({
 
   return (
     <>
+      {/* eslint-disable-next-line react-hooks/static-components -- `getBlurViewComponent`
+          returns a module-level cached component, so this identity is stable across
+          renders. The rule cannot see through the cache. */}
       <BlurView
         pointerEvents="none"
         intensity={intensity}
@@ -264,7 +271,7 @@ function FrostedBackdropOverlay({
       ? ({ experimentalBlurMethod: 'dimezisBlurView' } as const)
       : undefined;
   const blurFill = getInsetAbsoluteFillStyle();
-  const tintFill = StyleSheet.absoluteFillObject as ViewStyle;
+  const tintFill = StyleSheet.absoluteFill as ViewStyle;
 
   if (!BlurView && Platform.OS === 'web') {
     const webStyle = {
@@ -282,6 +289,9 @@ function FrostedBackdropOverlay({
 
   return (
     <>
+      {/* eslint-disable-next-line react-hooks/static-components -- `getBlurViewComponent`
+          returns a module-level cached component, so this identity is stable across
+          renders. The rule cannot see through the cache. */}
       <BlurView
         pointerEvents="none"
         intensity={intensity}

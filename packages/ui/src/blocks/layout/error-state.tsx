@@ -4,8 +4,6 @@ import { Text } from '../../components/text';
 import { Button, ButtonText } from '../../components/button';
 import { cn } from '../../lib/cn';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface ErrorStateProps extends ViewProps {
   icon?: React.ReactNode;
   title?: string;
@@ -14,8 +12,6 @@ export interface ErrorStateProps extends ViewProps {
   onRetry?: () => void;
   retryLabel?: string;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export function ErrorState({
   icon,

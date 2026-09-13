@@ -6,8 +6,6 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface TooltipProps {
   onOpenChange?: (open: boolean) => void;
   delayDuration?: number;
@@ -28,8 +26,6 @@ export interface TooltipContentProps extends React.ComponentPropsWithoutRef<
   className?: string;
   portalHost?: string;
 }
-
-// ─── Components ──────────────────────────────────────────────
 
 function Tooltip({
   onOpenChange,

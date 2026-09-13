@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import {
   View,
   Modal,
@@ -11,13 +11,11 @@ import {
   type PressableProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
-import { composeEventHandlers } from '../../lib/compose-event-handlers';
+import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, typographyStyle } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface DialogContextValue {
   open: boolean;
@@ -28,8 +26,6 @@ const DialogContext = createContext<DialogContextValue>({
   open: false,
   setOpen: () => {},
 });
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface DialogProps {
   defaultOpen?: boolean;
@@ -72,8 +68,6 @@ export interface DialogCloseProps extends PressableProps {
   asChild?: boolean;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function Dialog({
   defaultOpen = false,
   open: controlledOpen,
@@ -83,21 +77,25 @@ function Dialog({
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const open = controlledOpen ?? internalOpen;
 
-  const setOpen = (value: boolean) => {
-    if (controlledOpen === undefined) {
-      setInternalOpen(value);
-    }
-    onOpenChange?.(value);
-  };
+  const setOpen = useCallback(
+    (value: boolean) => {
+      if (controlledOpen === undefined) {
+        setInternalOpen(value);
+      }
+      onOpenChange?.(value);
+    },
+    [controlledOpen, onOpenChange]
+  );
+  const contextValue = useMemo(() => ({ open, setOpen }), [open, setOpen]);
 
-  return <DialogContext.Provider value={{ open, setOpen }}>{children}</DialogContext.Provider>;
+  return <DialogContext.Provider value={contextValue}>{children}</DialogContext.Provider>;
 }
 
 function DialogTrigger({ className, children, asChild, onPress, ...props }: DialogTriggerProps) {
   const { setOpen } = useContext(DialogContext);
 
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<any>;
+    const child = children as AsChildElement;
     return React.cloneElement(child, {
       ...props,
       className: cn(child.props.className, className),
@@ -109,6 +107,7 @@ function DialogTrigger({ className, children, asChild, onPress, ...props }: Dial
 
   return (
     <Pressable
+      accessibilityRole="button"
       {...props}
       className={cn(className)}
       onPress={composeEventHandlers(onPress, () => setOpen(true))}
@@ -149,11 +148,18 @@ function DialogContent({
       onRequestClose={() => setOpen(false)}
     >
       <Pressable
+        // Tap-to-dismiss is a pointer affordance. Left accessible it would swallow the
+        // whole panel into one element; screen reader users close from inside.
+        accessible={false}
+        importantForAccessibility="no"
         className="flex-1 justify-center items-center px-4"
         style={{ backgroundColor: colors.overlayStrong }}
         onPress={() => setOpen(false)}
       >
         <Pressable
+          // Container, not a control — Pressable defaults to `accessible: true`, which
+          // on iOS collapses every descendant into one accessibility element.
+          accessible={false}
           className={cn(
             'w-full border-border relative overflow-hidden',
             frosted ? 'bg-transparent' : 'bg-background',
@@ -216,7 +222,7 @@ function DialogClose({ className, children, asChild, onPress, ...props }: Dialog
   const { setOpen } = useContext(DialogContext);
 
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<any>;
+    const child = children as AsChildElement;
     return React.cloneElement(child, {
       ...props,
       className: cn(child.props.className, className),
@@ -228,6 +234,7 @@ function DialogClose({ className, children, asChild, onPress, ...props }: Dialog
 
   return (
     <Pressable
+      accessibilityRole="button"
       {...props}
       className={cn(className)}
       onPress={composeEventHandlers(onPress, () => setOpen(false))}

@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import {
   Modal,
   Platform,
@@ -14,7 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
-import { composeEventHandlers } from '../../lib/compose-event-handlers';
+import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -25,15 +25,11 @@ import {
   type FrostedSurfaceProps,
 } from '../../lib/frosted-surface';
 
-// ─── Context ───────────────────────────────────────────────────
-
 interface SheetContextValue {
   onClose: () => void;
 }
 
 const SheetContext = createContext<SheetContextValue>({ onClose: () => {} });
-
-// ─── Types ─────────────────────────────────────────────────────
 
 export interface SheetProps extends FrostedSurfaceProps {
   open: boolean;
@@ -62,8 +58,6 @@ export interface SheetCloseProps extends PressableProps {
   className?: string;
 }
 
-// ─── Components ───────────────────────────────────────────────
-
 export function Sheet({
   open,
   onOpenChange,
@@ -77,7 +71,8 @@ export function Sheet({
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const visual = useVisualTokens();
-  const onClose = () => onOpenChange(false);
+  const onClose = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const contextValue = useMemo(() => ({ onClose }), [onClose]);
   const frostedSurface = useFrostedSurface({
     frosted,
     blurIntensity,
@@ -97,7 +92,6 @@ export function Sheet({
 
   const maxWidth = maxWidthProp ?? visual.sheetMaxWidth;
 
-  // Full width on phones; cap at maxWidth only on tablets/web (breakpoint)
   const widthStyle =
     typeof maxWidth === 'number' && windowWidth >= visual.sheetTabletBreakpoint
       ? { maxWidth, alignSelf: 'center' as const, width: maxWidth }
@@ -116,12 +110,20 @@ export function Sheet({
           }
         : { maxHeight };
 
+  // A full-height sheet reaches the top of the screen, and the host Modal is
+  // status-bar-translucent, so its header lands underneath the clock and battery. A
+  // shorter sheet starts below the status bar and needs no inset of its own.
+  const isFullHeight = maxHeight === 'full';
+
   const sheetStyle: StyleProp<ViewStyle> = [
     maxHeightStyle,
     {
+      paddingTop: isFullHeight ? insets.top : 0,
       paddingBottom: Math.max(insets.bottom, 16),
-      borderTopLeftRadius: surfaceRadius(visual, 'xl'),
-      borderTopRightRadius: surfaceRadius(visual, 'xl'),
+      // Rounded top corners only read as "a sheet over something" when there is
+      // something behind them. At full height they just fight the device's own corners.
+      borderTopLeftRadius: isFullHeight ? 0 : surfaceRadius(visual, 'xl'),
+      borderTopRightRadius: isFullHeight ? 0 : surfaceRadius(visual, 'xl'),
       borderWidth: visual.borderWidthHairline,
     },
     widthStyle,
@@ -143,7 +145,14 @@ export function Sheet({
         style={{ backgroundColor: frosted ? 'transparent' : colors.overlay }}
       >
         {frostedBackdrop}
-        <Pressable className="flex-1" onPress={onClose} />
+        {/* Tap-to-dismiss only. Without this it is an unlabelled accessibility element
+            sitting above the sheet; screen reader users close from inside. */}
+        <Pressable
+          accessible={false}
+          importantForAccessibility="no"
+          className="flex-1"
+          onPress={onClose}
+        />
         <View
           className={cn(
             'border-border overflow-hidden relative',
@@ -152,7 +161,7 @@ export function Sheet({
           style={sheetStyle}
         >
           {frostedSurface.overlay}
-          <SheetContext.Provider value={{ onClose }}>{children}</SheetContext.Provider>
+          <SheetContext.Provider value={contextValue}>{children}</SheetContext.Provider>
         </View>
       </View>
     </Modal>
@@ -242,7 +251,7 @@ export function SheetContent({
         style={style}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: contentPadding }}
-        {...(props as any)}
+        {...props}
       >
         {children}
       </ScrollView>
@@ -282,7 +291,7 @@ export function SheetClose({ children, asChild, className, onPress, ...props }: 
   const { onClose } = useContext(SheetContext);
 
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<any>;
+    const child = children as AsChildElement;
     return React.cloneElement(child, {
       ...props,
       className: cn(child.props.className, className),
@@ -294,6 +303,7 @@ export function SheetClose({ children, asChild, className, onPress, ...props }: 
 
   return (
     <Pressable
+      accessibilityRole="button"
       {...props}
       className={cn(className)}
       onPress={composeEventHandlers(onPress, () => onClose())}

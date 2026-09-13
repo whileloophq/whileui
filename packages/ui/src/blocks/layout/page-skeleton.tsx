@@ -7,8 +7,6 @@ import { cn } from '../../lib/cn';
 import { useVisualTokens, type VisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, surfaceRadius } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export type PageSkeletonVariant = 'dashboard' | 'list' | 'settings' | 'card' | 'generic';
 export type PageSkeletonPadding = 'none' | 'sm' | 'default' | 'lg';
 export type PageSkeletonHeaderPlaceholder = 'compact' | 'default';
@@ -59,8 +57,6 @@ function HeaderPlaceholder({ variant }: { variant: PageSkeletonHeaderPlaceholder
     </View>
   );
 }
-
-// ─── Variant internals ────────────────────────────────────────
 
 function DashboardVariant({
   className,
@@ -231,8 +227,6 @@ function GenericVariant({
     </View>
   );
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export function PageSkeleton({
   variant,

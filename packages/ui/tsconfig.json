@@ -8,6 +8,5 @@
     }
   },
   "include": ["src/**/*"],
-  // `src/web` needs the DOM lib and is compiled by tsconfig.web.json.
-  "exclude": ["node_modules", "dist", "src/web"]
+  "exclude": ["node_modules", "dist"]
 }

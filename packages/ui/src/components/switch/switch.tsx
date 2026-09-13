@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 
@@ -49,11 +50,13 @@ function Switch({
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       accessibilityRole="switch"
       accessibilityState={{ checked: isChecked, disabled }}
+      aria-checked={isChecked}
     >
       <View
         className={cn(
           'flex-row items-center justify-start',
           isChecked ? 'border-primary bg-primary' : 'border-input bg-muted',
+          focusRing,
           className
         )}
         style={{

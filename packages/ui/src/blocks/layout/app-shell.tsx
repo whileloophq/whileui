@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import { StyleSheet, View, type ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cn } from '../../lib/cn';
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface AppShellProps extends ViewProps {
   header?: React.ReactNode;
@@ -16,8 +14,6 @@ export interface AppShellProps extends ViewProps {
   skeleton?: React.ReactNode;
 }
 
-// ─── Component ───────────────────────────────────────────────
-
 export function AppShell({
   header,
   footer,
@@ -29,14 +25,23 @@ export function AppShell({
   className,
   ...props
 }: AppShellProps) {
-  const Container = safeArea ? SafeAreaView : View;
-
-  return (
-    <Container className={cn('flex-1 bg-background', className)} {...props}>
+  // `className` is silently dropped on react-native-safe-area-context's `SafeAreaView`:
+  // it is a native view, and Uniwind only wraps React Native's own components. Styling
+  // the safe area directly meant `AppShell` rendered with no background and no `flex-1`
+  // whenever `safeArea` was true — which is the default — and correctly when it was
+  // false. So the safe area stays bare and every style goes on the child.
+  const shell = (
+    <View className={cn('flex-1 bg-background', className)} {...props}>
       {header}
       <View className="flex-1">{loading ? (skeleton ?? null) : children}</View>
       {footer}
       {bottomNav}
-    </Container>
+    </View>
   );
+
+  if (!safeArea) return shell;
+
+  return <SafeAreaView style={styles.fill}>{shell}</SafeAreaView>;
 }
+
+const styles = StyleSheet.create({ fill: { flex: 1 } });

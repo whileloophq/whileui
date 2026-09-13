@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { Text, View, type TextProps, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv } from '../../lib/tv';
@@ -110,8 +110,9 @@ export interface DataRowValueProps extends TextProps {
 const DataRow = React.forwardRef<View, DataRowProps>(
   ({ className, size = 'default', style, ...props }, ref) => {
     const visual = useVisualTokens();
+    const contextValue = useMemo(() => ({ size }), [size]);
     return (
-      <DataRowContext.Provider value={{ size }}>
+      <DataRowContext.Provider value={contextValue}>
         <View
           ref={ref}
           className={cn(dataRowVariants({ size }), className)}

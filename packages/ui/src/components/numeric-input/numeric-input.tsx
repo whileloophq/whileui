@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Platform, Pressable, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
@@ -235,11 +236,7 @@ const NumericInput = React.forwardRef<TextInput, NumericInputProps>(
         >
           <TextInput
             ref={ref}
-            className={cn(
-              numericInputTextVariants({ size }),
-              'w-full outline-none',
-              inputClassName
-            )}
+            className={cn(numericInputTextVariants({ size }), 'w-full', focusRing, inputClassName)}
             style={
               Platform.OS === 'web'
                 ? [

@@ -2,69 +2,102 @@
 
 Rules for AI agents and contributors editing this codebase. Follow every rule. No exceptions on docs.
 
-**Read `ROADMAP.md` first.** It states what each track is for, what this
-package owns versus delegates, and why. These rules are how; the roadmap is why.
-Where the two disagree, the roadmap wins and these rules are stale — fix them.
+**Read `ROADMAP.md` and `PLAN.md` first.** The roadmap states what this package
+owns versus delegates, and why. `PLAN.md` states the supported stack, the
+platform and accessibility contracts, what evidence a change owes, and the phase
+sequence. These rules are how. Where they disagree with either document, those
+documents win and these rules are stale — fix them.
 
-## Two tracks
+## One renderer, three targets
 
-- **DOM** — the track every current app is on or moving to: sidekick-app
-  (migrating from Expo, 2026-09) and split-loop. Browser, Capacitor mobile,
-  Tauri desktop; one build, no per-target UI branching.
-- **React Native** — no active consumer once sidekick-app finishes migrating.
-  Kept for a native-first app if one appears; not developed speculatively.
+React Native is the only renderer. iOS, Android and React Native Web are all
+production targets: iOS and Android set the interaction baseline, web must stay
+keyboard-operable, accessible and responsive. Do not add a parallel DOM or
+Capacitor implementation.
 
-Both share the token layer. Same names and variants where a component exists on
-both; the DOM track is never held back for the native one. Rules marked **[RN]**
-apply only to the native track. Everything else — tokens, `tv()` variants, UI
-standards, touch targets, press feedback — applies to both.
+One public contract, not one implementation. A `.native.tsx` / `.web.tsx` split
+is correct when the browser has a different semantic primitive, when the native
+API is mocked on web (`KeyboardAvoidingView`, `BackHandler`, `Keyboard`) or
+absent (`RefreshControl`), or when accessible behaviour would otherwise regress.
+It is not correct to shorten a file or to ship a different visual design — use
+Uniwind's `ios:` / `android:` / `web:` / `native:` selectors for that.
 
 ## Map and commands
 
 Bun workspace (`bun@1.3.9`). Never run `yarn` here.
 
-| Path                                     | What                                                                                                  |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `packages/ui/src/components/`, `blocks/` | React Native track                                                                                    |
-| `packages/ui/src/web/`                   | DOM track: `components/`, `blocks/`, `platform/`, `lib/recipes.ts`                                    |
-| `packages/ui/src/lib/`                   | Shared. Token contracts, presets, `theme-derive`, `cn`, `tv` are renderer-free; the rest are RN hooks |
-| `packages/ui/src/tokens.ts`              | Renderer-free entry → `@thewhileloop/whileui/tokens`                                                  |
-| `apps/showcase/`                         | Expo showcase (RN track), port 8082                                                                   |
-| `apps/site/`                             | Vite showcase (DOM track), port 8083. `scripts/gen-theme.ts` generates its theme CSS                  |
-| `ROADMAP.md`, `TODO.md`                  | Direction, task list. `TODO.md` is gitignored — local only                                            |
+| Path                                     | What                                                           |
+| ---------------------------------------- | -------------------------------------------------------------- |
+| `packages/ui/src/components/`, `blocks/` | React Native components and application-shaped blocks          |
+| `packages/ui/src/lib/`                   | Token contracts, recipes, theme helpers and React Native hooks |
+| `packages/ui/src/tokens.ts`              | Renderer-free entry → `@thewhileloop/whileui/tokens`           |
+| `apps/showcase/`                         | Expo showcase, port 8082                                       |
+| `fixtures/`                              | Consumer smoke fixtures — type-smoke, vite-smoke (RNW)         |
+| `eslint.config.mjs`                      | One flat config for every workspace, fixture and config file   |
+| `e2e/`                                   | Playwright specs, config and axe scan — browser evidence       |
+| `e2e/maestro/`                           | Native flows — the platform accessibility tree                 |
+| `scripts/verify-package.mjs`             | Packs and inspects the tarball a consumer would install        |
+| `docs/review-perspectives/`              | Per-PR review cards; `/review-perspectives` runs them          |
+| `docs/stability.md`                      | Maturity of every family and the evidence behind it            |
+| `ROADMAP.md`, `PLAN.md`                  | Direction; production foundation plan and phases               |
+| `TODO.md`, `CONSUMERS.md`                | Task list; consuming apps and their flows. Gitignored — local  |
 
 ```bash
 bun install
-bun run typecheck             # all workspaces via turbo; packages/ui checks all three tsconfigs
-bun run build                 # packages/ui: tsc -p tsconfig.json && tsc -p tsconfig.web.json
-bun run test                  # vitest + jsdom, DOM track only (src/web/**/*.test.tsx)
-cd apps/site && bun run dev   # DOM showcase (runs gen:theme first)
+bun run typecheck             # all workspaces via turbo; includes test files
+bun run lint                  # one root pass, type-aware, --max-warnings 0
+bun run test                  # jest-expo + RNTL contract suites
+bun run test:web              # Playwright + axe on the exported bundle (Chromium, WebKit)
+bun run verify                # every gate, in order, ~80s — run before pushing
+bun run verify:package        # pack a tarball and check what a consumer would install
+bun run test:native           # Maestro flows against a built app (see e2e/maestro)
+bun run build                 # package build; excludes tests from dist
 cd apps/showcase && bun run dev
-bunx react-doctor .           # run in apps/site after significant changes
+cd apps/showcase && bunx expo export --platform web   # proves it bundles
 ```
 
 A consumer on a local link resolves `packages/ui/dist/` — rebuild after edits.
 
 ## Core Rules
 
-- Use **latest stable versions** of packages. Ask if unsure.
-- Run `bun format && bun typecheck` after changes. Fix errors before completing.
-- Run `bunx react-doctor .` after significant changes to catch performance, security, correctness, and dead code issues. Fix errors (score 75+ = healthy).
+- **Match the pinned stack** in `PLAN.md` > Supported stack. For anything the Expo SDK bundles, use the SDK's pinned version, not npm `latest`. For everything else, latest stable. Ask if unsure.
+- Run `bun run format && bun run lint && bun run typecheck` after changes. Fix errors before completing.
+- **Run `bun run verify` before pushing.** There is no CI — no server runs these gates for you, so a skipped run means the gate did not happen. It chains format, lint, typecheck, unit tests, build, the iOS and Android exports and the browser suite in about 70 seconds.
+- **`--max-warnings 0` is deliberate** — there is no warning backlog and there should never be one. A rule that fires on something legitimate gets either a config option that describes the legitimate case, or an `eslint-disable-next-line` with a `--` reason explaining why the rule is wrong _here_. Never a bare disable, never a file-wide one, and never a rule switched off globally to clear a single site.
 - **Docs are mandatory** — README is the source of truth. Incomplete doc updates = task incomplete. Never leave docs stale.
 - **Avoid deprecated APIs** — Check for deprecation warnings, use recommended replacements. If a package marks an API deprecated, find the new import path or alternative.
 - Don't bloat the codebase.
 
-### Testing a DOM component
+### Testing interactive components
 
-A component whose behaviour is caret, focus or key handling gets a test beside
-it (`src/web/**/*.test.tsx`, vitest + jsdom + Testing Library, `bun run test`).
-Rendering is checked by eye in `apps/site`; the things you cannot see are what
-the test is for.
+Each layer proves something the one below cannot — the full table is in
+`PLAN.md` > Evidence model. In short:
 
-**Prove the test fails against the broken version.** jsdom has no layout, so a
-click never lands the caret anywhere but the end — a test that only clicks and
-types would have passed against the OTP field nobody could edit. Stash the fix,
-watch it fail, restore. If it still passes, the test is not the one you needed.
+- **Unit (`jest-expo` + RNTL)** for state, callbacks, accessibility props, refs,
+  cleanup, and a regression case for every fixed defect. It cannot prove OS
+  keyboards, Android back, portal layering, gesture arbitration or real focus.
+- **Showcase** for hands-on focus, keyboard, gesture and safe-area behaviour;
+  interaction-sensitive changes are verified on both iOS and Android.
+- **Device and browser E2E** for anything in that "cannot prove" list. A
+  component reaches `stable` only with evidence at the level where it can fail.
+
+A clean React Doctor report is a static signal, not proof that gesture work
+stayed off the JS thread.
+
+### Public repo hygiene
+
+This repo is public. Tracked files describe the **library**, never our products.
+
+- Do not name a consuming application, its screens, its business model or its
+  file paths in any tracked file. Write "the proving product" or "a consuming
+  app" instead.
+- Product specifics — which apps consume WhileUI, pull order, acceptance flows,
+  migration sequences — live in `CONSUMERS.md`, which is gitignored.
+- A rule is only allowed in `PLAN.md` or `AGENTS.md` if it is stated generically
+  enough to apply to any consumer. If it needs a product's name to make sense, it
+  belongs in `CONSUMERS.md`.
+- The same applies to commit messages, PR bodies and issue comments. Everything
+  here is public and permanent.
 
 ### Attribution
 
@@ -72,17 +105,52 @@ This repo is public and MIT. Reading another project to understand how it solves
 something is normal and encouraged. Copying its code is a licensing act.
 
 - **Reimplementing from understanding** — no attribution needed.
-- **Adapting code from an MIT project** (shadcn/ui, Konsta, Radix, and most of
-  this ecosystem) — keep the copyright notice. A `/* Adapted from <project> —
-<url>, MIT */` header on the file is enough, and note it in the PR.
+- **Adapting code from an MIT project** (most of this ecosystem) — keep the
+  copyright notice. A `/* Adapted from <project> — <url>, MIT */` header on the
+  file is enough, and note it in the PR.
 - **Anything not MIT/Apache/BSD** — do not adapt without checking the licence
   first.
 
-Describe other projects **accurately and without disparagement**. State what a
-project is optimised for and why our tradeoff differs; do not claim a limitation
-that has not been verified against its source. Absence from someone's docs is
-not evidence of absence in their code. This applies to commit messages and issue
-comments as much as to docs — everything here is public and permanent.
+**Never publish a claim about another project's code that you have not verified
+against its source.** "Library X has no tests", "X is slow", "X doesn't handle
+Y" — if you have not read their code and confirmed it, it does not go in a
+tracked file. Absence from someone's docs is not evidence of absence in their
+code. Where a project is named, describe it accurately and without disparagement:
+what it is optimised for, and why our tradeoff differs.
+
+Read other projects freely — that is how this one gets better. Just keep the
+evaluation out of our docs. Not to hide it, but because a decision record should
+stand on its own reasoning: "one styling foundation, because a second one doubles
+the token and debugging model" is complete, stays true, and does not go stale the
+moment someone else ships a release. Comparisons age badly and invite argument we
+gain nothing from.
+
+This applies to commit messages and issue comments as much as to docs —
+everything here is public and permanent.
+
+## Releasing
+
+`@thewhileloop/whileui` is published to npm and our own apps install it from there, so
+a publishing mistake is a product bug. Versions are managed with Changesets.
+
+1. **Write a changeset in the same change as the code.** `bun run changeset`, pick the
+   bump, describe it for someone upgrading — what changed, what they must do, why. A
+   `major` entry that does not say what to fix at the call site is not finished.
+2. **Run `bun run verify`.** It is the whole gate, including `verify:package`, which
+   packs a real tarball and checks what a consumer would actually install.
+3. **`bun run release:version`** applies pending changesets: bumps the version and
+   writes `CHANGELOG.md`. Review the diff — this is the last point the bump is cheap to
+   change.
+4. **`bun run release`** re-verifies, then publishes.
+
+Notes:
+
+- **Breaking changes are cheap, not invisible.** We own every consumer, so refactor
+  freely — but a product pinning an older version has to be able to read why.
+- The changelog is public. Same rule as commit messages: describe the library, never a
+  consuming product.
+- Bump the version only through Changesets. Hand-editing `version` loses the changelog
+  entry that explains it.
 
 ## Documentation
 
@@ -97,7 +165,8 @@ comments as much as to docs — everything here is public and permanent.
 1. Export from `packages/ui/src/components/<name>/index.ts` and `packages/ui/src/index.ts`
 2. Add to `README.md` components table
 3. Add to README API Reference if notable props
-4. Add a demo to the showcase for that track — `apps/site` (DOM) or `apps/showcase` (RN)
+4. Add a demo to `apps/showcase`
+5. Declare its maturity level (`PLAN.md` > Maturity and lifecycle). Anything new starts `experimental`; a showcase demo alone never makes it `stable`
 
 **Do not skip steps 2–4.** Missing doc or showcase entry = incomplete.
 
@@ -106,7 +175,7 @@ comments as much as to docs — everything here is public and permanent.
 1. Export from `packages/ui/src/blocks/<category>/index.ts` and `packages/ui/src/index.ts`
 2. Add to `README.md` blocks table
 3. Add to README Blocks API section with key props
-4. Add a demo to the showcase for that track — `apps/site` (DOM) or `apps/showcase` (RN)
+4. Add a demo to `apps/showcase`
 5. If new flow: add to README Flow Patterns table
 
 **Do not skip steps 2–4.** Missing doc or showcase entry = incomplete.
@@ -116,7 +185,7 @@ comments as much as to docs — everything here is public and permanent.
 A block extracted from an app is not done until the app imports it. In the same
 change, switch the app's call site to the block — or add a dated entry to that
 app's backlog. The showcase demo proves the block renders; only a consumer
-proves it is used. Four commerce blocks were built for sidekick's paywall and
+proves it is used. Four commerce blocks were once built for a consuming app and
 never imported; that is the failure this rule exists to prevent.
 
 ### When Changing Props or Removing
@@ -124,13 +193,7 @@ never imported; that is the failure this rule exists to prevent.
 - **Props:** Update README API section, Blocks API, and demo code
 - **Removing:** Remove from README (all sections) and the showcase. No orphan references
 
-> **Note.** Earlier revisions of this file also required entries in
-> `apps/site/lib/registry.ts`, `demos.tsx`, `block-demos.tsx` and
-> `props-data.ts`. `apps/site` was removed from the repo and those steps were
-> unfollowable. If a docs site returns, restore the steps here in the same
-> change — do not leave a checklist pointing at paths that do not exist.
-
-## Uniwind Configuration **[RN]**
+## Uniwind Configuration
 
 - `global.css` at **app root** (not `src/`) — Tailwind scans from its location
 - `withUniwindConfig` must be **outermost** wrapper in `metro.config.js`
@@ -151,6 +214,8 @@ never imported; that is the failure this rule exists to prevent.
 
 All visual properties are controlled via design tokens. To redesign the theme, modify `global.css` only — no component changes needed.
 
+The TypeScript contracts (`theme-contract.ts`, `visual-token-contract.ts`, `theme-derive.ts`, `theme-presets.ts`) are canonical for token **names, types and derivation**. An app's CSS variable block is generated from a preset via `themePresetToCss` into a `theme.generated.css` it imports; generated files are never hand-edited. An app's own `@theme` scale, fonts and custom variants stay hand-authored — we generate the contract, not the design.
+
 | Token Category     | Example Variables                                     | Controls                                 |
 | ------------------ | ----------------------------------------------------- | ---------------------------------------- |
 | **Spacing**        | `--spacing`, `--spacing-1` through `--spacing-96`     | `p-*`, `m-*`, `gap-*`, `w-*`, `h-*`      |
@@ -169,10 +234,7 @@ Required in both `light` and `dark` (and any custom theme):
 - `success`, `warning`, `info` (status colors)
 - Each token needs `*-foreground` variant for text on that background
 
-### Font Weight Mapping **[RN]**
-
-On the DOM track this is a non-issue: use `font-weight` normally with a variable
-or multi-weight webfont. The rest of this section is the native track only.
+### Font Weight Mapping
 
 React Native requires explicit font-family per weight. When changing fonts, update BOTH `--font-sans` in `@theme` AND the `.font-*` CSS classes in `global.css`.
 
@@ -224,7 +286,7 @@ const ButtonContext = createContext({ variant: 'default', size: 'default' });
 - Don't use `asChild` with `View` — it lacks `onPress`/`onLongPress`
 - Prefer wrapping children in Pressable over cloneElement injection
 
-### React Native Limitations **[RN]**
+### React Native Limitations
 
 - SafeAreaView: use `react-native-safe-area-context` (RN's deprecated)
 - **CSS box-shadow**: Not supported. Use `shadow-sm/md/lg` classes (soft shadows) or stacked Views for hard-edge 3D effects (NeoPOP style)
@@ -234,26 +296,11 @@ const ButtonContext = createContext({ variant: 'default', size: 'default' });
 
 ### Responsive & Multi-Target
 
-Web, Capacitor mobile and Tauri desktop are all a WebView rendering the same
-build. **Never branch the UI on target.** There is no "mobile version" of a
-component — there is a narrow viewport and a wide one.
-
-- **Breakpoints, not platforms.** Use CSS media queries / Tailwind variants for
-  layout that changes with width (`app-shell` picks `bottom-nav` under `lg`,
-  `navigation-sidebar` at or above it). Do not detect the host to decide layout.
-- **Overlays** (drawers, modals, sheets): sensible defaults with room to
-  override — e.g. drawers cap around 360px. Provide `maxWidth` / `width` props.
-  The library has smart defaults; apps opt in to overrides.
-- **Capability, not renderer.** Anything that differs by host is a _device
-  capability_ (haptics, secure storage, share, filesystem, status bar, keyboard),
-  and belongs behind `platform/` — never inline in a component. A component must
-  not know whether it is inside Capacitor.
-- **Touch and pointer both.** Every interactive element gets a 44px touch target
-  _and_ a hover state. The same build serves a phone and a desktop.
-
-**[RN]** On the native track the old guidance still holds: `Platform.OS`
-for behaviour that truly differs, `useWindowDimensions` for breakpoints, and the
-Uniwind `web:` variant for per-platform styling.
+Use `Platform.OS` only for behaviour that truly differs,
+`useWindowDimensions` for responsive layout, and the Uniwind `web:` variant for
+web-specific styling. Web is a production target, not a preview: it needs
+visible focus, keyboard operation and hover that never replaces the shared
+interaction.
 
 ## UI Standards
 
@@ -263,9 +310,18 @@ Uniwind `web:` variant for per-platform styling.
 
 ### Touch Targets (Fitts's Law)
 
-- **Minimum 44px** for mobile touch targets — even if visually smaller
-- Icon-only buttons: `h-11 w-11` (44px)
-- Small buttons: `h-9` minimum (36px visual, use `hitSlop` if needed)
+Platform minimums differ; a single universal number is wrong.
+
+| Target  | Minimum interactive area                                                     |
+| ------- | ---------------------------------------------------------------------------- |
+| iOS     | ≥ 44 × 44 pt                                                                 |
+| Android | ≥ 48 × 48 dp                                                                 |
+| Web     | WCAG 2.2 AA target size (≥ 24 CSS px); design ≥ 44 CSS px for touch controls |
+
+- Keep the visual size; reach the minimum with `hitSlop` or padding.
+- Icon-only buttons: `h-11 w-11` (44px) plus `hitSlop` to clear 48dp on Android.
+- Small buttons: `h-9` minimum (36px visual) — `hitSlop` is mandatory, not optional.
+- Any drag or swipe action needs an equivalent non-drag path (WCAG 2.2).
 
 ### Preventing Layout Shift
 
@@ -295,10 +351,35 @@ Add to this file when you discover:
 - **Android font B/D distorted:** Symptom: bold/semibold custom fonts render B, D, P, R incorrectly on Android only. Cause: passing `fontWeight` with `fontFamily` triggers synthetic bold. Fix: use `FontProvider` + `useResolveFontFamily` (applies only `fontFamily` via style, strips font-weight from `className`).
 - **Text/label line-height:** Avoid `leading-none` — clips ascenders (P, h, l). Use `leading-tight` or `leading-snug` for labels.
 - **Form-like visibility:** Use `border-border bg-muted` (not `border-input bg-background`) for inputs, selects, labeled fields — ensures visibility on light themes.
-- **Small touch targets:** Components under 44px (e.g. Checkbox h-5, Radio h-5, Switch h-7) need `hitSlop` so effective touch area ≥ 44px.
-- **Browser focus outline on inputs:** Always add `outline-none` to `TextInput` className. Without it, browsers render a blue/black outline on focus that doubles up with the component's `border-border`.
-- **DOM track fails typecheck with `Cannot find name 'document'` / `KeyboardEvent` has no `.key`:** Symptom: anything under `src/web/` that touches a DOM global. Cause: `packages/ui/tsconfig.json` has no DOM lib and resolves globals from React Native's ambient types. Fix: `src/web/` is compiled by `tsconfig.web.json` (DOM lib, `src/web` roots) and excluded from the main project; `build` and `typecheck` run both. Do **not** add `"DOM"` to the main tsconfig — it collides with RN's `fetch`/`FormData` declarations.
-- **`interface X extends HTMLAttributes<…>` "incorrectly extends":** a prop name collides with a DOM attribute of a different type — `onSelect` (React event handler) is the usual one. `Omit` it explicitly and say why in a comment.
+- **Small touch targets:** Components under the platform minimum (e.g. Checkbox h-5, Radio h-5, Switch h-7) need `hitSlop` so the effective area clears 44pt on iOS and 48dp on Android.
+- **Focus indicators: use `focusRing`, never bare `outline-none`.** Import it from `lib/focus-ring` (it is exported publicly too). The old rule here said to add `outline-none` to kill the browser's doubled-up outline — and taken literally it produced components with **no focus indicator at all**, a WCAG 2.4.7 AA failure that axe cannot detect. `focusRing` removes the default _and_ draws a themed `:focus-visible` ring in one class. `focusRingInset` is the same without the offset, for controls sitting flush inside a track (segments, tabs). `:focus-visible`, not `:focus`, so a mouse click does not leave a ring behind. A visually hidden input is the one exemption — its visible proxy must show the focus instead, as `OTPInput` does with its cursor.
+- **Pressable has no default role:** Symptom: a custom control is announced as a plain view by VoiceOver/TalkBack, and `getByRole('button')` fails. Cause: `Pressable` sets no `accessibilityRole`. Fix: set it explicitly before spreading `{...props}` so callers can still override.
+- **A Pressable used as a container hides everything inside it:** Symptom: VoiceOver reaches an overlay as one element and cannot focus the buttons within. Cause: `Pressable` defaults to `accessible: true`, and on iOS an accessible view is a single accessibility element whose descendants are not individually reachable. Every backdrop and panel built from `Pressable` — tap-to-dismiss backdrops, panels whose only `onPress` is `stopPropagation` — hits this. Fix: `accessible={false}` on both, plus `importantForAccessibility="no"` on the backdrop. **Only iOS catches it.** RNTL finds descendants regardless of an ancestor's `accessible` prop; React Native Web keeps them in the DOM; Android leaves every node in the UIAutomator tree. On iOS the descendants vanish from the accessibility tree entirely — `e2e/maestro/alert-dialog.yaml` fails without the fix and passes with it. Run `maestro --platform ios test e2e/maestro` when touching an overlay container.
+- **Section headings need `accessibilityRole="header"`:** Dialog titles and menu section labels announce as plain text without it, and rotor navigation cannot find them.
+- **No role means no keyboard on web:** React Native Web renders a `Pressable` without `accessibilityRole` as `<div tabindex="0">` — Tab reaches it, but Enter and Space do nothing, because RNW only attaches key handling to real roles. A missing role is a keyboard-operability bug, not just an announcement one.
+- **React Native Web dropped `accessibilityState` → `aria-*` derivation:** `accessibilityState={{ checked }}` no longer emits `aria-checked`, so `role="checkbox"`, `"switch"` and `"radio"` fail ARIA validation. Set `aria-checked` as well; React Native maps the `aria-` form on native, so one prop serves both.
+- **`Escape` does nothing while a modal animates in:** RNW arms the handler from `onShow`, which fires when the entry animation ends. Tests must wait for animations to settle; users just press it again.
+
+### Tooling gotchas
+
+- **`"type": "module"` breaks `.js` configs:** `jest.config.js` and `babel.config.js` are parsed as ESM and fail on `module.exports`. Use `.cjs`.
+- **SDK bumps must carry non-bundled packages too:** Expo pins what it bundles, but `uniwind`, `tailwindcss` and similar are on their own. Leaving one behind breaks Metro (`Invariant Violation: Unexpectedly escaped traversal`) while typecheck stays green. After any SDK bump, run an actual `expo export` — `tsc` does not exercise the bundler.
+- **RN 0.86 removed `StyleSheet.absoluteFillObject`:** Use `StyleSheet.absoluteFill`, which is now the same plain (frozen) style object.
+- **React Native 0.86 requires Xcode ≥ 16.1:** `pod install` raises `Please upgrade XCode` below that (`react-native/scripts/cocoapods/helpers.rb`, `min_xcode_version_supported`). An iOS native build is impossible on an older toolchain — nothing in the library can work around it.
+- **`className` is silently dropped on `react-native-safe-area-context`'s `SafeAreaView`:** it is a native view, and Uniwind only wraps React Native's own components. Symptom: padding, background and any caller `className` simply do not apply — measured as literal zero padding on device. Fix: keep the safe area bare (`style={{ flex: 1 }}`) and put every class on a child `View`. Uniwind exports its own `SafeAreaView`, but it wraps React Native's deprecated one, so it is not the answer.
+- **`ImageBackground` + `absoluteFill` does not fill on web:** React Native Web copies `width`/`height` from the outer style onto the inner `Image`, and `absoluteFill` carries neither — the image renders at its intrinsic size and leaves a visible seam where it ends. Put `width: '100%', height: '100%'` in `imageStyle`, which is applied last.
+- **Native projects are generated, not tracked:** `apps/*/ios` and `apps/*/android` come from `expo prebuild` and are gitignored. The showcase stays a managed Expo app; never hand-edit them.
+- **React 19 deprecated `React.MutableRefObject` and `React.ElementRef`:** Use `React.RefObject<T>` (its `current` is mutable now) and `React.ComponentRef<typeof X>`. `no-deprecated` catches both.
+- **`eslint-plugin-react` does not support ESLint 10** (peer caps at `^9.7`), and its rules are mostly DOM JSX anyway. `react-hooks` `recommended-latest` plus type-aware `typescript-eslint` covers what matters here.
+- **ESLint config lives at the root only.** Adding a per-package config or a turbo `lint` task splits the rule set and leaves `fixtures/` and root config files unlinted.
+
+### Patterns the lint rules enforce
+
+- **`as any` on a style prop hides a real bug.** A `Pressable`-backed component's `style` may be `(state) => ...`. Dropping a caller's function into a style array makes React Native silently ignore it. Resolve it inside a state callback instead — see `select.tsx`.
+- **Never mirror a controlled prop into state via an effect.** `useEffect(() => setX(prop), [prop])` costs a frame where the UI shows the old value. Derive it: `const x = prop !== undefined ? prop : internalX`. `react-hooks/set-state-in-effect` catches this.
+- **To latch state on a prop change, adjust during render, not in an effect.** `if (prev !== next) { setPrev(next); ... }` commits in the same render; an effect commits one frame late, which an entrance animation notices.
+- **Copy `ref.current` into a local at the top of an effect** if the cleanup reads it. By cleanup time the ref may point somewhere else.
+- **An async callback prop must say so in its type:** `onRefresh: () => void | Promise<void>`, not `() => void`. The narrow type accepts an async function and silently discards its rejection.
 
 ### Blocks vs components
 
@@ -307,17 +388,13 @@ Add to this file when you discover:
 
 ### Where to put new things
 
-| What                  | Path                                               | Notes                                                                                                                                                                                                                                     |
-| --------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Component (DOM)**   | `packages/ui/src/web/components/<name>.tsx`        | DOM track. Export from `packages/ui/src/web/index.ts`. Demo in `apps/site`                                                                                                                                                                |
-| **Component (RN)**    | `packages/ui/src/components/<name>/`               | Native track. Export from `index.ts`, re-export in `packages/ui/src/index.ts`. Demo in `apps/showcase`                                                                                                                                    |
-| **DOM recipe**        | `packages/ui/src/web/lib/recipes.ts`               | Token geometry as CSS `var()`. Mirror of `lib/recipes.ts` — keep the two in step. Pixel tokens are unitless: `calc(var(--x) * 1px)`                                                                                                       |
-| **Block (DOM)**       | `packages/ui/src/web/blocks/<category>/<name>.tsx` | DOM track. Same slots/props as the RN block where one exists. Export from `packages/ui/src/web/index.ts`. Demo in `apps/site` — the showcase's own shell is `AppShell` + `Header` + `DrawerMenu`                                          |
-| **Block (RN)**        | `packages/ui/src/blocks/<category>/`               | Categories: `layout`, `navigation`, `chat`, `lists`, `commerce`, `media`, `datepicker`, `splash`                                                                                                                                          |
-| **Auth/Profile**      | `apps/showcase/templates/auth/` or `profile/`      | Copy-paste templates; NOT in core package. Import primitives from `@thewhileloop/whileui`                                                                                                                                                 |
-| **Shared hook/util**  | `packages/ui/src/lib/`                             | Theme helpers, cn, portal, tv, font-context                                                                                                                                                                                               |
-| **Tokens/contract**   | `packages/ui/src/lib/`                             | `theme-contract`, `visual-token-contract`, `theme-presets`. **Keep these free of any renderer import** — they are the portable core                                                                                                       |
-| **Device capability** | `packages/ui/src/web/platform/`                    | **Hardware back**, storage, keyboard, status bar, deep links, haptics, share, filesystem. One interface, per-host impls. Never inline in a component. See the mandatory-set table in ROADMAP.md — an app must not be able to forget these |
+| What                 | Path                                          | Notes                                                                                                                               |
+| -------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Component**        | `packages/ui/src/components/<name>/`          | Export from `index.ts`, re-export in `packages/ui/src/index.ts`. Demo in `apps/showcase`                                            |
+| **Block**            | `packages/ui/src/blocks/<category>/`          | Categories: `layout`, `navigation`, `chat`, `lists`, `commerce`, `media`, `datepicker`, `splash`                                    |
+| **Auth/Profile**     | `apps/showcase/templates/auth/` or `profile/` | Copy-paste templates; NOT in core package. Import primitives from `@thewhileloop/whileui`                                           |
+| **Shared hook/util** | `packages/ui/src/lib/`                        | Theme helpers, cn, portal, tv, font-context                                                                                         |
+| **Tokens/contract**  | `packages/ui/src/lib/`                        | `theme-contract`, `visual-token-contract`, `theme-presets`. **Keep these free of any renderer import** — they are the portable core |
 
 ## Custom Themes (Starter Kits)
 

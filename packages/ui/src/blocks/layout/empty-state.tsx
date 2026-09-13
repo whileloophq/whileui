@@ -6,8 +6,6 @@ import { cn } from '../../lib/cn';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface EmptyStateProps extends ViewProps {
   icon?: React.ReactNode;
   title: string;
@@ -21,8 +19,6 @@ export interface EmptyStateProps extends ViewProps {
     onPress: () => void;
   };
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 function DefaultEmptyIcon() {
   const visual = useVisualTokens();

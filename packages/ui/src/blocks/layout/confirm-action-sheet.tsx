@@ -110,7 +110,13 @@ export function ConfirmActionSheet({
       onRequestClose={handleClose}
     >
       <View className="flex-1 justify-end" style={{ backgroundColor: colors.overlay }}>
-        <Pressable className="flex-1" onPress={handleClose} />
+        {/* Backdrop: tap-to-dismiss only, not a control. */}
+        <Pressable
+          accessible={false}
+          importantForAccessibility="no"
+          className="flex-1"
+          onPress={handleClose}
+        />
         <View
           className={cn(
             'border-border relative overflow-hidden',

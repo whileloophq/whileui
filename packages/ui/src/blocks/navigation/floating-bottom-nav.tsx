@@ -6,8 +6,6 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface FloatingBottomNavItem {
   key: string;
   label: string;
@@ -24,8 +22,6 @@ export interface FloatingBottomNavItemProps extends Omit<PressableProps, 'childr
   item: FloatingBottomNavItem;
   isActive: boolean;
 }
-
-// ─── Components ──────────────────────────────────────────────
 
 function FloatingNavItem({
   item,
@@ -44,6 +40,9 @@ function FloatingNavItem({
 
   return (
     <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isActive }}
+      aria-selected={isActive}
       className={cn(
         'flex-row items-center gap-2 active:scale-95',
         isActive && 'bg-primary',
@@ -80,6 +79,7 @@ export function FloatingBottomNav({
   return (
     <View className={cn('items-center pb-8', className)} {...props}>
       <View
+        accessibilityRole="tablist"
         className="flex-row items-center gap-1 bg-card p-1.5"
         style={[{ borderRadius: surfaceRadius(visual, 'xl') }, shadowStyle(visual, colors, 'md')]}
       >

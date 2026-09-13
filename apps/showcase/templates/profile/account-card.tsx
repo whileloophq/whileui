@@ -3,7 +3,7 @@
  * Copy this file into your app and customize. Uses @thewhileloop/whileui primitives.
  */
 import { View, Pressable, type PressableProps } from 'react-native';
-import { Avatar, AvatarFallback, AvatarImage, Text, cn } from '@thewhileloop/whileui';
+import { Avatar, AvatarFallback, AvatarImage, Text, cn, focusRing } from '@thewhileloop/whileui';
 
 export interface AccountCardProps extends Omit<PressableProps, 'children'> {
   name: string;
@@ -26,7 +26,11 @@ export function AccountCard({
 }: AccountCardProps) {
   return (
     <Pressable
-      className={cn('flex-row items-center rounded-xl bg-card p-4 active:opacity-90', className)}
+      className={cn(
+        'flex-row items-center rounded-xl bg-card p-4 active:opacity-90',
+        focusRing,
+        className
+      )}
       {...props}
     >
       <Avatar className="h-14 w-14">

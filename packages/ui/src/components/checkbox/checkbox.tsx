@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 
@@ -46,11 +47,16 @@ function Checkbox({
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: isChecked, disabled }}
+      // React Native Web no longer derives `aria-checked` from `accessibilityState`, and
+      // ARIA requires it on this role — without it a screen reader cannot tell checked
+      // from unchecked. React Native maps the `aria-` form on native, so both are correct.
+      aria-checked={isChecked}
     >
       <View
         className={cn(
           'items-center justify-center',
           isChecked ? 'border-primary bg-primary' : 'border-border bg-muted',
+          focusRing,
           className
         )}
         style={{

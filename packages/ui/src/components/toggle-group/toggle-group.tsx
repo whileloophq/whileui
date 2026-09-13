@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Pressable,
@@ -8,11 +8,10 @@ import {
   type TextProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { tv } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, typographyStyle, type TypographyRole } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 type ToggleGroupType = 'single' | 'multiple';
 
@@ -39,8 +38,6 @@ const ToggleGroupItemContext = createContext<ToggleGroupItemContextValue>({
   pressed: false,
   size: 'default',
 });
-
-// ─── Variants ────────────────────────────────────────────────
 
 const toggleGroupItemVariants = tv({
   base: 'inline-flex items-center justify-center',
@@ -91,8 +88,6 @@ const toggleGroupItemTextVariants = tv({
   },
 });
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface ToggleGroupProps extends ViewProps {
   type?: ToggleGroupType;
   defaultValue?: string | string[];
@@ -113,8 +108,6 @@ export interface ToggleGroupItemTextProps extends TextProps {
   className?: string;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function ToggleGroup({
   type = 'single',
   defaultValue,
@@ -131,11 +124,15 @@ function ToggleGroup({
     return Array.isArray(defaultValue) ? defaultValue : [defaultValue];
   });
 
-  const value = controlledValue
-    ? Array.isArray(controlledValue)
-      ? controlledValue
-      : [controlledValue]
-    : internalValue;
+  const value = useMemo(
+    () =>
+      controlledValue
+        ? Array.isArray(controlledValue)
+          ? controlledValue
+          : [controlledValue]
+        : internalValue,
+    [controlledValue, internalValue]
+  );
 
   const handleValueChange = useCallback(
     (itemValue: string) => {
@@ -153,10 +150,13 @@ function ToggleGroup({
     [type, value, onValueChange]
   );
 
+  const contextValue = useMemo(
+    () => ({ type, value, onValueChange: handleValueChange, variant, size }),
+    [handleValueChange, size, type, value, variant]
+  );
+
   return (
-    <ToggleGroupContext.Provider
-      value={{ type, value, onValueChange: handleValueChange, variant, size }}
-    >
+    <ToggleGroupContext.Provider value={contextValue}>
       <View className={cn('flex flex-row items-center gap-1', className)} {...props}>
         {children}
       </View>
@@ -174,6 +174,7 @@ function ToggleGroupItem({
   const { value, onValueChange, variant, size } = useContext(ToggleGroupContext);
   const pressed = value.includes(itemValue);
   const visual = useVisualTokens();
+  const contextValue = useMemo(() => ({ pressed, size }), [pressed, size]);
 
   const tokenStyle = {
     ...controlRecipe(visual, size ?? 'default'),
@@ -181,9 +182,9 @@ function ToggleGroupItem({
   };
 
   return (
-    <ToggleGroupItemContext.Provider value={{ pressed, size }}>
+    <ToggleGroupItemContext.Provider value={contextValue}>
       <Pressable
-        className={cn(toggleGroupItemVariants({ variant, size, pressed }), className)}
+        className={cn(toggleGroupItemVariants({ variant, size, pressed }), focusRing, className)}
         style={(state) => [
           tokenStyle,
           typeof styleProp === 'function' ? styleProp(state) : styleProp,

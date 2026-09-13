@@ -27,13 +27,18 @@ card asks what could be deleted with no loss.
   it?
 - Does any export have no importer outside its own file?
 - Did thirty lines of comments arrive with ten lines of code?
+- Is this configurability for an external consumer who does not exist? WhileUI is
+  internal-first and opinionated; products pull features, hypothetical users do not.
+- Is a compatibility shim being kept for a caller we control? We own every consumer —
+  change the caller.
 
 ## Red Flags
 
 - Prose paragraphs above the `// ─── Section ───` dividers, which are the house style.
 - Comments explaining a value the token name already explains.
 - An alias of an existing hook (`useResolvedThemeColors` for `useThemeColors`).
-- A `web/` copy of a shared helper (`cn`, `tv`) instead of importing it.
+- A platform-file copy of a shared helper (`cn`, `tv`) instead of importing it.
+- A prop that exists only so a caller need not be edited.
 - Showcase copy longer than one sentence per section.
 
 ## Green Flags
@@ -45,6 +50,7 @@ card asks what could be deleted with no loss.
 
 ## Codebase-Specific Patterns
 
-- House style: `components/button/button.tsx` (RN), `web/components/button.tsx`
-  (DOM). Match their comment density.
+- House style: `components/button/button.tsx`. Match its comment density.
 - A trim pass should read as mostly deletions — the 2026-09-08 one was +158 / −412.
+- The plain-DOM and Capacitor tracks were deleted in September 2026. Anything that
+  reintroduces a parallel implementation is the failure this card exists to catch.

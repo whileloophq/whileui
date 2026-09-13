@@ -1,11 +1,10 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { Pressable, Text, type PressableProps, type TextProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, typographyStyle, type TypographyRole } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface ToggleContextValue {
   pressed: boolean;
@@ -18,8 +17,6 @@ const ToggleContext = createContext<ToggleContextValue>({
   variant: 'default',
   size: 'default',
 });
-
-// ─── Variants ────────────────────────────────────────────────
 
 const toggleVariants = tv({
   base: 'inline-flex items-center justify-center active:bg-accent',
@@ -70,8 +67,6 @@ const toggleTextVariants = tv({
   },
 });
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface ToggleProps extends Omit<PressableProps, 'children'> {
   pressed?: boolean;
   defaultPressed?: boolean;
@@ -85,8 +80,6 @@ export interface ToggleProps extends Omit<PressableProps, 'children'> {
 export interface ToggleTextProps extends TextProps {
   className?: string;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 function Toggle({
   pressed: controlledPressed,
@@ -113,11 +106,12 @@ function Toggle({
     ...controlRecipe(visual, size ?? 'default'),
     ...(variant === 'outline' ? { borderWidth: visual.borderWidthControl } : null),
   };
+  const contextValue = useMemo(() => ({ pressed, variant, size }), [pressed, size, variant]);
 
   return (
-    <ToggleContext.Provider value={{ pressed, variant, size }}>
+    <ToggleContext.Provider value={contextValue}>
       <Pressable
-        className={cn(toggleVariants({ variant, size, pressed }), className)}
+        className={cn(toggleVariants({ variant, size, pressed }), focusRing, className)}
         style={(state) => [
           tokenStyle,
           typeof styleProp === 'function' ? styleProp(state) : styleProp,

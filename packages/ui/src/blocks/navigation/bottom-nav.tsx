@@ -6,8 +6,6 @@ import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/i
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface BottomNavItem {
   key: string;
   label: string;
@@ -26,8 +24,6 @@ export interface BottomNavItemProps extends Omit<PressableProps, 'children'> {
   isActive: boolean;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function BottomNavItemComponent({
   item,
   isActive,
@@ -44,6 +40,9 @@ function BottomNavItemComponent({
 
   return (
     <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isActive }}
+      aria-selected={isActive}
       className={cn('flex-1 items-center justify-center py-2', className)}
       style={interactiveStyle}
       {...props}
@@ -77,6 +76,8 @@ function BottomNavItemComponent({
 export function BottomNav({ items, activeKey, onSelect, className, ...props }: BottomNavProps) {
   return (
     <View
+      // The items below are `tab`s, and ARIA requires a `tablist` parent for that role.
+      accessibilityRole="tablist"
       className={cn('flex-row border-t border-border bg-background px-2 pb-6 pt-2', className)}
       {...props}
     >

@@ -1,8 +1,17 @@
 import * as React from 'react';
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import * as SelectPrimitive from '@rn-primitives/select';
 import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
+import { Text } from '../text';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -11,8 +20,6 @@ import { fieldRecipe, shadowStyle, surfaceRadius, typographyStyle } from '../../
 
 // iOS needs FullWindowOverlay to render above everything
 const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
-
-// ─── Types ───────────────────────────────────────────────────
 
 export type SelectOption = SelectPrimitive.Option;
 
@@ -27,10 +34,18 @@ export interface SelectProps {
   children: React.ReactNode;
 }
 
-export interface SelectTriggerProps extends React.ComponentPropsWithoutRef<
-  typeof SelectPrimitive.Trigger
+export interface SelectTriggerProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
+  'style'
 > {
   className?: string;
+  /**
+   * Object form only. On web this primitive is merged through a Slot that spreads
+   * `style`, which cannot carry a state callback — a function silently becomes `{}` and
+   * every style is lost. Rejecting it at compile time is the honest contract, and it is
+   * the same on both platforms so the API does not diverge.
+   */
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface SelectValueProps {
@@ -45,11 +60,14 @@ export interface SelectContentProps
   insets?: { top?: number; bottom?: number; left?: number; right?: number };
 }
 
-export interface SelectItemProps extends React.ComponentPropsWithoutRef<
-  typeof SelectPrimitive.Item
+export interface SelectItemProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>,
+  'style'
 > {
   className?: string;
   children?: React.ReactNode;
+  /** Object form only — see `SelectTriggerProps.style`. */
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface SelectItemIconProps {
@@ -75,8 +93,6 @@ export interface SelectSeparatorProps extends React.ComponentPropsWithoutRef<
   className?: string;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
@@ -91,14 +107,24 @@ const SelectTrigger = React.forwardRef<SelectTriggerRef, SelectTriggerProps>(
         ref={ref}
         className={cn(
           'border-border bg-muted flex w-full flex-row items-center justify-between gap-2 shadow-sm active:bg-state-pressed',
+          focusRing,
           props.disabled && '',
           className
         )}
-        style={[
+        // Pass an array unless the caller actually gave a callback. On web this primitive
+        // is wrapped in a Slot that merges `style` by object spread, which turns a
+        // function into `{}` and silently drops every style — the trigger rendered 24px
+        // tall with no padding, border or radius. A callback is still honoured on native,
+        // where dropping it was the original bug.
+        // Flattened, not an array. On web this primitive is merged through a Slot that
+        // spreads `style`, and spreading an array yields { 0: …, 1: … } — numeric keys
+        // that reach the DOM as indexed style properties and throw. The Select rendered
+        // nothing at all on web because of this.
+        style={StyleSheet.flatten([
           fieldRecipe(visual, 'default'),
-          styleProp as any,
-          props.disabled ? ({ opacity: interaction.disabledOpacity } as const) : null,
-        ]}
+          styleProp,
+          props.disabled ? { opacity: interaction.disabledOpacity } : null,
+        ])}
         {...props}
       >
         <>{children}</>
@@ -116,13 +142,21 @@ function SelectValue({
 }: SelectValueProps & React.RefAttributes<SelectPrimitive.ValueRef>) {
   const { value } = SelectPrimitive.useRootContext();
   const visual = useVisualTokens();
+
+  // The colour is set on a wrapper and inherited, rather than on the primitive itself.
+  // Its web build wraps a Radix span in a `Slot.Text` that drops React Native props, so
+  // neither `className` nor `style` reached the DOM and the text fell back to the
+  // user-agent default black — 1.2:1 on a dark surface. Rendering the label ourselves
+  // instead would fix the colour and lose the value: Radix owns the selection on web,
+  // and `useRootContext().value` is not populated there.
   return (
-    <SelectPrimitive.Value
+    <Text
       className={cn('text-foreground', !value && 'text-muted-foreground', className)}
       style={typographyStyle(visual, 'body')}
-      placeholder={placeholder}
-      {...props}
-    />
+      numberOfLines={1}
+    >
+      <SelectPrimitive.Value placeholder={placeholder} {...props} />
+    </Text>
   );
 }
 
@@ -163,17 +197,15 @@ const SelectContent = React.forwardRef<
               ref={ref}
               position={position}
               insets={insets}
-              style={
-                StyleSheet.flatten([
-                  {
-                    borderRadius: surfaceRadius(visual, 'lg'),
-                    borderWidth: visual.borderWidthHairline,
-                  },
-                  shadowStyle(visual, colors, 'md'),
-                  frostedSurface.surfaceStyle,
-                  styleProp as any,
-                ]) as any
-              }
+              style={StyleSheet.flatten([
+                {
+                  borderRadius: surfaceRadius(visual, 'lg'),
+                  borderWidth: visual.borderWidthHairline,
+                },
+                shadowStyle(visual, colors, 'md'),
+                frostedSurface.surfaceStyle,
+                styleProp,
+              ])}
               className={cn(
                 'border-border relative z-50 min-w-32 overflow-hidden',
                 frosted ? 'bg-transparent' : 'bg-popover',
@@ -228,16 +260,16 @@ const SelectItem = React.forwardRef<
         props.disabled && '',
         className
       )}
-      style={[
+      style={StyleSheet.flatten([
         {
           borderRadius: visual.radiusSm,
           minHeight: visual.touchTargetMinSize,
           paddingVertical: visual.controlPaddingYSm,
           paddingLeft: visual.controlPaddingXSm,
         },
-        styleProp as any,
-        props.disabled ? ({ opacity: interaction.disabledOpacity } as const) : null,
-      ]}
+        styleProp,
+        props.disabled ? { opacity: interaction.disabledOpacity } : null,
+      ])}
       {...props}
     >
       <View className="absolute right-3 flex h-4 w-4 items-center justify-center">
@@ -269,7 +301,7 @@ const SelectLabel = React.forwardRef<
     <SelectPrimitive.Label
       ref={ref}
       className={cn('text-muted-foreground px-2 py-2', className)}
-      style={[typographyStyle(visual, 'caption'), styleProp as any]}
+      style={StyleSheet.flatten([typographyStyle(visual, 'caption'), styleProp])}
       {...props}
     />
   );

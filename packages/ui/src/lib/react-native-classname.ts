@@ -13,6 +13,8 @@ declare module 'react-native' {
   interface PressableProps {
     className?: string;
   }
+  // Declaration merging requires the same parameter name, so it cannot be prefixed.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface FlatListProps<ItemT> {
     className?: string;
   }

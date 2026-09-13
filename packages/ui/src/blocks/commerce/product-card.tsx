@@ -1,4 +1,5 @@
-import { View, Pressable, Image, type PressableProps } from 'react-native';
+import { Image } from 'expo-image';
+import { View, Pressable, type PressableProps } from 'react-native';
 import { Text } from '../../components/text';
 import { Badge, BadgeText } from '../../components/badge';
 import { Skeleton } from '../../components/skeleton';
@@ -6,8 +7,6 @@ import { cn } from '../../lib/cn';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface ProductCardProps extends Omit<PressableProps, 'children'> {
   imageUrl?: string;
@@ -23,8 +22,6 @@ export interface ProductCardProps extends Omit<PressableProps, 'children'> {
   /** Show a skeleton placeholder instead of content. */
   loading?: boolean;
 }
-
-// ─── Skeleton ─────────────────────────────────────────────────
 
 function ProductCardSkeleton({
   variant = 'vertical',
@@ -60,8 +57,6 @@ function ProductCardSkeleton({
     </View>
   );
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export function ProductCard({
   imageUrl,
@@ -111,7 +106,6 @@ export function ProductCard({
       }}
       {...props}
     >
-      {/* Image */}
       <View
         className={cn(
           'items-center justify-center bg-muted',
@@ -119,7 +113,7 @@ export function ProductCard({
         )}
       >
         {imageUrl ? (
-          <Image source={{ uri: imageUrl }} className="h-full w-full" resizeMode="cover" />
+          <Image source={{ uri: imageUrl }} className="h-full w-full" contentFit="cover" />
         ) : (
           <View className="items-center justify-center gap-2">
             <View
@@ -139,7 +133,6 @@ export function ProductCard({
         )}
       </View>
 
-      {/* Content */}
       <View
         className={cn('flex-1', isHorizontal && 'justify-center')}
         style={{ padding: surfacePadding(visual, 'sm') }}
@@ -154,7 +147,6 @@ export function ProductCard({
           </Text>
         )}
 
-        {/* Rating */}
         {rating !== undefined && (
           <View className="mt-1 flex-row items-center gap-1">
             <Text className="text-accent" style={label}>
@@ -167,7 +159,6 @@ export function ProductCard({
           </View>
         )}
 
-        {/* Price */}
         <View className="mt-2 flex-row items-center gap-2">
           <Text className="text-lg font-bold text-foreground">{price}</Text>
           {originalPrice && (
@@ -177,7 +168,6 @@ export function ProductCard({
           )}
         </View>
 
-        {/* Stock */}
         {!inStock && (
           <Text className="mt-1 text-destructive" style={label}>
             Out of stock

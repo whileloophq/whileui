@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -8,8 +8,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { cn } from '../../lib/cn';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
-
-// ─── Context ─────────────────────────────────────────────────
 
 type AccordionType = 'single' | 'multiple';
 
@@ -37,8 +35,6 @@ const AccordionItemContext = createContext<AccordionItemContextValue>({
   isOpen: false,
 });
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface AccordionProps extends ViewProps {
   type?: AccordionType;
   defaultValue?: string | string[];
@@ -59,8 +55,6 @@ export interface AccordionTriggerProps extends Omit<PressableProps, 'children'> 
 export interface AccordionContentProps extends ViewProps {
   className?: string;
 }
-
-// ─── Components ──────────────────────────────────────────────
 
 function Accordion({
   type = 'single',
@@ -89,9 +83,13 @@ function Accordion({
     },
     [type, collapsible]
   );
+  const contextValue = useMemo(
+    () => ({ type, value, onValueChange, collapsible }),
+    [collapsible, onValueChange, type, value]
+  );
 
   return (
-    <AccordionContext.Provider value={{ type, value, onValueChange, collapsible }}>
+    <AccordionContext.Provider value={contextValue}>
       <View className={cn('w-full', className)} {...props}>
         {children}
       </View>
@@ -102,9 +100,10 @@ function Accordion({
 function AccordionItem({ value, className, children, ...props }: AccordionItemProps) {
   const { value: selectedValues } = useContext(AccordionContext);
   const isOpen = selectedValues.includes(value);
+  const contextValue = useMemo(() => ({ value, isOpen }), [isOpen, value]);
 
   return (
-    <AccordionItemContext.Provider value={{ value, isOpen }}>
+    <AccordionItemContext.Provider value={contextValue}>
       <View className={cn('border-b border-border', className)} {...props}>
         {children}
       </View>
@@ -127,6 +126,7 @@ function AccordionTrigger({
 
   return (
     <Pressable
+      accessibilityRole="button"
       className={cn('flex flex-row items-center justify-between py-4', className)}
       onPress={() => onValueChange(value)}
       style={interactiveStyle}
@@ -165,7 +165,7 @@ function AccordionContent({ className, children, ...props }: AccordionContentPro
     <Animated.View
       style={animatedStyle}
       className={cn('pb-4 overflow-hidden', className)}
-      {...(props as any)}
+      {...props}
     >
       {children}
     </Animated.View>
@@ -176,7 +176,5 @@ Accordion.displayName = 'Accordion';
 AccordionItem.displayName = 'AccordionItem';
 AccordionTrigger.displayName = 'AccordionTrigger';
 AccordionContent.displayName = 'AccordionContent';
-
-// ─── Exports ─────────────────────────────────────────────────
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };

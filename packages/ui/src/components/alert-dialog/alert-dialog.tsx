@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   Modal,
@@ -15,14 +23,12 @@ import {
   type PressableStateCallbackType,
 } from 'react-native';
 import { cn } from '../../lib/cn';
-import { composeEventHandlers } from '../../lib/compose-event-handlers';
+import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, typographyStyle } from '../../lib/recipes';
-
-// ─── Native alert copy (for presentation="native") ───────────
 
 /** `overlay` = themed UI as an absolute layer inside the parent (no second RN Modal). Mount inside your sheet `Modal` for app-styled confirms. */
 export type AlertDialogPresentation = 'modal' | 'native' | 'overlay';
@@ -50,11 +56,40 @@ function emptyNativeCopy(): NativeAlertCopy {
 function textFromNode(node: React.ReactNode): string {
   if (node == null || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
-  if (Array.isArray(node)) return node.map(textFromNode).filter(Boolean).join(' ');
+  if (Array.isArray(node)) {
+    return node
+      .reduce<string[]>((parts, child) => {
+        const text = textFromNode(child);
+        if (text) parts.push(text);
+        return parts;
+      }, [])
+      .join(' ');
+  }
   if (React.isValidElement(node)) {
     return textFromNode((node.props as { children?: React.ReactNode }).children);
   }
   return '';
+}
+
+/**
+ * Finds the `AlertDialogTitle` in a subtree and returns its text, so the panel can carry
+ * an accessible name from the same render that draws it. The native-alert path's copy ref
+ * cannot serve this: it is populated by child layout effects, which run after this render
+ * and never schedule another.
+ */
+function titleTextFromChildren(node: React.ReactNode): string {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = titleTextFromChildren(child);
+      if (found) return found;
+    }
+    return '';
+  }
+  if (!React.isValidElement(node)) return '';
+
+  const children = (node.props as { children?: React.ReactNode }).children;
+  if (node.type === AlertDialogTitle) return textFromNode(children);
+  return titleTextFromChildren(children);
 }
 
 /** Pressable children may be a render function; native alert only supports static labels. */
@@ -65,23 +100,19 @@ function textFromPressableChildren(
   return textFromNode(children);
 }
 
-// ─── Context ─────────────────────────────────────────────────
-
 interface AlertDialogContextValue {
   open: boolean;
   setOpen: (open: boolean) => void;
-  nativeCopyRef: React.MutableRefObject<NativeAlertCopy>;
+  nativeCopyRef: React.RefObject<NativeAlertCopy>;
 }
 
-const fallbackNativeRef: React.MutableRefObject<NativeAlertCopy> = { current: emptyNativeCopy() };
+const fallbackNativeRef: React.RefObject<NativeAlertCopy> = { current: emptyNativeCopy() };
 
 const AlertDialogContext = createContext<AlertDialogContextValue>({
   open: false,
   setOpen: () => {},
   nativeCopyRef: fallbackNativeRef,
 });
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface AlertDialogProps {
   defaultOpen?: boolean;
@@ -130,8 +161,6 @@ export interface AlertDialogCancelProps extends PressableProps {
   className?: string;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function AlertDialog({
   defaultOpen = false,
   open: controlledOpen,
@@ -140,20 +169,25 @@ function AlertDialog({
 }: AlertDialogProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const open = controlledOpen ?? internalOpen;
-  const nativeCopyRef = useRef<NativeAlertCopy>(emptyNativeCopy());
+  const [nativeCopyRef] = useState<React.RefObject<NativeAlertCopy>>(() => ({
+    current: emptyNativeCopy(),
+  }));
 
-  const setOpen = (value: boolean) => {
-    if (controlledOpen === undefined) {
-      setInternalOpen(value);
-    }
-    onOpenChange?.(value);
-  };
-
-  return (
-    <AlertDialogContext.Provider value={{ open, setOpen, nativeCopyRef }}>
-      {children}
-    </AlertDialogContext.Provider>
+  const setOpen = useCallback(
+    (value: boolean) => {
+      if (controlledOpen === undefined) {
+        setInternalOpen(value);
+      }
+      onOpenChange?.(value);
+    },
+    [controlledOpen, onOpenChange]
   );
+  const contextValue = useMemo(
+    () => ({ open, setOpen, nativeCopyRef }),
+    [nativeCopyRef, open, setOpen]
+  );
+
+  return <AlertDialogContext.Provider value={contextValue}>{children}</AlertDialogContext.Provider>;
 }
 
 function AlertDialogTrigger({
@@ -166,7 +200,7 @@ function AlertDialogTrigger({
   const { setOpen } = useContext(AlertDialogContext);
 
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<any>;
+    const child = children as AsChildElement;
     return React.cloneElement(child, {
       ...props,
       className: cn(child.props.className, className),
@@ -178,6 +212,7 @@ function AlertDialogTrigger({
 
   return (
     <Pressable
+      accessibilityRole="button"
       {...props}
       className={cn(className)}
       onPress={composeEventHandlers(onPress, () => setOpen(true))}
@@ -298,11 +333,31 @@ function AlertDialogContent({
 
   const themedBody = (
     <Pressable
+      // Tap-to-dismiss is a pointer affordance. Left accessible, this Pressable would be
+      // a single accessibility element wrapping the entire dialog, so VoiceOver would
+      // reach one "dismiss" target and none of the buttons inside it. Screen reader users
+      // dismiss with Cancel.
+      accessible={false}
+      importantForAccessibility="no"
       className="flex-1 justify-center items-center px-4"
       style={{ backgroundColor: colors.overlayStrong }}
       onPress={() => setOpen(false)}
     >
       <Pressable
+        // This Pressable is a container: its only `onPress` stops the backdrop from
+        // dismissing. `accessible={false}` is what keeps it that way — Pressable defaults
+        // to `accessible: true`, which on iOS collapses every descendant into one element
+        // and makes the confirm and cancel buttons unreachable.
+        accessible={false}
+        // A destructive confirmation is the worst place for a screen reader to wander
+        // out of. `accessibilityViewIsModal` keeps VoiceOver inside the panel; Android
+        // gets the same containment from the host Modal.
+        accessibilityViewIsModal
+        accessibilityRole="alert"
+        // Names the panel where the container is exposed (Android contentDescription,
+        // web `aria-label`). Read from the element tree because the native-alert copy ref
+        // is filled by child layout effects, which run after this render.
+        accessibilityLabel={titleTextFromChildren(children) || undefined}
         className={cn(
           'w-full border-border relative overflow-hidden',
           frosted ? 'bg-transparent' : 'bg-background',
@@ -357,7 +412,7 @@ function AlertDialogContent({
       <View
         pointerEvents="box-none"
         style={[
-          StyleSheet.absoluteFillObject,
+          StyleSheet.absoluteFill,
           { zIndex: 100, elevation: Platform.OS === 'android' ? 24 : undefined },
         ]}
       >
@@ -398,14 +453,18 @@ function AlertDialogTitle({ className, children, style, ...props }: AlertDialogT
   const visual = useVisualTokens();
 
   useLayoutEffect(() => {
-    nativeCopyRef.current.title = textFromNode(children);
+    const copy = nativeCopyRef.current;
+    copy.title = textFromNode(children);
     return () => {
-      nativeCopyRef.current.title = '';
+      copy.title = '';
     };
   }, [children, nativeCopyRef]);
 
   return (
     <Text
+      // Gives VoiceOver and TalkBack something to land on first inside the modal, and
+      // lets rotor navigation find it. Set before the spread so callers can override.
+      accessibilityRole="header"
       className={cn('font-semibold text-foreground', className)}
       style={[typographyStyle(visual, 'title'), style]}
       {...props}
@@ -425,9 +484,10 @@ function AlertDialogDescription({
   const visual = useVisualTokens();
 
   useLayoutEffect(() => {
-    nativeCopyRef.current.message = textFromNode(children);
+    const copy = nativeCopyRef.current;
+    copy.message = textFromNode(children);
     return () => {
-      nativeCopyRef.current.message = '';
+      copy.message = '';
     };
   }, [children, nativeCopyRef]);
 
@@ -453,25 +513,28 @@ function AlertDialogAction({
   const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const onPressRef = useRef(onPress);
-  onPressRef.current = onPress;
+  useLayoutEffect(() => {
+    onPressRef.current = onPress;
+  }, [onPress]);
   const interactiveStyle = withInteractivePressableStyle(undefined, interaction, {
     pressedVariant: 'strong',
   });
 
   useLayoutEffect(() => {
-    nativeCopyRef.current.confirmLabel = textFromPressableChildren(children);
-    nativeCopyRef.current.onConfirm = () => {
+    const copy = nativeCopyRef.current;
+    copy.confirmLabel = textFromPressableChildren(children);
+    copy.onConfirm = () => {
       const h = onPressRef.current;
       if (h) (h as (e?: unknown) => void)();
     };
     return () => {
-      nativeCopyRef.current.confirmLabel = 'OK';
-      nativeCopyRef.current.onConfirm = null;
+      copy.confirmLabel = 'OK';
+      copy.onConfirm = null;
     };
   }, [children, nativeCopyRef]);
 
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<any>;
+    const child = children as AsChildElement;
     return React.cloneElement(child, {
       ...props,
       className: cn(child.props.className, className),
@@ -483,6 +546,10 @@ function AlertDialogAction({
 
   return (
     <Pressable
+      // Pressable sets no role of its own, so without this the confirm button in a
+      // destructive dialog announces as a plain view. Before the spread, so a caller can
+      // still override it.
+      accessibilityRole="button"
       {...props}
       className={cn('inline-flex items-center justify-center bg-primary', className)}
       style={(state) => {
@@ -519,25 +586,29 @@ function AlertDialogCancel({ className, children, onPress, ...props }: AlertDial
   const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const onPressRef = useRef(onPress);
-  onPressRef.current = onPress;
+  useLayoutEffect(() => {
+    onPressRef.current = onPress;
+  }, [onPress]);
   const interactiveStyle = withInteractivePressableStyle(undefined, interaction, {
     pressedVariant: 'default',
   });
 
   useLayoutEffect(() => {
-    nativeCopyRef.current.cancelLabel = textFromPressableChildren(children);
-    nativeCopyRef.current.onCancel = () => {
+    const copy = nativeCopyRef.current;
+    copy.cancelLabel = textFromPressableChildren(children);
+    copy.onCancel = () => {
       const h = onPressRef.current;
       if (h) (h as (e?: unknown) => void)();
     };
     return () => {
-      nativeCopyRef.current.cancelLabel = 'Cancel';
-      nativeCopyRef.current.onCancel = null;
+      copy.cancelLabel = 'Cancel';
+      copy.onCancel = null;
     };
   }, [children, nativeCopyRef]);
 
   return (
     <Pressable
+      accessibilityRole="button"
       {...props}
       className={cn(
         'inline-flex items-center justify-center border-border bg-transparent',

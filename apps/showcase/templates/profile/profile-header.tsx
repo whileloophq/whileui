@@ -2,7 +2,8 @@
  * ProfileHeader — Copy-paste template
  * Copy this file into your app and customize. Uses @thewhileloop/whileui primitives.
  */
-import { Image, View, Pressable, type ViewProps } from 'react-native';
+import { Image } from 'expo-image';
+import { View, Pressable, type ViewProps } from 'react-native';
 import {
   Avatar,
   AvatarFallback,
@@ -67,7 +68,7 @@ export function ProfileHeader({
         {coverUrl ? (
           <Image
             source={{ uri: coverUrl }}
-            resizeMode="cover"
+            contentFit="cover"
             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           />
         ) : null}

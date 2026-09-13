@@ -103,9 +103,15 @@ export function DrawerMenu({
   const [mounted, setMounted] = React.useState(visible);
   const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  React.useEffect(() => {
+  // Mounting has to happen in the same commit that `visible` flips, or the drawer's
+  // entrance animation loses its first frame. React's documented way to do that is to
+  // adjust state during render on a props change rather than in an effect; the close
+  // path is the asymmetric one and stays below, on a timer, so the exit can finish.
+  const [prevVisible, setPrevVisible] = React.useState(visible);
+  if (prevVisible !== visible) {
+    setPrevVisible(visible);
     if (visible) setMounted(true);
-  }, [visible]);
+  }
 
   React.useEffect(() => {
     if (!mounted) return;
@@ -157,7 +163,6 @@ export function DrawerMenu({
 
   const drawerTree = (
     <Animated.View style={[StyleSheet.absoluteFill, containerStyle]}>
-      {/* Backdrop */}
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
@@ -166,10 +171,15 @@ export function DrawerMenu({
         ]}
       >
         {frostedBackdrop}
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        {/* Backdrop: tap-to-dismiss only, not a control. */}
+        <Pressable
+          accessible={false}
+          importantForAccessibility="no"
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+        />
       </Animated.View>
 
-      {/* Drawer Panel */}
       <Animated.View
         style={[
           {
@@ -198,10 +208,8 @@ export function DrawerMenu({
       >
         {frostedSurface.overlay}
         <View className="flex-1 pb-8" style={{ paddingTop: contentTopPadding }}>
-          {/* Header */}
           {header && <View className="px-5 pb-4 mb-2 border-b border-border">{header}</View>}
 
-          {/* Sections */}
           <View className="flex-1 px-3">
             {sections.map((section, sectionIndex) => (
               <View key={sectionIndex} className="mb-4">
@@ -219,6 +227,7 @@ export function DrawerMenu({
                     return (
                       <Pressable
                         key={item.key}
+                        accessibilityRole="button"
                         onPress={() => handleItemPress(item.key)}
                         className={cn(
                           'flex-row items-center gap-3 mx-1 transition-colors',
@@ -275,7 +284,6 @@ export function DrawerMenu({
             ))}
           </View>
 
-          {/* Footer */}
           {footer && <View className="px-5 py-4 mt-auto border-t border-border">{footer}</View>}
         </View>
       </Animated.View>

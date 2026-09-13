@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TextInput, type TextInputProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
@@ -71,7 +72,8 @@ const Input = React.forwardRef<TextInput, InputProps>(
         <TextInput
           ref={ref}
           className={cn(
-            'flex-1 text-foreground placeholder:text-muted-foreground outline-none',
+            'flex-1 text-foreground placeholder:text-muted-foreground',
+            focusRing,
             inputClassName
           )}
           style={{

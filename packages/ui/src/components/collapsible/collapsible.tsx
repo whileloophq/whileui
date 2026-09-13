@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState } from 'react';
-import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  View,
+  Pressable,
+  type GestureResponderEvent,
+  type ViewProps,
+  type PressableProps,
+} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,8 +13,6 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { cn } from '../../lib/cn';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface CollapsibleContextValue {
   isOpen: boolean;
@@ -22,12 +26,9 @@ const CollapsibleContext = createContext<CollapsibleContextValue>({
   disabled: false,
 });
 
-// Hook to access collapsible state
 export function useCollapsible() {
   return useContext(CollapsibleContext);
 }
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface CollapsibleProps extends ViewProps {
   defaultOpen?: boolean;
@@ -47,8 +48,6 @@ export interface CollapsibleContentProps extends ViewProps {
   forceMount?: boolean;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function Collapsible({
   defaultOpen = false,
   open: controlledOpen,
@@ -61,15 +60,16 @@ function Collapsible({
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const isOpen = controlledOpen ?? internalOpen;
 
-  const toggle = () => {
+  const toggle = useCallback(() => {
     if (disabled) return;
     const next = !isOpen;
     setInternalOpen(next);
     onOpenChange?.(next);
-  };
+  }, [disabled, isOpen, onOpenChange]);
+  const contextValue = useMemo(() => ({ isOpen, toggle, disabled }), [disabled, isOpen, toggle]);
 
   return (
-    <CollapsibleContext.Provider value={{ isOpen, toggle, disabled }}>
+    <CollapsibleContext.Provider value={contextValue}>
       <View className={cn(className)} {...props}>
         {children}
       </View>
@@ -86,22 +86,33 @@ function CollapsibleTrigger({
 }: CollapsibleTriggerProps) {
   const { toggle, disabled } = useContext(CollapsibleContext);
 
-  const handlePress = (e: any) => {
+  const handlePress = (e: GestureResponderEvent) => {
     onPress?.(e);
     toggle();
   };
 
-  // When asChild is true, wrap child in an invisible pressable overlay
   if (asChild && React.isValidElement(children)) {
     return (
-      <Pressable onPress={handlePress} disabled={disabled} className={cn(className)} {...props}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={handlePress}
+        disabled={disabled}
+        className={cn(className)}
+        {...props}
+      >
         {children}
       </Pressable>
     );
   }
 
   return (
-    <Pressable className={cn(className)} onPress={handlePress} disabled={disabled} {...props}>
+    <Pressable
+      accessibilityRole="button"
+      className={cn(className)}
+      onPress={handlePress}
+      disabled={disabled}
+      {...props}
+    >
       {children}
     </Pressable>
   );
@@ -130,7 +141,7 @@ function CollapsibleContent({
   if (!isOpen && !forceMount) return null;
 
   return (
-    <Animated.View style={animatedStyle} className={cn(className)} {...(props as any)}>
+    <Animated.View style={animatedStyle} className={cn(className)} {...props}>
       {children}
     </Animated.View>
   );

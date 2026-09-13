@@ -1,4 +1,16 @@
+import type { PressableProps } from 'react-native';
+import type { ReactElement } from 'react';
+
 type EventHandler<E> = ((event: E) => void) | null | undefined;
+
+/**
+ * What `asChild` can assume about the element it was handed. The child is the caller's,
+ * so this names only the props we actually read off it before cloning — anything wider
+ * would be a claim we cannot check.
+ */
+export type AsChildElement = ReactElement<
+  Pick<PressableProps, 'onPress' | 'onLongPress'> & { className?: string }
+>;
 
 function isDefaultPrevented(event: unknown): boolean {
   if (!event || typeof event !== 'object') return false;

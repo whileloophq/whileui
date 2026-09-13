@@ -110,9 +110,9 @@ function MetricCard({
           className="mt-3 flex-row h-3 overflow-hidden"
           style={{ borderRadius: visual.radiusSm }}
         >
-          {segments.map((seg, i) => (
+          {segments.map((seg) => (
             <View
-              key={i}
+              key={`${seg.color}:${seg.value}`}
               className="h-full"
               style={{ width: `${seg.value}%`, backgroundColor: seg.color }}
             />

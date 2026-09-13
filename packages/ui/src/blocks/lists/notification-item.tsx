@@ -4,10 +4,9 @@ import { Text } from '../../components/text';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/avatar';
 import { Skeleton } from '../../components/skeleton';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, typographyStyle } from '../../lib/recipes';
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface NotificationItemProps extends Omit<PressableProps, 'children'> {
   icon?: React.ReactNode;
@@ -22,8 +21,6 @@ export interface NotificationItemProps extends Omit<PressableProps, 'children'> 
   loading?: boolean;
 }
 
-// ─── Row tokens ───────────────────────────────────────────────
-
 function useNotificationRowStyle(): ViewStyle {
   const visual = useVisualTokens();
   return {
@@ -31,8 +28,6 @@ function useNotificationRowStyle(): ViewStyle {
     paddingVertical: visual.controlPaddingYDefault,
   };
 }
-
-// ─── Skeleton ─────────────────────────────────────────────────
 
 function NotificationItemSkeleton({ className }: { className?: string }) {
   const rowStyle = useNotificationRowStyle();
@@ -50,8 +45,6 @@ function NotificationItemSkeleton({ className }: { className?: string }) {
     </View>
   );
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export function NotificationItem({
   icon,
@@ -76,8 +69,10 @@ export function NotificationItem({
 
   return (
     <Pressable
+      accessibilityRole={props.onPress || props.onLongPress ? 'button' : undefined}
       className={cn(
         'flex-row items-start active:bg-muted',
+        focusRing,
         !read && 'bg-primary-soft-subtle',
         className
       )}
@@ -87,7 +82,6 @@ export function NotificationItem({
       }}
       {...props}
     >
-      {/* Avatar or Icon */}
       {avatarUrl || avatarFallback ? (
         <Avatar className="h-10 w-10">
           {avatarUrl && <AvatarImage src={avatarUrl} />}
@@ -101,7 +95,6 @@ export function NotificationItem({
         )
       )}
 
-      {/* Content */}
       <View className="ml-3 flex-1">
         <View className="flex-row items-center justify-between">
           <Text

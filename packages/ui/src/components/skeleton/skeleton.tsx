@@ -13,8 +13,6 @@ import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
 
-// ─── Variants ─────────────────────────────────────────────────
-
 const skeletonVariants = tv({
   base: 'bg-muted',
   variants: {
@@ -26,13 +24,9 @@ const skeletonVariants = tv({
   defaultVariants: { variant: 'pulse' },
 });
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface SkeletonProps extends ViewProps, VariantProps<typeof skeletonVariants> {
   className?: string;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 function Skeleton({ className, variant = 'pulse', style, ...props }: SkeletonProps) {
   const progress = useSharedValue(0);
@@ -68,7 +62,7 @@ function Skeleton({ className, variant = 'pulse', style, ...props }: SkeletonPro
       <View
         className={cn(skeletonVariants({ variant }), 'overflow-hidden', className)}
         style={[radiusStyle, style]}
-        {...(props as any)}
+        {...props}
       >
         <Animated.View
           style={[
@@ -91,13 +85,11 @@ function Skeleton({ className, variant = 'pulse', style, ...props }: SkeletonPro
     <Animated.View
       style={[pulseStyle, radiusStyle, style]}
       className={cn(skeletonVariants({ variant }), className)}
-      {...(props as any)}
+      {...props}
     />
   );
 }
 
 Skeleton.displayName = 'Skeleton';
-
-// ─── Exports ─────────────────────────────────────────────────
 
 export { Skeleton, skeletonVariants };

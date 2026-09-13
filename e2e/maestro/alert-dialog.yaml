@@ -1,0 +1,50 @@
+appId: dev.whileloop.showcase
+name: AlertDialog reaches its own buttons
+---
+# This flow exists for one defect, and on iOS it is the only thing that can see it.
+#
+# Overlay backdrops and panels were built from `Pressable`, which defaults to
+# `accessible: true`. On iOS an accessibility element hides its descendants, so an open
+# destructive confirmation collapsed into a single element and VoiceOver could not reach
+# either button. Measured on a simulator, same screen, one prop changed:
+#
+#   with `accessible={false}`     without it
+#   ---------------------------   ------------------
+#   "Delete workspace?"           "Delete workspace?"
+#   "This will permanently..."     —
+#   "Cancel"                       —
+#   "Delete"                       —
+#
+# No other layer can tell those apart. React Native Testing Library walks the React tree
+# and finds descendants regardless of `accessible`. React Native Web keeps them in the
+# DOM. Android leaves every node in the UIAutomator tree, so this flow passes on Android
+# either way — it only fails on iOS, which is where the defect lives.
+#
+# Selectors end-anchor rather than full-anchor: iOS composes an accessibility label from
+# a Pressable's children, so an icon + text chip reads as ", Overlays" and the confirm
+# button as "Delete" while a different demo on the same screen has "Delete item".
+
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: '.*Overlays.*'
+
+- tapOn:
+    text: '.*Delete$'
+
+# The dialog is open.
+- assertVisible: 'Delete workspace?'
+- assertVisible: 'This will permanently remove all data. This action cannot be undone.'
+
+# The part that matters: the controls inside the panel are their own elements, not
+# swallowed by the container that holds them.
+- assertVisible:
+    text: '.*Cancel$'
+- assertVisible:
+    text: '.*Delete$'
+
+# And they work.
+- tapOn:
+    text: '.*Cancel$'
+- assertNotVisible: 'Delete workspace?'

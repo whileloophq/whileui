@@ -3,10 +3,9 @@ import { View, Pressable, type PressableProps, type ViewStyle } from 'react-nati
 import { Text } from '../../components/text';
 import { Skeleton } from '../../components/skeleton';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, typographyStyle } from '../../lib/recipes';
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface ListItemProps extends Omit<PressableProps, 'children'> {
   icon?: React.ReactNode;
@@ -22,8 +21,6 @@ export interface ListItemProps extends Omit<PressableProps, 'children'> {
   loading?: boolean;
 }
 
-// ─── Row tokens ───────────────────────────────────────────────
-
 function useListRowStyle(compact: boolean, showBorder: boolean): ViewStyle {
   const visual = useVisualTokens();
   return {
@@ -32,8 +29,6 @@ function useListRowStyle(compact: boolean, showBorder: boolean): ViewStyle {
     borderBottomWidth: showBorder ? visual.borderWidthHairline : 0,
   };
 }
-
-// ─── Skeleton ─────────────────────────────────────────────────
 
 function ListItemSkeleton({
   showBorder = true,
@@ -61,8 +56,6 @@ function ListItemSkeleton({
   );
 }
 
-// ─── Component ───────────────────────────────────────────────
-
 export function ListItem({
   icon,
   title,
@@ -87,8 +80,10 @@ export function ListItem({
 
   return (
     <Pressable
+      accessibilityRole={props.onPress || props.onLongPress ? 'button' : undefined}
       className={cn(
         'flex-row items-center bg-card',
+        focusRing,
         showBorder && 'border-border',
         'active:bg-muted',
         className
@@ -99,10 +94,8 @@ export function ListItem({
       }}
       {...props}
     >
-      {/* Icon */}
       {icon && <View className="mr-3 text-muted-foreground">{icon}</View>}
 
-      {/* Content */}
       <View className="flex-1">
         <Text className="text-foreground" style={typographyStyle(visual, 'body')}>
           {title}
@@ -123,7 +116,6 @@ export function ListItem({
         )}
       </View>
 
-      {/* Right Side */}
       {rightText && (
         <Text className="mr-2 text-muted-foreground" style={typographyStyle(visual, 'label')}>
           {rightText}

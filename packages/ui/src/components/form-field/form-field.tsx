@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { Text, View, type TextProps, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
@@ -82,8 +82,12 @@ const FormField = React.forwardRef<View, FormFieldProps>(
     ref
   ) => {
     const interaction = useInteractionTokens();
+    const contextValue = useMemo(
+      () => ({ density, invalid, disabled, required }),
+      [density, disabled, invalid, required]
+    );
     return (
-      <FormFieldContext.Provider value={{ density, invalid, disabled, required }}>
+      <FormFieldContext.Provider value={contextValue}>
         <View
           ref={ref}
           className={cn(formFieldVariants({ density }), className)}

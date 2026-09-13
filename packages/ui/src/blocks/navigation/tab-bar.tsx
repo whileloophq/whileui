@@ -6,8 +6,6 @@ import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/i
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface TabBarItem {
   key: string;
   label: string;
@@ -27,8 +25,6 @@ export interface TabBarItemProps extends Omit<PressableProps, 'children'> {
   isActive: boolean;
   variant: 'default' | 'pills' | 'underline';
 }
-
-// ─── Components ──────────────────────────────────────────────
 
 function TabBarItemComponent({
   item,
@@ -68,6 +64,9 @@ function TabBarItemComponent({
 
   return (
     <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isActive }}
+      aria-selected={isActive}
       className={cn(baseStyles, variantStyles[variant], className)}
       style={(state) => [
         tokenStyle,
@@ -101,6 +100,7 @@ export function TabBar({
 
   const content = (
     <View
+      accessibilityRole="tablist"
       className={cn(
         'flex-row',
         variant === 'pills' && 'gap-1 bg-muted p-1',

@@ -8,8 +8,6 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface PricingFeature {
   label: string;
   included: boolean;
@@ -28,8 +26,6 @@ export interface PricingCardProps extends ViewProps {
   /** Show a skeleton placeholder instead of content. */
   loading?: boolean;
 }
-
-// ─── Skeleton ─────────────────────────────────────────────────
 
 function PricingCardSkeleton({
   highlighted = false,
@@ -74,8 +70,6 @@ function PricingCardSkeleton({
   );
 }
 
-// ─── Component ───────────────────────────────────────────────
-
 export function PricingCard({
   name,
   description,
@@ -119,7 +113,6 @@ export function PricingCard({
       ]}
       {...props}
     >
-      {/* Header */}
       <View className="mb-4 flex-row items-center justify-between">
         <Text className="font-semibold text-foreground" style={emphasis}>
           {name}
@@ -137,16 +130,14 @@ export function PricingCard({
         </Text>
       )}
 
-      {/* Price */}
       <View className="mb-6 flex-row items-baseline">
         <Text className="text-4xl font-bold text-foreground">{price}</Text>
         <Text className="ml-1 text-muted-foreground">{period}</Text>
       </View>
 
-      {/* Features */}
       <View className="mb-6 gap-3">
-        {features.map((feature, index) => (
-          <View key={index} className="flex-row items-center gap-3">
+        {features.map((feature) => (
+          <View key={feature.label} className="flex-row items-center gap-3">
             <Text className={feature.included ? 'text-primary' : 'text-muted-foreground'}>
               {feature.included ? '✓' : '✕'}
             </Text>
@@ -162,7 +153,6 @@ export function PricingCard({
         ))}
       </View>
 
-      {/* Button */}
       <Button variant={highlighted ? 'default' : 'outline'} className="w-full" onPress={onPress}>
         <ButtonText>{buttonLabel}</ButtonText>
       </Button>

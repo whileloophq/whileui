@@ -12,7 +12,7 @@ repo's own rule.
 
 1. **List what the diff adds, removes or renames** — exports, props, blocks, files,
    scripts.
-2. **Find each one's README row or section, its showcase demo (right track), and any
+2. **Find each one's README row or section, its showcase demo, and any
    doc that names it.**
 3. **Check the docs still describe reality** — commands run, paths exist, the
    consumers named are the real ones.
@@ -20,13 +20,24 @@ repo's own rule.
 ## Key Questions
 
 - New or changed component/block: README table row? API section if the props are
-  notable? Demo in `apps/site` (DOM) or `apps/showcase` (RN)?
-- Removed or renamed: gone from README, the showcase, `index.ts` / `web/index.ts`?
-- New export path (`./tokens`, `./web/*`): in `package.json` `exports` **and**
-  documented?
+  notable? Demo in `apps/showcase`?
+- Removed or renamed: gone from README, the showcase, and `index.ts`?
+- New export path: in `package.json` `exports` **and** documented?
 - Does any doc still name a file, command or directory this diff deletes?
 - Extracted from an app: does the app import it in this change, or is there a dated
   entry in that app's backlog?
+- New export: is its maturity level declared, and is the claim honest? A showcase demo
+  is `experimental`; `stable` needs a shipped product call site (`PLAN.md` > Maturity
+  and lifecycle).
+- Does the diff contradict `PLAN.md` — a dependency off the pinned stack, a rule it
+  quietly drops? Either the plan changes in this diff or the code does.
+- **This repo is public.** Does any tracked file name a consuming app, its screens, its
+  business model or a path inside its repo? That belongs in `CONSUMERS.md`, which is
+  gitignored. Same test for the commit message.
+- Does it make a claim about another project? The bar is that the claim is verified
+  against that project's source, neutral in tone, and load-bearing for a decision we are
+  documenting. "Library X has no tests" fails all three — cut it or verify it
+  (`AGENTS.md` > Attribution).
 
 ## Red Flags
 
@@ -35,6 +46,8 @@ repo's own rule.
 - `AGENTS.md` checklist steps referencing paths the diff removes.
 - "frozen", "primary", "first consumer" claims that contradict `ROADMAP.md`.
 - A tracked file linking to `TODO.md`, which is gitignored.
+- A `stable` claim with no product call site behind it.
+- A consuming app named, or one of its paths quoted, in a tracked file.
 
 ## Green Flags
 
@@ -43,8 +56,10 @@ repo's own rule.
 
 ## Codebase-Specific Patterns
 
-- README: Components table, Blocks table, "DOM Track" section, per-component API
-  sections further down.
-- `apps/site/src/tabs.tsx` holds `PENDING` per category — remove the item when it
-  ships and add a demo in that tab.
+- README: Components table, Blocks table, and per-component API sections further
+  down.
+- `apps/showcase/App.tsx` is the executable component catalog for native and React
+  Native Web.
+- `ROADMAP.md` is direction, `PLAN.md` is the foundation plan and phases, `AGENTS.md`
+  is day-to-day rules. A diff that outdates one of them must change it.
 - `TODO.md` is local. Summarise its content in tracked docs; never link to it.

@@ -1,13 +1,12 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRingInset } from '../../lib/focus-ring';
 import { tv } from '../../lib/tv';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface TabsContextValue {
   value: string;
@@ -18,8 +17,6 @@ const TabsContext = createContext<TabsContextValue>({
   value: '',
   onValueChange: () => {},
 });
-
-// ─── Variants ────────────────────────────────────────────────
 
 const tabsTriggerVariants = tv({
   base: 'inline-flex items-center justify-center whitespace-nowrap font-medium',
@@ -63,8 +60,6 @@ function getTabsTriggerStyle(
   };
 }
 
-// ─── Types ───────────────────────────────────────────────────
-
 export interface TabsProps extends ViewProps {
   defaultValue: string;
   value?: string;
@@ -87,8 +82,6 @@ export interface TabsContentProps extends ViewProps {
   className?: string;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function Tabs({
   defaultValue,
   value: controlledValue,
@@ -100,13 +93,20 @@ function Tabs({
   const [internalValue, setInternalValue] = useState(defaultValue);
   const value = controlledValue ?? internalValue;
 
-  const handleValueChange = (newValue: string) => {
-    setInternalValue(newValue);
-    onValueChange?.(newValue);
-  };
+  const handleValueChange = useCallback(
+    (newValue: string) => {
+      setInternalValue(newValue);
+      onValueChange?.(newValue);
+    },
+    [onValueChange]
+  );
+  const contextValue = useMemo(
+    () => ({ value, onValueChange: handleValueChange }),
+    [handleValueChange, value]
+  );
 
   return (
-    <TabsContext.Provider value={{ value, onValueChange: handleValueChange }}>
+    <TabsContext.Provider value={contextValue}>
       <View className={cn('w-full', className)} {...props}>
         {children}
       </View>
@@ -119,6 +119,7 @@ function TabsList({ className, style, ...props }: TabsListProps) {
   const colors = useThemeColors();
   return (
     <View
+      accessibilityRole="tablist"
       className={cn('flex flex-row items-center justify-center', className)}
       style={[getTabsListStyle(visual, colors), style]}
       {...props}
@@ -150,6 +151,7 @@ function TabsTrigger({
       className={cn(
         tabsTriggerVariants({ state: isActive ? 'active' : 'inactive' }),
         'flex-1',
+        focusRingInset,
         className
       )}
       style={(state) => {
@@ -158,6 +160,9 @@ function TabsTrigger({
         return [baseStyle, tokenStyle];
       }}
       onPress={() => onValueChange(tabValue)}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isActive, disabled: Boolean(disabled) }}
+      aria-selected={isActive}
       disabled={disabled}
       {...props}
     >

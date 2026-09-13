@@ -197,6 +197,7 @@
   --ui-frosted-highlight-height: 2;
   --ui-frosted-backdrop-blur-intensity: 22;
   --ui-frosted-backdrop-blur-scale: 0.72;
+  --ui-frosted-android-tint-alpha-scale: 1.18;
   --ui-frosted-android-experimental-blur: 1;
 }
 
@@ -232,7 +233,7 @@
       --color-foreground: oklch(0.22 0.03 315); /* Deep plum-charcoal text */
       --color-card: oklch(1 0.006 330 / 0.72); /* Translucent soft card */
       --color-card-foreground: oklch(0.22 0.03 315);
-      --color-popover: oklch(0.975 0.012 330 / 0.85); /* Surface Strong */
+      --color-popover: oklch(0.975 0.012 330); /* Opaque — see the dark theme note. */
       --color-popover-foreground: oklch(0.22 0.03 315);
 
       --color-primary: oklch(0.5 0.15 335); /* Deeper rose/plum */
@@ -394,7 +395,9 @@
       --color-foreground: oklch(0.96 0.012 330); /* Warm ivory text */
       --color-card: oklch(0.18 0.035 315 / 0.68); /* Translucent dark glass */
       --color-card-foreground: oklch(0.96 0.012 330);
-      --color-popover: oklch(0.24 0.04 315 / 0.74); /* Surface Strong */
+      --color-popover: oklch(
+        0.24 0.04 315
+      ); /* Opaque: popovers float over arbitrary content, so alpha here shows the page through them. Glass surfaces use --color-surface-translucent. */
       --color-popover-foreground: oklch(0.96 0.012 330);
 
       --color-primary: oklch(0.58 0.16 335); /* Muted plum-rose */
@@ -424,7 +427,7 @@
       --color-overlay: rgba(0, 0, 0, 0.7);
       --color-overlay-strong: rgba(0, 0, 0, 0.85);
       --color-surface-elevated: oklch(0.24 0.04 315 / 0.72);
-      --color-surface-border: oklch(255 255 255 / 0.1);
+      --color-surface-border: oklch(1 0 0 / 0.1);
       --color-surface-highlight: oklch(0.58 0.16 335 / 0.15); /* Plum/rose highlights */
       --color-surface-translucent: oklch(0.18 0.035 315 / 0.4);
       --color-surface-translucent-border: oklch(0.58 0.16 335 / 0.12);
@@ -433,14 +436,14 @@
       /* ─── Feedback + Semantic Helpers ──────────────────────── */
       --color-state-hover: oklch(0.58 0.16 335 / 0.12);
       --color-state-pressed: oklch(0.58 0.16 335 / 0.2);
-      --color-state-disabled: oklch(255 255 255 / 0.1);
+      --color-state-disabled: oklch(1 0 0 / 0.1);
       --color-primary-active: oklch(0.62 0.14 335);
-      --color-secondary-active: oklch(255 255 255 / 0.15);
+      --color-secondary-active: oklch(1 0 0 / 0.15);
       --color-destructive-active: oklch(0.44 0.14 25);
 
       --color-primary-soft: oklch(0.58 0.16 335 / 0.18);
       --color-primary-soft-subtle: oklch(0.58 0.16 335 / 0.09);
-      --color-secondary-soft: oklch(255 255 255 / 0.05);
+      --color-secondary-soft: oklch(1 0 0 / 0.05);
       --color-muted-soft: oklch(0.25 0.025 315 / 0.03);
       --color-destructive-soft: oklch(0.5 0.15 25 / 0.18);
       --color-destructive-soft-border: oklch(0.5 0.15 25 / 0.38);

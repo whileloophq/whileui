@@ -1,13 +1,12 @@
-import React, { createContext, useContext, useState } from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import React, { createContext, useContext, useMemo, useState } from 'react';
+import { type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 import { View, Modal, Pressable, Text, type ViewProps, type PressableProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import type { AsChildElement } from '../../lib/compose-event-handlers';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface DropdownMenuContextValue {
   open: boolean;
@@ -18,8 +17,6 @@ const DropdownMenuContext = createContext<DropdownMenuContextValue>({
   open: false,
   setOpen: () => {},
 });
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface DropdownMenuProps {
   children: React.ReactNode;
@@ -49,10 +46,9 @@ export interface DropdownMenuSeparatorProps extends ViewProps {
 
 function DropdownMenu({ children }: DropdownMenuProps) {
   const [open, setOpen] = useState(false);
+  const contextValue = useMemo(() => ({ open, setOpen }), [open]);
   return (
-    <DropdownMenuContext.Provider value={{ open, setOpen }}>
-      {children}
-    </DropdownMenuContext.Provider>
+    <DropdownMenuContext.Provider value={contextValue}>{children}</DropdownMenuContext.Provider>
   );
 }
 
@@ -60,9 +56,9 @@ function DropdownMenuTrigger({ className, children, asChild, ...props }: Dropdow
   const { setOpen } = useContext(DropdownMenuContext);
 
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<any>;
+    const child = children as AsChildElement;
     return React.cloneElement(child, {
-      onPress: (e: any) => {
+      onPress: (e: GestureResponderEvent) => {
         child.props.onPress?.(e);
         setOpen(true);
       },
@@ -71,7 +67,12 @@ function DropdownMenuTrigger({ className, children, asChild, ...props }: Dropdow
   }
 
   return (
-    <Pressable className={cn(className)} onPress={() => setOpen(true)} {...props}>
+    <Pressable
+      accessibilityRole="button"
+      className={cn(className)}
+      onPress={() => setOpen(true)}
+      {...props}
+    >
       {children}
     </Pressable>
   );
@@ -118,8 +119,20 @@ function DropdownMenuContent({
       navigationBarTranslucent
       onRequestClose={() => setOpen(false)}
     >
-      <Pressable className="flex-1 justify-end" onPress={() => setOpen(false)}>
+      {/* Both of these are containers. Pressable defaults to `accessible: true`, which on
+          iOS collapses every descendant into a single accessibility element — the menu
+          items inside would be unreachable. */}
+      <Pressable
+        accessible={false}
+        importantForAccessibility="no"
+        className="flex-1 justify-end"
+        onPress={() => setOpen(false)}
+      >
         <Pressable
+          accessible={false}
+          // Names the container for the `menuitem` children below; without a `menu`
+          // ancestor the role is invalid ARIA and assistive tech ignores it.
+          accessibilityRole="menu"
           className={cn(
             'w-full border-border p-2 pb-8 relative overflow-hidden',
             frosted ? 'bg-transparent' : 'bg-popover',
@@ -148,6 +161,7 @@ function DropdownMenuItem({ className, style, ...props }: DropdownMenuItemProps)
   };
   return (
     <Pressable
+      accessibilityRole="menuitem"
       className={cn('flex flex-row items-center active:bg-accent', className)}
       style={(state) => [tokenStyle, typeof style === 'function' ? style(state) : style]}
       onPress={(e) => {
@@ -164,7 +178,13 @@ function DropdownMenuLabel({ className, children, ...props }: DropdownMenuLabelP
   return (
     <View className={cn('px-2 py-1.5', className)} {...props}>
       {typeof children === 'string' ? (
-        <Text className="font-semibold text-foreground" style={typographyStyle(visual, 'label')}>
+        <Text
+          // A menu section label is a heading — without this it announces as plain text
+          // and rotor navigation cannot find it.
+          accessibilityRole="header"
+          className="font-semibold text-foreground"
+          style={typographyStyle(visual, 'label')}
+        >
           {children}
         </Text>
       ) : (

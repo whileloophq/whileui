@@ -1,13 +1,12 @@
-import React, { createContext, useContext, useState } from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import React, { createContext, useContext, useMemo, useState } from 'react';
+import { type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 import { View, Modal, Pressable, Text, type ViewProps, type PressableProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import type { AsChildElement } from '../../lib/compose-event-handlers';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
-
-// ─── Context ─────────────────────────────────────────────────
 
 interface ContextMenuContextValue {
   open: boolean;
@@ -18,8 +17,6 @@ const ContextMenuContext = createContext<ContextMenuContextValue>({
   open: false,
   setOpen: () => {},
 });
-
-// ─── Types ───────────────────────────────────────────────────
 
 export interface ContextMenuProps {
   children: React.ReactNode;
@@ -47,22 +44,19 @@ export interface ContextMenuSeparatorProps extends ViewProps {
   className?: string;
 }
 
-// ─── Components ──────────────────────────────────────────────
-
 function ContextMenu({ children }: ContextMenuProps) {
   const [open, setOpen] = useState(false);
-  return (
-    <ContextMenuContext.Provider value={{ open, setOpen }}>{children}</ContextMenuContext.Provider>
-  );
+  const contextValue = useMemo(() => ({ open, setOpen }), [open]);
+  return <ContextMenuContext.Provider value={contextValue}>{children}</ContextMenuContext.Provider>;
 }
 
 function ContextMenuTrigger({ className, children, asChild, ...props }: ContextMenuTriggerProps) {
   const { setOpen } = useContext(ContextMenuContext);
 
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<any>;
+    const child = children as AsChildElement;
     return React.cloneElement(child, {
-      onLongPress: (e: any) => {
+      onLongPress: (e: GestureResponderEvent) => {
         child.props.onLongPress?.(e);
         setOpen(true);
       },
@@ -73,6 +67,7 @@ function ContextMenuTrigger({ className, children, asChild, ...props }: ContextM
 
   return (
     <Pressable
+      accessibilityRole="button"
       className={cn(className)}
       onLongPress={() => setOpen(true)}
       delayLongPress={300}
@@ -124,8 +119,18 @@ function ContextMenuContent({
       navigationBarTranslucent
       onRequestClose={() => setOpen(false)}
     >
-      <Pressable className="flex-1 justify-end" onPress={() => setOpen(false)}>
+      {/* Both of these are containers. Pressable defaults to `accessible: true`, which on
+          iOS collapses every descendant into a single accessibility element — the menu
+          items inside would be unreachable. */}
+      <Pressable
+        accessible={false}
+        importantForAccessibility="no"
+        className="flex-1 justify-end"
+        onPress={() => setOpen(false)}
+      >
         <Pressable
+          accessible={false}
+          accessibilityRole="menu"
           className={cn(
             'w-full border-border p-2 pb-8 relative overflow-hidden',
             frosted ? 'bg-transparent' : 'bg-popover',
@@ -154,6 +159,7 @@ function ContextMenuItem({ className, style, ...props }: ContextMenuItemProps) {
   };
   return (
     <Pressable
+      accessibilityRole="menuitem"
       className={cn('flex flex-row items-center active:bg-accent', className)}
       style={(state) => [tokenStyle, typeof style === 'function' ? style(state) : style]}
       onPress={(e) => {
@@ -170,7 +176,13 @@ function ContextMenuLabel({ className, children, ...props }: ContextMenuLabelPro
   return (
     <View className={cn('px-2 py-1.5', className)} {...props}>
       {typeof children === 'string' ? (
-        <Text className="font-semibold text-foreground" style={typographyStyle(visual, 'label')}>
+        <Text
+          // A menu section label is a heading — without this it announces as plain text
+          // and rotor navigation cannot find it.
+          accessibilityRole="header"
+          className="font-semibold text-foreground"
+          style={typographyStyle(visual, 'label')}
+        >
           {children}
         </Text>
       ) : (

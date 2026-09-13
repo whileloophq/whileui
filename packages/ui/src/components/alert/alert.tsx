@@ -44,8 +44,6 @@ const Alert = React.forwardRef<View, AlertProps>(({ className, variant, style, .
 
 Alert.displayName = 'Alert';
 
-// ─── AlertTitle ──────────────────────────────────────────────
-
 export interface AlertTitleProps extends TextProps {}
 
 const AlertTitle = React.forwardRef<Text, AlertTitleProps>(
@@ -63,8 +61,6 @@ const AlertTitle = React.forwardRef<Text, AlertTitleProps>(
 );
 
 AlertTitle.displayName = 'AlertTitle';
-
-// ─── AlertDescription ───────────────────────────────────────
 
 export interface AlertDescriptionProps extends TextProps {}
 

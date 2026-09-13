@@ -1,7 +1,7 @@
 import './lib/react-native-classname';
 
-// ─── Utilities ───────────────────────────────────────────────
 export { cn } from './lib/cn';
+export { focusRing, focusRingInset } from './lib/focus-ring';
 export { tv, type VariantProps } from './lib/tv';
 export {
   FontProvider,
@@ -26,7 +26,6 @@ export {
   useThemeColors,
   useThemeTokens,
   useIconColors,
-  useResolvedThemeColors,
   type ThemeColors,
 } from './lib/theme-colors';
 export {
@@ -89,15 +88,12 @@ export {
 } from './lib/theme-presets';
 export { deriveThemeColors, THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './lib/theme-derive';
 
-// ─── Primitives ──────────────────────────────────────────────
 export { Text, textVariants, type TextProps } from './components/text';
 export { View, type ViewProps } from './components/view';
 export { Pressable, type PressableProps } from './components/pressable';
 export { Stack, stackVariants, type StackProps } from './components/stack';
 export { Row, rowVariants, type RowProps } from './components/row';
-export { Box, boxVariants, type BoxProps } from './components/box';
 
-// ─── Components ──────────────────────────────────────────────
 export {
   Button,
   ButtonText,
@@ -431,7 +427,6 @@ export {
   type ToastProviderProps,
 } from './components/toast';
 
-// ─── Blocks ──────────────────────────────────────────────────
 export * from './blocks/chat';
 export * from './blocks/navigation';
 export * from './blocks/layout';

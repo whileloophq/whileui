@@ -42,6 +42,11 @@ export function PlanToggle({
     return (
       <Pressable
         key={value}
+        // A two-state chooser is a toggle button; `aria-pressed` is the state ARIA
+        // allows on that role.
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
+        aria-pressed={active}
         className={cn(
           'flex-1 flex-row items-center justify-center gap-2',
           active ? 'bg-background border border-border' : 'bg-transparent'

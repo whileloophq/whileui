@@ -2,16 +2,14 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
+    // `Bundler` is what Metro and Vite consumers use. No `paths`: resolution has to go
+    // through `node_modules` and the package's `exports` map, or this fixture proves
+    // nothing about what we publish.
     "moduleResolution": "Bundler",
     "strict": true,
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "@thewhileloop/whileui": ["../../packages/ui/dist/index.d.ts"],
-      "@thewhileloop/whileui/*": ["../../packages/ui/dist/*"]
-    }
+    "noEmit": true
   },
   "include": ["smoke.tsx"]
 }

@@ -94,6 +94,3 @@ export function useIconColors() {
 
 /** Alias for useThemeColors. Returns RN-safe color strings (hex/rgb/rgba) for RefreshControl, LinearGradient, charts. */
 export const useThemeTokens = useThemeColors;
-
-/** @deprecated Use useThemeTokens or useThemeColors. */
-export const useResolvedThemeColors = useThemeColors;

@@ -3,7 +3,11 @@ import { Text } from '../../components/text';
 import { Spinner } from '../../components/spinner';
 import { cn } from '../../lib/cn';
 
-// ─── Types ───────────────────────────────────────────────────
+const SPINNER_SIZE_CLASS = {
+  sm: 'h-6 w-6',
+  md: 'h-10 w-10',
+  lg: 'h-16 w-16',
+} as const;
 
 export interface LoadingScreenProps extends ViewProps {
   message?: string;
@@ -12,8 +16,6 @@ export interface LoadingScreenProps extends ViewProps {
   spinnerColor?: string;
 }
 
-// ─── Component ───────────────────────────────────────────────
-
 export function LoadingScreen({
   message,
   size = 'md',
@@ -21,15 +23,9 @@ export function LoadingScreen({
   className,
   ...props
 }: LoadingScreenProps) {
-  const spinnerSizes = {
-    sm: 'h-6 w-6',
-    md: 'h-10 w-10',
-    lg: 'h-16 w-16',
-  };
-
   return (
     <View className={cn('flex-1 items-center justify-center bg-background', className)} {...props}>
-      <View className={spinnerSizes[size]}>
+      <View className={SPINNER_SIZE_CLASS[size]}>
         <Spinner color={spinnerColor} />
       </View>
       {message && <Text className="mt-4 text-muted-foreground">{message}</Text>}
