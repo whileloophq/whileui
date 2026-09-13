@@ -271,6 +271,7 @@ function MyScreen() {
 | **Tabs**        | TabsList, TabsTrigger, TabsContent       |
 | **Accordion**   | AccordionItem, AccordionTrigger, Content |
 | **Collapsible** | CollapsibleTrigger, CollapsibleContent   |
+| **Container**   | Centred content column with a max width  |
 
 ### Overlays & Menus
 
@@ -428,6 +429,33 @@ import { Stack, Row } from '@thewhileloop/whileui';
 | gap     | `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| '2xl'`           | Spacing between children |
 | align   | `'start' \| 'center' \| 'end' \| 'stretch' \| 'baseline'`           | Cross-axis alignment     |
 | justify | `'start' \| 'center' \| 'end' \| 'between' \| 'around' \| 'evenly'` | Main-axis alignment      |
+
+### Container
+
+Caps content width and centres it. Phone-first layouts stretch to the viewport, which
+is right at 390px and wrong at 1600px — line lengths become unreadable and related
+controls drift apart.
+
+```tsx
+<Container size="lg">{children}</Container>
+```
+
+| Prop        | Type                                   | Default | Notes                       |
+| ----------- | -------------------------------------- | ------- | --------------------------- |
+| `size`      | `sm` \| `md` \| `lg` \| `xl` \| `full` | `md`    | `sm` forms, `lg` dashboards |
+| `fill`      | `boolean`                              | `false` | `flex-1`, for a screen root |
+| `className` | `string`                               | —       | Merged after the variant    |
+
+No platform branch, and none is needed: every size is wider than any phone, so on iOS
+and Android the cap never engages and it renders as a plain full-width `View`. The same
+component is a no-op on native and the whole fix on desktop.
+
+For a scroll view, put the column on the content container so the scrollbar stays at
+the window edge:
+
+```tsx
+<ScrollView contentContainerClassName="w-full max-w-5xl self-center" />
+```
 
 ## Full-Screen Composition
 

@@ -91,6 +91,7 @@ import {
   AccordionTrigger,
   AccordionContent,
   Collapsible,
+  Container,
   CollapsibleTrigger,
   CollapsibleContent,
   Dialog,
@@ -2175,6 +2176,22 @@ function LayoutBlocksTab() {
 
   return (
     <View className="gap-6">
+      <Container size="sm" className="border border-dashed border-border rounded-xl p-4 mt-2">
+        <Text className="font-semibold text-foreground mb-1">Container — size="sm"</Text>
+        <Text className="text-sm text-muted-foreground">
+          Caps content width and centres it. Resize the window: on a phone this is a plain
+          full-width View, because every size is wider than any phone. On a wide screen it stops the
+          line length running away.
+        </Text>
+      </Container>
+
+      <Container size="lg" className="border border-dashed border-border rounded-xl p-4 mt-2">
+        <Text className="font-semibold text-foreground mb-1">Container — size="lg"</Text>
+        <Text className="text-sm text-muted-foreground">
+          Wider column for dashboards and multi-column content.
+        </Text>
+      </Container>
+
       <SectionGroup label="Bars & Overlays" />
       <Section title="Action Bar" subtitle="Sticky bottom action row with safe-area support">
         <ActionBar

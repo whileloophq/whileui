@@ -207,6 +207,7 @@ export {
   type CollapsibleTriggerProps,
   type CollapsibleContentProps,
 } from './components/collapsible';
+export { Container, containerVariants, type ContainerProps } from './components/container';
 
 export {
   Dialog,

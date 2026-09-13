@@ -12,7 +12,7 @@ an export.
 
 | Measure                             | Count |
 | ----------------------------------- | ----- |
-| Component and block families        | 80    |
+| Component and block families        | 81    |
 | Shipped in a production application | 30    |
 | Showcase demo only, never shipped   | 50    |
 | Neither shipped nor demonstrated    | 0     |
@@ -73,7 +73,7 @@ Rendered in the showcase, never used in a shipping screen. A demo proves a compo
 renders; only a consumer proves it is useful. These stay `experimental` until a
 product pulls them, and they should not receive hardening work ahead of Tier 1.
 
-`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `Collapsible`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Menubar`, `Popover`, `RadioGroup`, `Select`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
+`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Menubar`, `Popover`, `RadioGroup`, `Select`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
 
 ## Tier 3 — neither shipped nor demonstrated (0)
 
@@ -373,4 +373,4 @@ Phase 0 blockers.
   production application's source. The applications themselves are listed in
   `CONSUMERS.md`, which is local.
 - **Demo** = at least one export referenced in `apps/showcase`.
-- **Tests** = files matching `*.test.*` in `packages/ui`. There are none.
+- **Tests** = files matching `*.test.*` in `packages/ui`. Six families have one.
