@@ -104,6 +104,6 @@
     "jest-expo": "~57.0.5",
     "react-native-screens": "~4.26.0",
     "test-renderer": "^1.2.0",
-    "typescript": "^5.7.0"
+    "typescript": "~6.0.3"
   }
 }
