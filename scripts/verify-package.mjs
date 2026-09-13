@@ -10,14 +10,7 @@
  * four questions of the result.
  */
 import { execFileSync } from 'node:child_process';
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-  existsSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname, relative } from 'node:path';
@@ -26,8 +19,16 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PKG = join(ROOT, 'packages/ui');
 
+// `maxBuffer` is explicit because the default truncates stdout at 64 kB, and attw's
+// JSON report crosses that as soon as the export map grows. A truncated report parsed
+// as JSON throws a SyntaxError that reads like a tooling bug rather than a size limit.
 const run = (cmd, args, opts = {}) =>
-  execFileSync(cmd, args, { encoding: 'utf8', stdio: 'pipe', ...opts });
+  execFileSync(cmd, args, {
+    encoding: 'utf8',
+    stdio: 'pipe',
+    maxBuffer: 64 * 1024 * 1024,
+    ...opts,
+  });
 
 let failures = 0;
 const pass = (msg) => console.log(`  ok    ${msg}`);
@@ -52,9 +53,13 @@ async function walk(dir) {
 
 step('Packing');
 run('npm', ['run', 'build'], { cwd: ROOT });
-const packed = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', tmpdir()], { cwd: PKG }));
+const packed = JSON.parse(
+  run('npm', ['pack', '--json', '--pack-destination', tmpdir()], { cwd: PKG })
+);
 const tarball = join(tmpdir(), packed[0].filename);
-console.log(`  ${packed[0].filename} — ${packed[0].files.length} files, ${(packed[0].size / 1024) | 0} kB`);
+console.log(
+  `  ${packed[0].filename} — ${packed[0].files.length} files, ${(packed[0].size / 1024) | 0} kB`
+);
 
 const work = mkdtempSync(join(tmpdir(), 'whileui-pkg-'));
 run('tar', ['-xzf', tarball, '-C', work]);
@@ -184,8 +189,17 @@ try {
     // `bunx` prints its own install chatter before the tool's output the first time it
     // resolves a package, so the stream is not pure JSON.
     const start = raw?.indexOf('{') ?? -1;
-    const problems =
-      start < 0 ? null : Object.values(JSON.parse(raw.slice(start)).problems ?? {}).flat();
+    let problems = null;
+    if (start >= 0) {
+      try {
+        problems = Object.values(JSON.parse(raw.slice(start)).problems ?? {}).flat();
+      } catch (error) {
+        // Say which failure this is. A truncated or non-JSON report is a problem with
+        // this script, not with the package being checked.
+        fail('attw report could not be parsed', `${error.message}\n${raw.slice(-400)}`);
+        problems = [];
+      }
+    }
 
     if (problems === null) {
       fail('attw produced no report', raw);
