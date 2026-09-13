@@ -62,3 +62,40 @@ for (const width of WIDTHS) {
     }
   });
 }
+
+/**
+ * The other end of the same promise.
+ *
+ * The checks above only ever ran at 320 and 390 px, so they proved content does not
+ * overflow a phone and said nothing about what happens on a monitor. A phone-first
+ * layout stretched edge to edge at 1512 px passed this suite for as long as it existed
+ * — the defect was invisible to the gate, not absent from the product.
+ *
+ * `Container` is what caps it, so this asserts the cap actually engages.
+ */
+test.describe('desktop width', () => {
+  test.use({ viewport: { width: 1512, height: 900 } });
+
+  test('Container caps its content instead of stretching', async ({ page }) => {
+    await openShowcase(page);
+    await openCategory(page, 'Layout');
+
+    for (const [label, ceiling] of [
+      ['Container — size="sm"', 640],
+      ['Container — size="lg"', 1100],
+    ] as const) {
+      const demo = page.getByText(label, { exact: false }).first();
+      await expect(demo).toBeVisible();
+
+      // Measure the container itself, not the text node inside it.
+      const width = await demo.evaluate((el) => {
+        const box = (el.closest('[class]')?.parentElement ?? el).getBoundingClientRect();
+        return Math.round(box.width);
+      });
+
+      expect(width, `${label} measured ${width}px at a 1512px viewport`).toBeLessThanOrEqual(
+        ceiling
+      );
+    }
+  });
+});
