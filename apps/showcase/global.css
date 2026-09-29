@@ -114,6 +114,9 @@
   --ui-motion-fast: 140;
   --ui-motion-normal: 200;
   --ui-motion-slow: 280;
+  --ui-motion-spring-damping: 20;
+  --ui-motion-spring-stiffness: 260;
+  --ui-motion-spring-mass: 0.8;
   --ui-drawer-open-duration: 260;
   --ui-drawer-close-duration: 180;
 

@@ -4,6 +4,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  type ScrollViewProps,
   type PressableProps,
   type StyleProp,
   useWindowDimensions,
@@ -46,7 +47,7 @@ export interface SheetHeaderProps extends ViewProps {
   description?: string;
 }
 
-export interface SheetContentProps extends ViewProps {
+export interface SheetContentProps extends ScrollViewProps {
   scrollEnabled?: boolean;
 }
 
@@ -239,6 +240,9 @@ export function SheetContent({
   className,
   children,
   style,
+  contentContainerStyle,
+  keyboardShouldPersistTaps = 'handled',
+  nestedScrollEnabled = true,
   ...props
 }: SheetContentProps) {
   const visual = useVisualTokens();
@@ -250,7 +254,9 @@ export function SheetContent({
         className={cn('flex-1', className)}
         style={style}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: contentPadding }}
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+        nestedScrollEnabled={nestedScrollEnabled}
+        contentContainerStyle={[{ padding: contentPadding }, contentContainerStyle]}
         {...props}
       >
         {children}
@@ -260,7 +266,7 @@ export function SheetContent({
   return (
     <View
       className={cn('flex-1', className)}
-      style={[{ padding: contentPadding }, style]}
+      style={[{ padding: contentPadding }, contentContainerStyle, style]}
       {...props}
     >
       {children}

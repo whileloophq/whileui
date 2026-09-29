@@ -1,0 +1,37 @@
+appId: dev.whileloop.showcase
+name: Drawer and sheet keep one explicit scroll owner
+---
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: 'Typography'
+    timeout: 60000
+- tapOn:
+    text: '.*Open menu.*'
+- scrollUntilVisible:
+    element:
+      text: 'Layout'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    text: 'Layout'
+- swipe:
+    direction: UP
+    duration: 1500
+- swipe:
+    direction: UP
+    duration: 1500
+- swipe:
+    direction: UP
+    duration: 800
+- tapOn:
+    id: '.*open-sheet-test.*'
+- assertVisible: 'Settings'
+- swipe:
+    direction: UP
+    duration: 1000
+- assertVisible: 'End of sheet content'
+- assertVisible: 'Cancel'
+- tapOn:
+    id: '.*close-sheet-test.*'
+- assertNotVisible: 'End of sheet content'

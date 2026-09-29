@@ -8,6 +8,7 @@ import {
   Platform,
   StyleSheet,
   ImageBackground,
+  Alert as SystemAlert,
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable, useUniwind } from 'uniwind';
@@ -39,9 +40,12 @@ import {
   FontProvider,
   PortalHost,
   ThemeBridge,
+  MotionProvider,
+  useMotionPolicy,
   useThemeBridge,
   type ThemeBridgeAdapter,
   type ThemeMode,
+  type MotionMode,
   Text,
   Button,
   ButtonText,
@@ -414,12 +418,53 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <FontProvider value={SHOWCASE_FONT_MAP}>
-        <ToastProvider>
-          <AppContent />
-          <PortalHost />
-        </ToastProvider>
+        <MotionProvider>
+          <ToastProvider>
+            <AppContent />
+            <PortalHost />
+          </ToastProvider>
+        </MotionProvider>
       </FontProvider>
     </SafeAreaProvider>
+  );
+}
+
+function MotionPolicyDetails() {
+  const motion = useMotionPolicy();
+  return (
+    <View className="gap-1 rounded-xl border border-border bg-muted p-3">
+      <Text className="text-sm text-foreground">Resolved mode: {motion.mode}</Text>
+      <Text className="text-sm text-muted-foreground">
+        Reduced: {motion.reduceMotion ? 'yes' : 'no'} · animations:{' '}
+        {motion.animationsEnabled ? 'enabled' : 'disabled'}
+      </Text>
+      <Text className="text-sm text-muted-foreground">
+        Durations: {motion.durations.fast}/{motion.durations.normal}/{motion.durations.slow} ms
+      </Text>
+    </View>
+  );
+}
+
+function MotionPolicyDemo() {
+  const [mode, setMode] = useState<MotionMode>('system');
+  return (
+    <MotionProvider mode={mode}>
+      <SegmentedControl value={mode} onValueChange={(next) => setMode(next as MotionMode)} wrap>
+        <SegmentedControlItem value="system">
+          <SegmentedControlItemText>System</SegmentedControlItemText>
+        </SegmentedControlItem>
+        <SegmentedControlItem value="reduced">
+          <SegmentedControlItemText>Reduced</SegmentedControlItemText>
+        </SegmentedControlItem>
+        <SegmentedControlItem value="full">
+          <SegmentedControlItemText>Full</SegmentedControlItemText>
+        </SegmentedControlItem>
+        <SegmentedControlItem value="disabled">
+          <SegmentedControlItemText>Disabled</SegmentedControlItemText>
+        </SegmentedControlItem>
+      </SegmentedControl>
+      <MotionPolicyDetails />
+    </MotionProvider>
   );
 }
 
@@ -595,6 +640,7 @@ function AppContent() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Open menu"
+                    testID="open-menu-test"
                     onPress={() => {
                       triggerHaptic('light');
                       setDrawerOpen(true);
@@ -891,6 +937,7 @@ function PrimitivesTab({
   onThemeModeChange: (mode: ThemeMode) => void;
 }) {
   const [progress, setProgress] = useState(45);
+  const [buttonPressCount, setButtonPressCount] = useState(0);
   const colors = useIconColors();
 
   React.useEffect(() => {
@@ -985,7 +1032,21 @@ function PrimitivesTab({
           <Button disabled>
             <ButtonText>Disabled</ButtonText>
           </Button>
+          <Button loading className="ml-2">
+            <ButtonText>Saving changes</ButtonText>
+          </Button>
         </View>
+        <Button
+          variant="outline"
+          testID="press-feedback-test"
+          onPress={() => {
+            setButtonPressCount((count) => count + 1);
+            if (Platform.OS !== 'web') SystemAlert.alert('Button pressed');
+          }}
+          accessibilityLabel={`Press test: ${buttonPressCount}`}
+        >
+          <ButtonText>Press test: {buttonPressCount}</ButtonText>
+        </Button>
       </Section>
 
       <Section title="Theme Bridge" subtitle="Official light/dark/system sync helper">
@@ -1007,6 +1068,13 @@ function PrimitivesTab({
             <SegmentedControlItemText>System</SegmentedControlItemText>
           </SegmentedControlItem>
         </SegmentedControl>
+      </Section>
+
+      <Section
+        title="Motion Policy"
+        subtitle="System, reduced, full, and deterministic disabled modes"
+      >
+        <MotionPolicyDemo />
       </Section>
 
       <Section
@@ -2288,7 +2356,12 @@ function LayoutBlocksTab() {
 
       <Section title="Sheet" subtitle="Bottom sheet modal with header, scrollable content, footer">
         <View className="rounded-xl border border-border p-4 bg-card">
-          <Button variant="outline" onPress={() => setSheetOpen(true)} className="w-full">
+          <Button
+            variant="outline"
+            onPress={() => setSheetOpen(true)}
+            className="w-full"
+            testID="open-sheet-test"
+          >
             <ButtonText>Open Sheet</ButtonText>
           </Button>
         </View>
@@ -2302,10 +2375,20 @@ function LayoutBlocksTab() {
               <View className="h-20 rounded-lg bg-muted items-center justify-center">
                 <Text className="text-xs text-muted-foreground">Custom content</Text>
               </View>
+              <View className="gap-3">
+                <Text className="text-foreground">Account preferences</Text>
+                <Text className="text-foreground">Notification preferences</Text>
+                <Text className="text-foreground">Privacy preferences</Text>
+                <Text className="text-foreground">Language preferences</Text>
+                <Text className="text-foreground">Appearance preferences</Text>
+                <Text className="text-foreground">Data preferences</Text>
+                <Text className="text-foreground">Security preferences</Text>
+                <Text className="text-foreground">End of sheet content</Text>
+              </View>
             </View>
           </SheetContent>
           <SheetFooter>
-            <Button variant="outline" onPress={() => setSheetOpen(false)}>
+            <Button variant="outline" onPress={() => setSheetOpen(false)} testID="close-sheet-test">
               <ButtonText>Cancel</ButtonText>
             </Button>
             <SheetClose asChild>

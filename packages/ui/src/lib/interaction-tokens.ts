@@ -16,6 +16,16 @@ function clampOpacity(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
+/** Motion values used when a `--ui-motion-*` token is absent, and by the provider-less motion policy. */
+export const MOTION_TOKEN_DEFAULTS = {
+  motionFast: 140,
+  motionNormal: 200,
+  motionSlow: 280,
+  motionSpringDamping: 20,
+  motionSpringStiffness: 260,
+  motionSpringMass: 0.8,
+} as const;
+
 export interface InteractionTokens {
   pressOpacity: number;
   pressOpacityStrong: number;
@@ -26,6 +36,9 @@ export interface InteractionTokens {
   motionFast: number;
   motionNormal: number;
   motionSlow: number;
+  motionSpringDamping: number;
+  motionSpringStiffness: number;
+  motionSpringMass: number;
   drawerOpenDuration: number;
   drawerCloseDuration: number;
 }
@@ -50,6 +63,9 @@ export function useInteractionTokens(): InteractionTokens {
     motionFast,
     motionNormal,
     motionSlow,
+    motionSpringDamping,
+    motionSpringStiffness,
+    motionSpringMass,
     drawerOpenDuration,
     drawerCloseDuration,
   ] = useCSSVariable([
@@ -62,6 +78,9 @@ export function useInteractionTokens(): InteractionTokens {
     '--ui-motion-fast',
     '--ui-motion-normal',
     '--ui-motion-slow',
+    '--ui-motion-spring-damping',
+    '--ui-motion-spring-stiffness',
+    '--ui-motion-spring-mass',
     '--ui-drawer-open-duration',
     '--ui-drawer-close-duration',
   ]);
@@ -73,9 +92,24 @@ export function useInteractionTokens(): InteractionTokens {
     disabledOpacitySoft: clampOpacity(parseNumber(disabledOpacitySoft, 0.56)),
     disabledOpacitySubtle: clampOpacity(parseNumber(disabledOpacitySubtle, 0.36)),
     inactiveOpacity: clampOpacity(parseNumber(inactiveOpacity, 0.54)),
-    motionFast: Math.max(0, Math.round(parseNumber(motionFast, 140))),
-    motionNormal: Math.max(0, Math.round(parseNumber(motionNormal, 200))),
-    motionSlow: Math.max(0, Math.round(parseNumber(motionSlow, 280))),
+    motionFast: Math.max(0, Math.round(parseNumber(motionFast, MOTION_TOKEN_DEFAULTS.motionFast))),
+    motionNormal: Math.max(
+      0,
+      Math.round(parseNumber(motionNormal, MOTION_TOKEN_DEFAULTS.motionNormal))
+    ),
+    motionSlow: Math.max(0, Math.round(parseNumber(motionSlow, MOTION_TOKEN_DEFAULTS.motionSlow))),
+    motionSpringDamping: Math.max(
+      0,
+      parseNumber(motionSpringDamping, MOTION_TOKEN_DEFAULTS.motionSpringDamping)
+    ),
+    motionSpringStiffness: Math.max(
+      0,
+      parseNumber(motionSpringStiffness, MOTION_TOKEN_DEFAULTS.motionSpringStiffness)
+    ),
+    motionSpringMass: Math.max(
+      0.01,
+      parseNumber(motionSpringMass, MOTION_TOKEN_DEFAULTS.motionSpringMass)
+    ),
     drawerOpenDuration: Math.max(0, Math.round(parseNumber(drawerOpenDuration, 260))),
     drawerCloseDuration: Math.max(0, Math.round(parseNumber(drawerCloseDuration, 180))),
   };

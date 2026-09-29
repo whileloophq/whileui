@@ -51,6 +51,17 @@ Add these two when the diff qualifies:
    export map, dependencies, `src/index.ts`, `src/tokens.ts`, `src/vite.ts`,
    `fixtures/`, `global.css` or `metro.config.js`.
 
+Add these focused cards when the diff qualifies:
+
+9. Component contract — `09-component-contract.md`, when the diff changes a component,
+   block, public prop, state model, context, ref, callback or export.
+10. Interaction and performance — `10-interaction-performance.md`, when the diff
+    changes press, motion, gesture, scrolling, lists, images, timers or animation
+    policy.
+11. Web production — `11-web-production.md`, when the diff changes public UI behaviour,
+    layout, focus, overlays, platform files, responsive styles, browser packaging or
+    browser tests.
+
 Each prompt includes: branch name, merge-base SHA, changed-file list (the agent reads
 the diff itself — do not paste it), the issue if found, and these instructions:
 

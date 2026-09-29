@@ -50,6 +50,24 @@ describe('Button', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
+  it('is busy, disabled, and preserves its label while loading', async () => {
+    const onPress = jest.fn();
+    const user = userEvent.setup();
+    await render(
+      <Button loading onPress={onPress} accessibilityLabel="Save">
+        <ButtonText>Save</ButtonText>
+      </Button>
+    );
+
+    const button = screen.getByRole('button', { name: 'Save' });
+    expect(button).toBeDisabled();
+    expect(button.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    expect(screen.getByText('Save')).toBeOnTheScreen();
+
+    await user.press(button);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
   it('reports its disabled state to assistive technology', async () => {
     await render(
       <Button disabled accessibilityLabel="Save">

@@ -3,7 +3,6 @@ import { Pressable } from '../../components/pressable';
 import { Badge, BadgeText } from '../../components/badge';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, typographyStyle } from '../../lib/recipes';
 
@@ -28,17 +27,12 @@ export function PlanToggle({
   style,
   ...props
 }: PlanToggleProps) {
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const segmentStyle = controlRecipe(visual, 'sm');
   const labelStyle = typographyStyle(visual, 'label');
 
   const renderItem = (value: PlanToggleValue, label: string) => {
     const active = selected === value;
-    const interactiveStyle = withInteractivePressableStyle(undefined, interaction, {
-      disabled: !onChange,
-      pressedVariant: 'default',
-    });
     return (
       <Pressable
         key={value}
@@ -51,15 +45,8 @@ export function PlanToggle({
           'flex-1 flex-row items-center justify-center gap-2',
           active ? 'bg-background border border-border' : 'bg-transparent'
         )}
-        style={(state) => {
-          const baseStyle =
-            typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle;
-          return [
-            baseStyle,
-            segmentStyle,
-            active ? { borderWidth: visual.borderWidthHairline } : null,
-          ];
-        }}
+        feedback="default"
+        style={[segmentStyle, active ? { borderWidth: visual.borderWidthHairline } : null]}
         disabled={!onChange}
         onPress={() => onChange?.(value)}
       >

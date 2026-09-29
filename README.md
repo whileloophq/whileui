@@ -106,15 +106,15 @@ module.exports = withUniwindConfig({
 
 ```tsx
 import './global.css';
-import { PortalHost } from '@thewhileloop/whileui';
+import { MotionProvider, PortalHost } from '@thewhileloop/whileui';
 import { Button, ButtonText } from '@thewhileloop/whileui';
 
 export default function App() {
   return (
-    <>
+    <MotionProvider>
       {/* Your app content */}
       <PortalHost />
-    </>
+    </MotionProvider>
   );
 }
 ```
@@ -214,6 +214,8 @@ function MyScreen() {
 - **Layout:** `Stack` (vertical), `Row` (horizontal) — both support `gap`, `align`, `justify`
 - **Auth callbacks:** Auth templates use objects: `onSubmit({ email, password })`, `onSubmit({ firstName, lastName, email, password })`, etc. Copy templates from `apps/showcase/templates/auth/`.
 - **PortalHost:** Add `<PortalHost />` at app root for Select, Popover, Tooltip, HoverCard.
+- **Motion:** Wrap the root in `<MotionProvider>`; use `useMotionPolicy()` for semantic
+  durations, the responsive spring, and reduced-motion behavior.
 - **Uniwind:** `withUniwindConfig` must wrap metro config. `global.css` at app root, imported in `App.tsx`.
 - **Reference:** Block props in `packages/ui/src/blocks` (core) and `apps/showcase/templates/` (auth, profile); flow patterns in README "Flow Patterns" section.
 
@@ -228,6 +230,12 @@ function MyScreen() {
 | **Pressable** | Themed pressable wrapper         |
 | **Stack**     | Vertical flex layout with gap    |
 | **Row**       | Horizontal flex layout with gap  |
+
+### Root Providers
+
+| Provider           | Notes                                                                    |
+| ------------------ | ------------------------------------------------------------------------ |
+| **MotionProvider** | System reduced motion, explicit preview modes, and deterministic testing |
 
 ### Form Controls
 
@@ -584,7 +592,7 @@ The WhileUI token contract is strict for cross-app reuse. Define these in **ever
 - Required core tokens: `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `destructive-foreground`, `border`, `input`, `ring`
 - Optional status tokens: `success`, `success-foreground`, `warning`, `warning-foreground`, `info`, `info-foreground`
 - Optional effect tokens: `overlay`, `overlay-strong`, `surface-elevated`, `surface-border`, `surface-highlight`, `surface-translucent`, `surface-translucent-border`, `state-hover`, `state-pressed`, `state-disabled`
-- Optional interaction/motion tokens: `--ui-press-opacity`, `--ui-press-opacity-strong`, `--ui-disabled-opacity`, `--ui-disabled-opacity-soft`, `--ui-disabled-opacity-subtle`, `--ui-inactive-opacity`, `--ui-motion-fast`, `--ui-motion-normal`, `--ui-motion-slow`, `--ui-drawer-open-duration`, `--ui-drawer-close-duration`, `--ui-blur-intensity-subtle`, `--ui-blur-intensity-medium`, `--ui-blur-intensity-strong`, `--ui-blur-saturation-pct`, `--ui-frosted-highlight-height`, `--ui-frosted-backdrop-blur-intensity`, `--ui-frosted-backdrop-blur-scale`, `--ui-frosted-android-tint-alpha-scale`, `--ui-frosted-android-experimental-blur`, `--ui-drawer-frosted-inset`, `--ui-drawer-frosted-radius`, `--ui-drawer-content-top-padding`
+- Optional interaction/motion tokens: `--ui-press-opacity`, `--ui-press-opacity-strong`, `--ui-disabled-opacity`, `--ui-disabled-opacity-soft`, `--ui-disabled-opacity-subtle`, `--ui-inactive-opacity`, `--ui-motion-fast`, `--ui-motion-normal`, `--ui-motion-slow`, `--ui-motion-spring-damping`, `--ui-motion-spring-stiffness`, `--ui-motion-spring-mass`, `--ui-drawer-open-duration`, `--ui-drawer-close-duration`, `--ui-blur-intensity-subtle`, `--ui-blur-intensity-medium`, `--ui-blur-intensity-strong`, `--ui-blur-saturation-pct`, `--ui-frosted-highlight-height`, `--ui-frosted-backdrop-blur-intensity`, `--ui-frosted-backdrop-blur-scale`, `--ui-frosted-android-tint-alpha-scale`, `--ui-frosted-android-experimental-blur`, `--ui-drawer-frosted-inset`, `--ui-drawer-frosted-radius`, `--ui-drawer-content-top-padding`
 - Optional scale tokens: spacing (`--spacing`, `--spacing-*`), typography (`--text-*`, `--leading-*`, `--tracking-*`), radius (`--radius-*`), elevation (`--shadow-*`)
 
 Minimal contract example:
@@ -717,6 +725,9 @@ WhileUI components also read optional `--ui-*` tokens for deeper control of pres
   --ui-motion-fast: 160;
   --ui-motion-normal: 220;
   --ui-motion-slow: 300;
+  --ui-motion-spring-damping: 20;
+  --ui-motion-spring-stiffness: 260;
+  --ui-motion-spring-mass: 0.8;
   --ui-drawer-open-duration: 300;
   --ui-drawer-close-duration: 220;
   --ui-blur-intensity-subtle: 18;
@@ -738,6 +749,23 @@ For custom components, use:
 
 ```tsx
 import { useInteractionTokens, withInteractivePressableStyle } from '@thewhileloop/whileui';
+```
+
+Wrap the application in `MotionProvider` to coordinate system reduced motion, explicit
+preview overrides, and deterministic animation-free tests. The provider is optional:
+without it `useMotionPolicy` returns the token defaults with Reanimated following the
+system setting, and `--ui-motion-*` overrides are not read. `reduced` preserves
+non-spatial feedback while asking Reanimated to skip motion; `disabled` also resolves
+semantic durations to zero.
+
+```tsx
+import { MotionProvider, useMotionPolicy } from '@thewhileloop/whileui';
+
+<MotionProvider mode="system">{/* application */}</MotionProvider>;
+
+const motion = useMotionPolicy();
+motion.durations.normal;
+motion.springs.responsive;
 ```
 
 Optional RN fallback tokens (hex/rgb/hsl/named):
@@ -875,12 +903,39 @@ blinking cursor.
 
 # API Reference
 
+## Pressable
+
+```tsx
+import { Pressable, Text } from '@thewhileloop/whileui';
+
+<Pressable
+  accessibilityRole="button"
+  feedback="strong"
+  disabledFeedback="default"
+  loading={false}
+  onPress={() => {}}
+>
+  <Text>Open</Text>
+</Pressable>;
+```
+
+`Pressable` preserves React Native's event, ref, accessibility, and function-style
+`style` contracts. Feedback changes opacity without changing layout. Native press state
+comes directly from React Native; web adds a motion-policy-aware opacity transition.
+
+| Prop             | Type                                        | Default     | Description                                |
+| ---------------- | ------------------------------------------- | ----------- | ------------------------------------------ |
+| feedback         | `'none' \| 'default' \| 'strong'`           | `'none'`    | Semantic pressed opacity                   |
+| disabledFeedback | `'none' \| 'default' \| 'soft' \| 'subtle'` | `'default'` | Semantic unavailable opacity               |
+| loading          | `boolean`                                   | `false`     | Expose busy/disabled state and block input |
+| className        | `string`                                    | —           | Additional Tailwind classes                |
+
 ## Button
 
 ```tsx
 import { Button, ButtonText, ButtonIcon } from '@thewhileloop/whileui';
 
-<Button variant="default" size="default" disabled={false} onPress={() => {}}>
+<Button variant="default" size="default" disabled={false} loading={false} onPress={() => {}}>
   <ButtonIcon>
     <Icon />
   </ButtonIcon>
@@ -892,12 +947,13 @@ import { Button, ButtonText, ButtonIcon } from '@thewhileloop/whileui';
 </Button>;
 ```
 
-| Prop      | Type                                                                          | Default     | Description                 |
-| --------- | ----------------------------------------------------------------------------- | ----------- | --------------------------- |
-| variant   | `'default' \| 'destructive' \| 'outline' \| 'secondary' \| 'ghost' \| 'link'` | `'default'` | Button style variant        |
-| size      | `'default' \| 'sm' \| 'lg' \| 'icon'`                                         | `'default'` | Button size                 |
-| disabled  | `boolean`                                                                     | `false`     | Disable the button          |
-| className | `string`                                                                      | —           | Additional Tailwind classes |
+| Prop      | Type                                                                          | Default     | Description                                        |
+| --------- | ----------------------------------------------------------------------------- | ----------- | -------------------------------------------------- |
+| variant   | `'default' \| 'destructive' \| 'outline' \| 'secondary' \| 'ghost' \| 'link'` | `'default'` | Button style variant                               |
+| size      | `'default' \| 'sm' \| 'lg' \| 'icon'`                                         | `'default'` | Button size                                        |
+| disabled  | `boolean`                                                                     | `false`     | Disable the button                                 |
+| loading   | `boolean`                                                                     | `false`     | Show a spinner, expose busy state, and block input |
+| className | `string`                                                                      | —           | Additional Tailwind classes                        |
 
 ## Input
 
@@ -2163,7 +2219,7 @@ Tracked work items for future releases.
 
 ### Documentation Gaps
 
-- [ ] Add `## API` sections for: Textarea, Toggle, ToggleGroup, Label, Separator, Skeleton, AspectRatio, Collapsible, Text, View, Pressable
+- [ ] Add `## API` sections for: Textarea, Toggle, ToggleGroup, Label, Separator, Skeleton, AspectRatio, Collapsible, Text, View
 - [ ] Add `## API` sections for blocks: FloatingBottomNav, TabBar, FormModalScreen, ErrorState, LoadingScreen, ListItem, NotificationItem, MetricCard, SmartImage, TimelineFeed
 
 ### Infrastructure

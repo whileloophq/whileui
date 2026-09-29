@@ -45,6 +45,16 @@ export {
   type PressedVariant,
   type DisabledVariant,
 } from './lib/interaction-tokens';
+export {
+  MotionProvider,
+  useMotionPolicy,
+  type MotionMode,
+  type MotionDuration,
+  type MotionSpring,
+  type MotionSpringConfig,
+  type MotionPolicy,
+  type MotionProviderProps,
+} from './lib/motion-policy';
 export { useVisualTokens, type VisualTokens } from './lib/visual-tokens';
 export {
   VISUAL_TOKEN_SPECS,

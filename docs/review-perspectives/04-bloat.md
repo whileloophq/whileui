@@ -34,7 +34,7 @@ card asks what could be deleted with no loss.
 
 ## Red Flags
 
-- Prose paragraphs above the `// ─── Section ───` dividers, which are the house style.
+- Section-banner comments or prose paragraphs that only repeat the file structure.
 - Comments explaining a value the token name already explains.
 - An alias of an existing hook (`useResolvedThemeColors` for `useThemeColors`).
 - A platform-file copy of a shared helper (`cn`, `tv`) instead of importing it.
@@ -50,7 +50,8 @@ card asks what could be deleted with no loss.
 
 ## Codebase-Specific Patterns
 
-- House style: `components/button/button.tsx`. Match its comment density.
+- House style: let names and file structure explain sections; comments state only a
+  constraint or non-obvious reason.
 - A trim pass should read as mostly deletions — the 2026-09-08 one was +158 / −412.
 - The plain-DOM and Capacitor tracks were deleted in September 2026. Anything that
   reintroduces a parallel implementation is the failure this card exists to catch.

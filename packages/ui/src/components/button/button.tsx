@@ -1,17 +1,12 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import {
-  Pressable,
-  Text,
-  View,
-  type PressableProps,
-  type TextProps,
-  type ViewProps,
-} from 'react-native';
+import { Text, View, type TextProps, type ViewProps } from 'react-native';
+import { Pressable, type PressableProps } from '../pressable';
+import { Spinner } from '../spinner';
 import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useResolveFontFamily } from '../../lib/font-context';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, typographyStyle, type TypographyRole } from '../../lib/recipes';
 
@@ -97,10 +92,14 @@ const buttonTextVariants = tv({
 });
 
 export interface ButtonProps
-  extends Omit<PressableProps, 'children'>, VariantProps<typeof buttonVariants> {
+  extends
+    Omit<PressableProps, 'children' | 'feedback' | 'loading'>,
+    VariantProps<typeof buttonVariants> {
   children?: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  /** Shows a centered spinner, exposes busy state, and prevents interaction. */
+  loading?: boolean;
 }
 
 export interface ButtonTextProps extends TextProps {
@@ -122,20 +121,27 @@ const Button = React.forwardRef<React.ComponentRef<typeof Pressable>, ButtonProp
       variant = 'default',
       size = 'default',
       disabled,
+      loading = false,
       children,
       style: styleProp,
       ...props
     },
     ref
   ) => {
-    const interaction = useInteractionTokens();
     const visual = useVisualTokens();
-    const interactiveStyle = withInteractivePressableStyle(styleProp, interaction, {
-      disabled: Boolean(disabled),
-      pressedVariant: variant === 'link' ? 'none' : 'strong',
-    });
+    const colors = useThemeColors();
     const tokenStyle = getButtonStyleTokens(visual, size, variant);
     const contextValue = useMemo(() => ({ variant, size }), [size, variant]);
+    const spinnerColor =
+      variant === 'default'
+        ? colors.primaryForeground
+        : variant === 'destructive'
+          ? colors.destructiveForeground
+          : variant === 'secondary'
+            ? colors.secondaryForeground
+            : variant === 'link'
+              ? colors.primary
+              : colors.foreground;
 
     return (
       <ButtonContext.Provider value={contextValue}>
@@ -143,15 +149,32 @@ const Button = React.forwardRef<React.ComponentRef<typeof Pressable>, ButtonProp
           ref={ref}
           accessibilityRole={variant === 'link' ? 'link' : 'button'}
           className={cn(buttonVariants({ variant, size }), focusRing, className)}
-          style={(state) => {
-            const baseStyle =
-              typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle;
-            return [baseStyle, tokenStyle ?? null];
-          }}
+          style={(state) => [
+            typeof styleProp === 'function' ? styleProp(state) : styleProp,
+            tokenStyle ?? null,
+          ]}
           disabled={disabled}
+          loading={loading}
+          feedback={variant === 'link' ? 'none' : 'strong'}
           {...props}
         >
-          {children}
+          {loading ? (
+            <>
+              <View className="flex-row items-center justify-center gap-2 opacity-0">
+                {children}
+              </View>
+              <View
+                pointerEvents="none"
+                accessible={false}
+                importantForAccessibility="no-hide-descendants"
+                className="absolute inset-0 items-center justify-center"
+              >
+                <Spinner color={spinnerColor} accessible={false} />
+              </View>
+            </>
+          ) : (
+            children
+          )}
         </Pressable>
       </ButtonContext.Provider>
     );

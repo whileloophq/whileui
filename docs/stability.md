@@ -4,7 +4,7 @@ Phase 0 artifact (`PLAN.md` > Phases > Phase 0). Records the maturity of every
 component and block family against the evidence that exists today, so no export can
 claim a level it has not earned.
 
-**Generated 2026-09-12.** Regenerate by re-running the survey described under
+**Generated 2026-09-26.** Regenerate by re-running the survey described under
 _Method_ below; update it in the same change as anything that adds, removes or promotes
 an export.
 
@@ -12,17 +12,19 @@ an export.
 
 | Measure                             | Count |
 | ----------------------------------- | ----- |
-| Component and block families        | 81    |
+| Component and block families        | 82    |
 | Shipped in a production application | 30    |
-| Showcase demo only, never shipped   | 50    |
+| Showcase demo only, never shipped   | 52    |
 | Neither shipped nor demonstrated    | 0     |
-| Covered by a contract test          | 6     |
+| Covered by a contract test          | 11    |
 | Qualifying as `stable`              | **0** |
-| Qualifying as `candidate`           | 6     |
+| Qualifying as `candidate`           | 9     |
 
-**Six families are `candidate` as of 2026-09-12** — `Button`, `Input`, `OTPInput`,
-`AlertDialog`, `SmartInput` and `KeyboardAwareScreen` each have a contract suite and a
-production call site. The other 74 are `experimental`. `candidate` requires passing contract tests;
+**Nine families are `candidate` as of 2026-09-29** — `Button`, `Input`, `OTPInput`,
+`AlertDialog`, `SmartInput`, `KeyboardAwareScreen`, `Pressable`, `PullToRefreshScrollView`
+and `DrawerMenu` each have a contract suite and a production call site. `Sheet` and
+`MotionProvider` have suites but no production call site, so they stay `experimental`
+with the other 71. `candidate` requires passing contract tests;
 `stable` requires the full definition of done, which no family meets until the
 accessibility matrix and E2E layers exist. The 30 shipped families are the ones on the shortest
 path — they already have the production call site that `stable` demands, and need the
@@ -67,13 +69,13 @@ Phase 1 exit list is drawn from this tier.
 | `SmartInput`              | layout     |
 | `DrawerMenu`              | navigation |
 
-## Tier 2 — showcase demo only (50)
+## Tier 2 — showcase demo only (52)
 
 Rendered in the showcase, never used in a shipping screen. A demo proves a component
 renders; only a consumer proves it is useful. These stay `experimental` until a
 product pulls them, and they should not receive hardening work ahead of Tier 1.
 
-`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Menubar`, `Popover`, `RadioGroup`, `Select`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
+`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Menubar`, `MotionProvider`, `Popover`, `RadioGroup`, `Select`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
 
 ## Tier 3 — neither shipped nor demonstrated (0)
 
@@ -251,14 +253,15 @@ a test pinning that.
 Maestro landed on Android (`e2e/maestro/`, `bun run test:native`). Two findings, one of
 them about the layer itself.
 
-**`expo-image` is declared an optional peer and is not optional.** It is a static
+**`expo-image` was declared an optional peer even though it is not optional.** It is a static
 top-level import in `smart-image.tsx` and `product-card.tsx`, and `src/index.ts`
 re-exports everything — so any consumer importing from the package root pulls it in. On
 native, without it installed and autolinked, the app dies at startup with
 `Cannot find native module 'ExpoImage'`. Every other layer passed it: web has a JS
 implementation, Jest never touches it, and the packed-tarball check sees it declared.
 `frosted-surface.tsx` already has the right pattern for this — a runtime require with a
-fallback, which makes `expo-blur` genuinely optional. Not yet fixed.
+fallback, which makes `expo-blur` genuinely optional. Fixed 2026-09-27 by making
+`expo-image` a required peer, matching the package's root-import behavior.
 
 **`className` is silently dropped on `react-native-safe-area-context`'s `SafeAreaView`.**
 It is a native view and Uniwind only wraps React Native's own components. Measured on

@@ -27,6 +27,7 @@ import {
   CardHeader,
   CardTitle,
   Input,
+  MotionProvider,
   PullToRefreshScrollView,
   Tabs,
   TabsContent,
@@ -78,41 +79,43 @@ export function Smoke() {
   void colors.notARealToken;
 
   return (
-    <AppShell className="flex-1">
-      <Card className="rounded-xl">
-        <CardHeader>
-          <CardTitle>Type smoke</CardTitle>
-          <Badge>New</Badge>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="a" className="w-full">
-            <TabsList>
-              <TabsTrigger value="a" className="flex-1">
-                A
-              </TabsTrigger>
-              <TabsTrigger value="b">B</TabsTrigger>
-            </TabsList>
-            <TabsContent value="a">
-              <Input ref={inputRef} placeholder="Email" onChangeText={(next) => void next} />
-              <Button variant={variant} className="mt-2" onPress={() => {}}>
-                <ButtonText>Button text children</ButtonText>
-              </Button>
-            </TabsContent>
-          </Tabs>
+    <MotionProvider>
+      <AppShell className="flex-1">
+        <Card className="rounded-xl">
+          <CardHeader>
+            <CardTitle>Type smoke</CardTitle>
+            <Badge>New</Badge>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="a" className="w-full">
+              <TabsList>
+                <TabsTrigger value="a" className="flex-1">
+                  A
+                </TabsTrigger>
+                <TabsTrigger value="b">B</TabsTrigger>
+              </TabsList>
+              <TabsContent value="a">
+                <Input ref={inputRef} placeholder="Email" onChangeText={(next) => void next} />
+                <Button variant={variant} className="mt-2" onPress={() => {}}>
+                  <ButtonText>Button text children</ButtonText>
+                </Button>
+              </TabsContent>
+            </Tabs>
 
-          <PullToRefreshScrollView refreshing={false} onRefresh={onRefresh}>
-            <CardTitle>Pull</CardTitle>
-          </PullToRefreshScrollView>
+            <PullToRefreshScrollView refreshing={false} onRefresh={onRefresh}>
+              <CardTitle>Pull</CardTitle>
+            </PullToRefreshScrollView>
 
-          <AlertDialog>
-            <AlertDialogContent>
-              <AlertDialogTitle>Delete?</AlertDialogTitle>
-              <AlertDialogCancel>Keep</AlertDialogCancel>
-              <AlertDialogAction onPress={() => {}}>Delete</AlertDialogAction>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
-    </AppShell>
+            <AlertDialog>
+              <AlertDialogContent>
+                <AlertDialogTitle>Delete?</AlertDialogTitle>
+                <AlertDialogCancel>Keep</AlertDialogCancel>
+                <AlertDialogAction onPress={() => {}}>Delete</AlertDialogAction>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
+      </AppShell>
+    </MotionProvider>
   );
 }

@@ -51,7 +51,8 @@ repo's own rule.
 
 ## Green Flags
 
-- README, showcase and `TODO.md` change in the same commit as the code.
+- README, showcase and `docs/stability.md` change in the same commit as the code when
+  the public API or maturity evidence changes.
 - `git grep` for an old name returns nothing after a rename.
 
 ## Codebase-Specific Patterns

@@ -1,0 +1,15 @@
+appId: dev.whileloop.showcase
+name: Button activates through the native accessibility control
+---
+- stopApp
+- launchApp
+
+- scrollUntilVisible:
+    element:
+      id: 'press-feedback-test'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'press-feedback-test'
+- assertVisible: 'Button pressed'
+- tapOn: 'OK'

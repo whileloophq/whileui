@@ -1,6 +1,9 @@
 /** @type {import('jest').Config} */
 module.exports = {
   preset: 'jest-expo',
+  // Jest probes `watchman --version` before it runs; a wedged watchman daemon blocks that
+  // call forever and the suite never starts. Node's own crawler is fast enough here.
+  watchman: false,
   // Worklets ships a `.native` implementation that expects the native module to be
   // installed; this resolver steers Jest to the plain-JS one instead.
   resolver: 'react-native-worklets/jest/resolver',

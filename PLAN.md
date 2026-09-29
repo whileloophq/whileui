@@ -4,11 +4,12 @@
 
 Three tracked documents, one job each.
 
-| File             | Answers                                                          |
-| ---------------- | ---------------------------------------------------------------- |
-| `ROADMAP.md`     | Why WhileUI exists, what it owns, what it refuses to own         |
-| `PLAN.md` (this) | What "production ready" means here, and the sequence to reach it |
-| `AGENTS.md`      | How to edit this repo day to day                                 |
+| File                | Answers                                                          |
+| ------------------- | ---------------------------------------------------------------- |
+| `ROADMAP.md`        | Why WhileUI exists, what it owns, what it refuses to own         |
+| `PLAN.md` (this)    | What "production ready" means here, and the sequence to reach it |
+| `IMPLEMENTATION.md` | Resumable task state, evidence and the next safe action          |
+| `AGENTS.md`         | How to edit this repo day to day                                 |
 
 `README.md` remains the API source of truth. `docs/review-perspectives/` holds the
 per-PR review cards that enforce this plan.
@@ -339,6 +340,38 @@ mocked on web. Native verifies overlap, safe area, orientation, accessory views 
 dismissal. Web uses document layout, responsive CSS and focus management rather than
 translating native keyboard offsets. OTP and numeric inputs additionally specify IME,
 paste and autofill behavior while keeping identical `value`/`onChange` semantics.
+
+## Refactor protocol
+
+Refactor one proven family at a time. A broad visual rewrite that touches dozens of
+families produces no useful evidence and makes regressions impossible to localise.
+
+1. **Select from Tier 1.** Start with a component used by a product, prioritising the
+   critical acceptance flow. Freeze unrelated component additions while the stable
+   kernel is being built.
+2. **State the contract before editing.** Record state ownership, public events, ref
+   behaviour, compound parts, accessibility intent and platform seams. Remove props
+   with no caller rather than preserving compatibility for applications we control.
+3. **Capture the defect or baseline.** Add the smallest failing contract test for
+   behaviour, or record a release-build trace for a performance claim. Do not refactor
+   from visual intuition alone.
+4. **Refactor behind the public contract.** Keep tokens renderer-free, use semantic
+   classes and shared recipes, reuse the interaction engine, and introduce a platform
+   file only when it passes the renderer justification test.
+5. **Verify at the failure layer.** Run static and contract gates for every change;
+   add native evidence for keyboard, gestures, back handling and accessibility-tree
+   behaviour; add browser evidence for focus, keyboard, responsive layout and semantic
+   behaviour.
+6. **Adopt immediately.** Update the proving product in the same change or record a
+   dated product backlog item. A showcase demonstrates; a product proves.
+7. **Close the loop.** Update README, showcase, stability evidence and the changeset,
+   then run `bun run verify` and the applicable review cards before merging.
+
+Review ownership is explicit: `09-component-contract.md` guards API and composition,
+`10-interaction-performance.md` guards responsiveness and motion, and
+`11-web-production.md` guards the browser as a production target. The renderer,
+accessibility, verification and distribution cards remain independent checks; passing
+one never substitutes for another.
 
 ## Phases
 

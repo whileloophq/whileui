@@ -2,7 +2,7 @@ import { RefreshControl, ScrollView, type ScrollViewProps } from 'react-native';
 import { useThemeColors } from '../../lib/theme-colors';
 import { cn } from '../../lib/cn';
 
-export interface PullToRefreshScrollViewProps extends ScrollViewProps {
+export interface PullToRefreshScrollViewProps extends Omit<ScrollViewProps, 'refreshControl'> {
   refreshing: boolean;
   /**
    * Refreshing is almost always async, so the signature says so. Nothing here awaits it —
@@ -20,6 +20,7 @@ export function PullToRefreshScrollView({
   refreshColor,
   className,
   children,
+  alwaysBounceVertical = true,
   ...props
 }: PullToRefreshScrollViewProps) {
   const colors = useThemeColors();
@@ -28,6 +29,7 @@ export function PullToRefreshScrollView({
   return (
     <ScrollView
       className={cn('flex-1', className)}
+      alwaysBounceVertical={alwaysBounceVertical}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}

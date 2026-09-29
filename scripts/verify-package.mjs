@@ -10,7 +10,16 @@
  * four questions of the result.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  openSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname, relative } from 'node:path';
@@ -179,13 +188,23 @@ try {
   step('Types resolve the way the JavaScript does');
   {
     // attw exits non-zero whenever it finds anything, including things we accept, so
-    // read its JSON and decide for ourselves.
-    let raw;
+    // read its JSON and decide for ourselves. Write stdout straight to disk: the stdout
+    // attached to a non-zero child result was still cut at 64 kB with a larger
+    // maxBuffer, which turned a valid report into invalid JSON.
+    const reportPath = join(work, 'attw.json');
+    const reportFd = openSync(reportPath, 'w');
     try {
-      raw = run('bunx', ['@arethetypeswrong/cli', '--pack', '.', '-f', 'json'], { cwd: PKG });
-    } catch (error) {
-      raw = error.stdout;
+      run('bunx', ['@arethetypeswrong/cli', '--pack', '.', '-f', 'json'], {
+        cwd: PKG,
+        stdio: ['ignore', reportFd, 'pipe'],
+      });
+    } catch {
+      // A non-zero exit is expected when the report contains accepted non-bundler
+      // findings. The JSON on disk decides whether the package passes.
+    } finally {
+      closeSync(reportFd);
     }
+    const raw = readFileSync(reportPath, 'utf8');
     // `bunx` prints its own install chatter before the tool's output the first time it
     // resolves a package, so the stream is not pure JSON.
     const start = raw?.indexOf('{') ?? -1;

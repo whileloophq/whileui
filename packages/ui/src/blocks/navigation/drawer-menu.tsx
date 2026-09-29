@@ -4,6 +4,7 @@ import {
   Pressable,
   Platform,
   Modal,
+  ScrollView,
   useWindowDimensions,
   StyleSheet,
   type ViewStyle,
@@ -23,6 +24,7 @@ import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, surfaceRadius } from '../../lib/recipes';
+import { useMotionPolicy } from '../../lib/motion-policy';
 import {
   useFrostedSurface,
   useFrostedBackdrop,
@@ -75,6 +77,7 @@ export function DrawerMenu({
   const colors = useThemeColors();
   const interaction = useInteractionTokens();
   const visual = useVisualTokens();
+  const motion = useMotionPolicy();
   const frostedSurface = useFrostedSurface({
     frosted,
     blurIntensity,
@@ -121,8 +124,15 @@ export function DrawerMenu({
       closeTimerRef.current = null;
     }
 
+    const duration =
+      motion.reduceMotion || !motion.animationsEnabled
+        ? 0
+        : visible
+          ? interaction.drawerOpenDuration
+          : interaction.drawerCloseDuration;
     progress.value = withTiming(visible ? 1 : 0, {
-      duration: visible ? interaction.drawerOpenDuration : interaction.drawerCloseDuration,
+      duration,
+      reduceMotion: motion.reanimatedReduceMotion,
       easing: visible
         ? Easing.bezier(0.2, 0.8, 0.2, 1) // Swift, decelerating entrance
         : Easing.bezier(0.4, 0, 1, 1), // Accelerating, sharp exit
@@ -131,7 +141,7 @@ export function DrawerMenu({
     if (!visible) {
       closeTimerRef.current = setTimeout(() => {
         setMounted(false);
-      }, interaction.drawerCloseDuration);
+      }, duration);
     }
 
     return () => {
@@ -140,7 +150,16 @@ export function DrawerMenu({
         closeTimerRef.current = null;
       }
     };
-  }, [mounted, visible, progress, interaction.drawerOpenDuration, interaction.drawerCloseDuration]);
+  }, [
+    mounted,
+    visible,
+    progress,
+    interaction.drawerOpenDuration,
+    interaction.drawerCloseDuration,
+    motion.animationsEnabled,
+    motion.reduceMotion,
+    motion.reanimatedReduceMotion,
+  ]);
 
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
@@ -210,7 +229,11 @@ export function DrawerMenu({
         <View className="flex-1 pb-8" style={{ paddingTop: contentTopPadding }}>
           {header && <View className="px-5 pb-4 mb-2 border-b border-border">{header}</View>}
 
-          <View className="flex-1 px-3">
+          <ScrollView
+            className="flex-1 px-3"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
             {sections.map((section, sectionIndex) => (
               <View key={sectionIndex} className="mb-4">
                 {section.title && (
@@ -282,7 +305,7 @@ export function DrawerMenu({
                 </View>
               </View>
             ))}
-          </View>
+          </ScrollView>
 
           {footer && <View className="px-5 py-4 mt-auto border-t border-border">{footer}</View>}
         </View>

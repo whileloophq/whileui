@@ -2,6 +2,7 @@ import React, { type ReactElement } from 'react';
 import { render, type RenderOptions } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import { PortalHost } from '@rn-primitives/portal';
+import { MotionProvider } from '../lib/motion-policy';
 
 /** Fixed so layout assertions do not depend on a device. Notch-sized top inset. */
 export const TEST_METRICS: Metrics = {
@@ -12,8 +13,10 @@ export const TEST_METRICS: Metrics = {
 function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SafeAreaProvider initialMetrics={TEST_METRICS}>
-      {children}
-      <PortalHost />
+      <MotionProvider mode="disabled">
+        {children}
+        <PortalHost />
+      </MotionProvider>
     </SafeAreaProvider>
   );
 }
