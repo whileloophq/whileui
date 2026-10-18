@@ -45,13 +45,15 @@ Working tree at handoff: clean
 Last command run: nvm exec 24 bun run verify
 Last command result: passed — format, lint, typecheck, 60 unit tests, build, packed
   tarball, iOS and Android exports, 86 Chromium/WebKit tests
-Next safe action: attach a physical iOS device and a lower-tier physical Android device,
-  build release artifacts for both and capture drawer and sheet traces; record them in
-  P2-03, which then closes. If that hardware stays out of reach, decide explicitly
-  whether the simulator and emulator release runs satisfy the Phase 2 exit, record that
-  decision in P2-03, and only then start P3-01
-Blockers: P2-03 needs release traces from physical iOS and Android devices. None
-  attached. Nothing else in the repository is waiting on a decision
+Next safe action: attach one lower-tier physical Android, install the release APK and
+  run scroll-ownership.yaml and drawer-lifecycle.yaml against it, recording dumpsys
+  gfxinfo in P2-03, which then closes. No iOS hardware is required — the simulator is
+  this stack's representative iOS device. If no Android phone is reachable, decide
+  explicitly whether the Phase 2 exit is met without it, record that decision in P2-03,
+  and only then start P3-01
+Blockers: P2-03 needs drawer and sheet release traces from one physical lower-tier
+  Android. None attached; the emulator was measured and cannot substitute. Nothing else
+  in the repository is waiting on a decision
 ```
 
 The commit and working-tree lines are historical hints, not authority. Always run
@@ -263,18 +265,33 @@ Evidence recorded 2026-10-18:
   not frame work. No touched component updates React state from a scroll or animation
   frame.
 
-**Blocked 2026-10-18.** Implementation and every reproducible gate are complete. What
-remains cannot be produced on this machine.
+**Blocked 2026-10-18.** Implementation and every reproducible gate are complete. One
+acceptance criterion remains and it needs hardware this machine does not have.
 
-**Blocker:** release traces for the drawer and the sheet on representative physical iOS
-and Android devices. None is attached. The release flows on the iPhone 17 Pro simulator
-and the Pixel 8 emulator prove behavior, and `PLAN.md` > Evidence model does not let
-either stand in for performance acceptance.
+**Measured, so that nobody repeats the attempt.** `scroll-ownership.yaml` was run
+against the release APK on the Pixel 8 API Baklava emulator and `dumpsys gfxinfo` read
+immediately afterwards: 3098 frames, 63.56% janky, a 61 ms median, 1026 missed vsyncs.
+The same command against the system launcher on the same emulator reports 85.51% janky
+and an identical **4950 ms GPU percentile** — a figure no physical GPU produces. The
+emulator renders through a software path, so these numbers describe the emulator rather
+than the application, and the launcher control is worse than the app under test. An
+emulator cannot supply performance acceptance. That is now a measurement rather than an
+appeal to the plan.
 
-**Unblocked by:** one current physical iOS device and one lower-tier physical Android
-device; release artifacts built for both; drawer and sheet traces captured and recorded
-here showing no frame work on the JS thread. The task closes on that record alone — no
-source change is expected.
+**Blocker:** drawer and sheet release traces from one physical lower-tier Android
+device. None is attached.
+
+**Scope correction.** An earlier revision of this task asked for physical iOS _and_
+Android hardware. `PLAN.md` does not. Its device row is "current iOS simulator, current
+Android emulator, one physical lower-tier Android", and the only physical device named
+anywhere in the plan appears in the Phase 7 release gates. The representative iOS device
+for this stack **is** the simulator, and the iPhone 17 Pro simulator release run already
+covers it. The gap is one Android phone, not two devices.
+
+**Unblocked by:** attaching any lower-tier physical Android, installing the release APK
+that `apps/showcase/android` already builds, running `scroll-ownership.yaml` and
+`drawer-lifecycle.yaml` against it and recording `dumpsys gfxinfo` here. No source
+change is expected; the task closes on that record alone.
 
 **On the Phase 2 gate:** the phase exit asks that release-build gestures are verified on
 iOS and Android, which the simulator and emulator release runs satisfy as written. The
@@ -576,10 +593,17 @@ that has been incorporated into a completed task's Evidence section.
   session verified, unchanged.
 - Checks run and results: see below.
 - Evidence added: none. This session produced no new evidence by design.
-- Remaining risk or blocker: P2-03 release traces need physical iOS and Android devices.
-  Until the Phase 2 gate question is settled, starting P3-01 would skip a prerequisite.
-- Next safe action: attach the two devices, capture drawer and sheet traces, record them
-  in P2-03. Failing that, settle the gate question explicitly before P3-01.
+- Attempted and failed, deliberately: completing P2-03 on available hardware. The
+  scroll-ownership flow passes against the release APK on the emulator, but `dumpsys
+gfxinfo` reports a 4950 ms GPU percentile for both the app and the system launcher,
+  which is the emulator's software renderer rather than either application. Recorded in
+  P2-03 so the attempt is not repeated.
+- Scope narrowed: the blocker is one physical lower-tier Android, not two devices.
+  `PLAN.md` names the iOS simulator as this stack's representative iOS device.
+- Remaining risk or blocker: P2-03 needs that one Android phone. Until the Phase 2 gate
+  question is settled, starting P3-01 would skip a prerequisite.
+- Next safe action: attach an Android phone, rerun the two flows, record gfxinfo in
+  P2-03. Failing that, settle the gate question explicitly before P3-01.
 
 ### 2026-10-18 — React quality and performance-pattern cleanup
 
