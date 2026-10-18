@@ -423,6 +423,28 @@ as the default presets. Safe in a build script (no React, RN or Uniwind
 imports); `useThemeColors()` uses it too, so a missing `--color-primary-soft`
 derives from the app's own primary instead of falling back to the default palette.
 
+**Building a product preset.** Use `createThemePreset` rather than a `ThemePreset`
+literal — it takes the 25 base colours per scheme and derives the rest:
+
+```ts
+import { createThemePreset, themePresetToCss } from '@thewhileloop/whileui/tokens';
+
+const preset = createThemePreset({
+  name: 'acme',
+  description: 'Acme brand palette.',
+  light: { background: '...', foreground: '...', primary: '...' /* 25 base keys */ },
+  dark: { background: '...', foreground: '...', primary: '...' },
+  visual: { radiusLg: 12 }, // optional, partial
+});
+
+writeFileSync('theme.generated.css', themePresetToCss(preset));
+```
+
+The literal form asks for all 52 colours per scheme, including every active variant,
+soft variant, overlay, surface, interaction state and shadow. Those are exactly what
+`deriveThemeColors` computes, so hand-writing them produces a second derivation that
+drifts from the library's. Override a derived value by assigning to the result.
+
 ## Layout Primitives (Stack, Row)
 
 Use `Stack` for vertical layouts, `Row` for horizontal layouts. Both support `gap`, `align`, and `justify` variants.
@@ -603,7 +625,7 @@ The WhileUI token contract is strict for cross-app reuse. Define these in **ever
 - Required core tokens: `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `destructive-foreground`, `border`, `input`, `ring`
 - Optional status tokens: `success`, `success-foreground`, `warning`, `warning-foreground`, `info`, `info-foreground`
 - Optional effect tokens: `overlay`, `overlay-strong`, `surface-elevated`, `surface-border`, `surface-highlight`, `surface-translucent`, `surface-translucent-border`, `state-hover`, `state-pressed`, `state-disabled`
-- Optional interaction/motion tokens: `--ui-press-opacity`, `--ui-press-opacity-strong`, `--ui-disabled-opacity`, `--ui-disabled-opacity-soft`, `--ui-disabled-opacity-subtle`, `--ui-inactive-opacity`, `--ui-motion-fast`, `--ui-motion-normal`, `--ui-motion-slow`, `--ui-motion-spring-damping`, `--ui-motion-spring-stiffness`, `--ui-motion-spring-mass`, `--ui-drawer-open-duration`, `--ui-drawer-close-duration`, `--ui-blur-intensity-subtle`, `--ui-blur-intensity-medium`, `--ui-blur-intensity-strong`, `--ui-blur-saturation-pct`, `--ui-frosted-highlight-height`, `--ui-frosted-backdrop-blur-intensity`, `--ui-frosted-backdrop-blur-scale`, `--ui-frosted-android-tint-alpha-scale`, `--ui-frosted-android-experimental-blur`, `--ui-drawer-frosted-inset`, `--ui-drawer-frosted-radius`, `--ui-drawer-content-top-padding`
+- Optional visual tokens, generated from a preset: `--ui-blur-intensity-subtle`, `--ui-blur-intensity-medium`, `--ui-blur-intensity-strong`, `--ui-blur-saturation-pct`, `--ui-frosted-highlight-height`, `--ui-frosted-backdrop-blur-intensity`, `--ui-frosted-backdrop-blur-scale`, `--ui-frosted-android-tint-alpha-scale`, `--ui-frosted-android-experimental-blur`, `--ui-drawer-frosted-inset`, `--ui-drawer-frosted-radius`, `--ui-drawer-content-top-padding`
 - Optional scale tokens: spacing (`--spacing`, `--spacing-*`), typography (`--text-*`, `--leading-*`, `--tracking-*`), radius (`--radius-*`), elevation (`--shadow-*`)
 
 Minimal contract example:
@@ -721,53 +743,25 @@ const iconColors = useIconColors();
 
 Input, Textarea, NumericInput, SmartInput, Spinner, and LoadingScreen default to theme colors when you omit `placeholderTextColor` or `spinnerColor`.
 
-### Interaction + Motion Tokens
+### Interaction and motion
 
-WhileUI components also read optional `--ui-*` tokens for deeper control of press feedback, disabled states, and motion timing:
+Press opacity, disabled opacity, motion durations, the responsive spring, and the drawer
+open and close durations are package constants on `INTERACTION_TOKENS`. They are not CSS
+variables and they do not change with a preset. Delete any `--ui-press-*`,
+`--ui-disabled-*`, `--ui-inactive-opacity`, `--ui-motion-*`, or `--ui-drawer-open-duration`
+/ `--ui-drawer-close-duration` declarations from a theme: nothing reads them.
 
-```css
-@theme {
-  --ui-press-opacity: 0.72;
-  --ui-press-opacity-strong: 0.9;
-  --ui-disabled-opacity: 0.5;
-  --ui-disabled-opacity-soft: 0.6;
-  --ui-disabled-opacity-subtle: 0.4;
-  --ui-inactive-opacity: 0.5;
-  --ui-motion-fast: 160;
-  --ui-motion-normal: 220;
-  --ui-motion-slow: 300;
-  --ui-motion-spring-damping: 20;
-  --ui-motion-spring-stiffness: 260;
-  --ui-motion-spring-mass: 0.8;
-  --ui-drawer-open-duration: 300;
-  --ui-drawer-close-duration: 220;
-  --ui-blur-intensity-subtle: 18;
-  --ui-blur-intensity-medium: 22;
-  --ui-blur-intensity-strong: 28;
-  --ui-blur-saturation-pct: 185;
-  --ui-frosted-highlight-height: 0;
-  --ui-frosted-backdrop-blur-intensity: 14;
-  --ui-frosted-backdrop-blur-scale: 0.55;
-  --ui-frosted-android-tint-alpha-scale: 1.22;
-  --ui-frosted-android-experimental-blur: 1;
-  --ui-drawer-frosted-inset: 0;
-  --ui-drawer-frosted-radius: 28;
-  --ui-drawer-content-top-padding: 0;
-}
-```
-
-For custom components, use:
+For a custom control, read that table:
 
 ```tsx
 import { useInteractionTokens, withInteractivePressableStyle } from '@thewhileloop/whileui';
 ```
 
-Wrap the application in `MotionProvider` to coordinate system reduced motion, explicit
-preview overrides, and deterministic animation-free tests. The provider is optional:
-without it `useMotionPolicy` returns the token defaults with Reanimated following the
-system setting, and `--ui-motion-*` overrides are not read. `reduced` preserves
-non-spatial feedback while asking Reanimated to skip motion; `disabled` also resolves
-semantic durations to zero.
+Wrap the application in `MotionProvider` to coordinate system reduced motion, an explicit
+preview mode, and deterministic animation-free tests. The provider is optional. Without
+it `useMotionPolicy` reports the durations and spring from `INTERACTION_TOKENS`, and
+Reanimated follows the system setting. `reduced` preserves non-spatial feedback while asking Reanimated to skip motion;
+`disabled` also resolves semantic durations to zero.
 
 ```tsx
 import { MotionProvider, useMotionPolicy } from '@thewhileloop/whileui';

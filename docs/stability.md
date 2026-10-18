@@ -16,15 +16,16 @@ an export.
 | Shipped in a production application | 30    |
 | Showcase demo only, never shipped   | 52    |
 | Neither shipped nor demonstrated    | 0     |
-| Covered by a contract test          | 11    |
+| Covered by a contract test          | 17    |
 | Qualifying as `stable`              | **0** |
-| Qualifying as `candidate`           | 9     |
+| Qualifying as `candidate`           | 15    |
 
-**Nine families are `candidate` as of 2026-09-29** — `Button`, `Input`, `OTPInput`,
-`AlertDialog`, `SmartInput`, `KeyboardAwareScreen`, `Pressable`, `PullToRefreshScrollView`
-and `DrawerMenu` each have a contract suite and a production call site. `Sheet` and
+**Fifteen families are `candidate` as of 2026-10-18** — `Button`, `Input`, `OTPInput`,
+`AlertDialog`, `SmartInput`, `KeyboardAwareScreen`, `Pressable`, `PullToRefreshScrollView`,
+`DrawerMenu`, `Switch`, `Textarea`, `NumericInput`, `SegmentedControl`, `FormField` and
+`DatePickerModal` each have a contract suite and a production call site. `Sheet` and
 `MotionProvider` have suites but no production call site, so they stay `experimental`
-with the other 71. `candidate` requires passing contract tests;
+with the other 65. `candidate` requires passing contract tests;
 `stable` requires the full definition of done, which no family meets until the
 accessibility matrix and E2E layers exist. The 30 shipped families are the ones on the shortest
 path — they already have the production call site that `stable` demands, and need the
@@ -106,12 +107,15 @@ non-digit rejection, staying editable once full, and cursor-timer cleanup.
 
 Four items deferred out of that work:
 
-- `useInteractionTokens` hardcodes its fallbacks inline (`0.82`, `0.92`, `140`) instead
-  of declaring them in `visual-token-contract.ts` like every other `--ui-*` token. Two
-  sources of truth for the same values — a Phase 4 token item.
+- ~~`useInteractionTokens` hardcodes its fallbacks inline.~~ Closed 2026-10-18. Press,
+  disabled, inactive, motion and drawer timing are one table, `INTERACTION_TOKENS`. They
+  are not in `visual-token-contract.ts` and nothing reads them from CSS. A generated
+  theme was warning for variables it was never going to emit, then using these same
+  numbers anyway.
 - Uniwind resolves CSS variables from Metro-compiled CSS, which Jest cannot produce, so
-  the harness stubs `useCSSVariable`. Components therefore exercise their fallback path
-  under test. Real token resolution is proven by the browser and device layers, not here.
+  the harness stubs `useCSSVariable`. Visual and color tokens therefore exercise their
+  fallback path under test. Real token resolution is proven by the browser and device
+  layers, not here. `useInteractionTokens` does not use that hook.
 - `KeyboardAwareScreen`'s actual contract — which `KeyboardAvoidingView` behaviour each
   platform gets — is not unit-testable. `KeyboardAvoidingView` consumes the prop rather
   than forwarding it, and RNTL v14 can only query host elements. Its suite covers

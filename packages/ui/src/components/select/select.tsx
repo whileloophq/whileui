@@ -112,11 +112,6 @@ const SelectTrigger: ForwardRefComponent<SelectTriggerRef, SelectTriggerProps> =
           props.disabled && '',
           className
         )}
-        // Pass an array unless the caller actually gave a callback. On web this primitive
-        // is wrapped in a Slot that merges `style` by object spread, which turns a
-        // function into `{}` and silently drops every style — the trigger rendered 24px
-        // tall with no padding, border or radius. A callback is still honoured on native,
-        // where dropping it was the original bug.
         // Flattened, not an array. On web this primitive is merged through a Slot that
         // spreads `style`, and spreading an array yields { 0: …, 1: … } — numeric keys
         // that reach the DOM as indexed style properties and throw. The Select rendered

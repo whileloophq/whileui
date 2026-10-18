@@ -4,6 +4,7 @@ import {
   WHILEUI_LIGHT_THEME_COLORS,
   type ThemeColors,
 } from './theme-contract';
+import { deriveThemeColors, type ThemeBaseColors } from './theme-derive';
 import { VISUAL_TOKEN_SPECS, type VisualTokens } from './visual-token-contract';
 
 /**
@@ -21,6 +22,40 @@ export interface ThemePreset {
   dark: ThemeColors;
   /** Visual token overrides; unset keys keep contract fallbacks. */
   visual: Partial<VisualTokens>;
+}
+
+/**
+ * Build a preset from the 25 base colors, deriving the other 27.
+ *
+ * Prefer this to writing a `ThemePreset` literal. `visual` has always been
+ * `Partial`, but `light` and `dark` are the full 52-key `ThemeColors`, so the
+ * literal form asks an author for every active variant, soft variant, overlay,
+ * surface, interaction state and shadow — values `deriveThemeColors` already
+ * computes from the palette. Nothing in the literal's type points at that helper,
+ * and the predictable result is a hand-written derivation that drifts from the
+ * library's own. The Atelier preset below is 110 lines for this reason.
+ *
+ * Override a derived value by spreading the result:
+ *
+ * ```ts
+ * const preset = createThemePreset({ name, description, light, dark });
+ * preset.dark.overlay = 'rgba(0, 0, 0, 0.9)';
+ * ```
+ */
+export function createThemePreset(input: {
+  name: string;
+  description: string;
+  light: ThemeBaseColors;
+  dark: ThemeBaseColors;
+  visual?: Partial<VisualTokens>;
+}): ThemePreset {
+  return {
+    name: input.name,
+    description: input.description,
+    light: deriveThemeColors(input.light, 'light'),
+    dark: deriveThemeColors(input.dark, 'dark'),
+    visual: input.visual ?? {},
+  };
 }
 
 // Rounded, airy, frosted. Matches the contract fallbacks.

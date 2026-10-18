@@ -17,8 +17,9 @@ jest.mock('react-native-reanimated', () => ({
 // "couldn't find your variable" warning per render.
 jest.mock('uniwind', () => ({
   ...jest.requireActual('uniwind'),
-  useCSSVariable: (names: string | string[]) =>
-    Array.isArray(names) ? names.map(() => undefined) : undefined,
+  useCSSVariable: jest.fn((names: string | string[]) =>
+    Array.isArray(names) ? names.map(() => undefined) : undefined
+  ),
 }));
 
 // Animations that outlive a test leak into the next one. Fail loudly instead.

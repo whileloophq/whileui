@@ -390,7 +390,11 @@ native and web fixtures; token card clean.
 
 **Review cards:** 01, 02, 07, 08, 11.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** Not started. On 2026-10-18 press, disabled, inactive, motion and
+drawer durations were left out of `VISUAL_TOKEN_SPECS` on purpose. They live in
+`INTERACTION_TOKENS`. Generated themes must not grow those variables, and
+`useInteractionTokens` must not read them from CSS. That read was the Uniwind
+missing-variable warning on every generated theme.
 
 ### [ ] P4-02 — Profile provider and compound-control renders
 

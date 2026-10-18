@@ -38,6 +38,7 @@ export {
   type ThemeTokenSpec,
 } from './lib/theme-contract';
 export {
+  INTERACTION_TOKENS,
   useInteractionTokens,
   withInteractivePressableStyle,
   type InteractionTokens,

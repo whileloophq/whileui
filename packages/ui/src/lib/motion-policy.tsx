@@ -29,8 +29,8 @@ export interface MotionProviderProps {
 }
 
 // Without a provider, components still render and Reanimated still follows the system
-// setting. Only `--ui-motion-*` overrides and the non-Reanimated reduced-motion paths
-// need `MotionProvider` at the root.
+// setting. The provider is what switches the non-Reanimated paths to reduced or
+// disabled motion. Durations and the spring come from `INTERACTION_TOKENS` either way.
 const DEFAULT_MOTION_POLICY: MotionPolicy = {
   mode: 'system',
   reduceMotion: false,

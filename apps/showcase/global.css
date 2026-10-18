@@ -105,21 +105,6 @@
 }
 
 @theme static {
-  --ui-press-opacity: 0.82;
-  --ui-press-opacity-strong: 0.92;
-  --ui-disabled-opacity: 0.46;
-  --ui-disabled-opacity-soft: 0.56;
-  --ui-disabled-opacity-subtle: 0.36;
-  --ui-inactive-opacity: 0.54;
-  --ui-motion-fast: 140;
-  --ui-motion-normal: 200;
-  --ui-motion-slow: 280;
-  --ui-motion-spring-damping: 20;
-  --ui-motion-spring-stiffness: 260;
-  --ui-motion-spring-mass: 0.8;
-  --ui-drawer-open-duration: 260;
-  --ui-drawer-close-duration: 180;
-
   --ui-radius-sm: 10;
   --ui-radius-md: 14;
   --ui-radius-lg: 18;
