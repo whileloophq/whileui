@@ -302,9 +302,17 @@ interaction.
 
 ## UI Standards
 
-- Overlays (Dialog, Popover, Menus): `rounded-lg`
-- Controls (Button, Input, Select): `h-10`
-- Cards: `rounded-xl`
+Radii and control heights come from the visual token recipes, never from a hardcoded
+class. A literal `rounded-xl` or `h-10` bypasses the preset, so switching themes leaves
+it behind — which is the one thing the token system exists to prevent.
+
+- Overlays (Dialog, Popover, Menus): `surfaceRadius(visual, 'lg')`
+- Controls (Button, Input, Select): `controlRecipe(visual, size)`
+- Cards: `surfaceRadius(visual, 'xl')` with `surfacePadding`
+
+Measured 2026-10-18: `rounded-lg` appears in no component, `h-10` only as an `Avatar`
+size, and `Button` derives its height from `controlRecipe`. The old wording described a
+state the package left behind.
 
 ### Touch Targets
 
