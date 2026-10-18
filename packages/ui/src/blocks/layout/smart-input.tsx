@@ -1,5 +1,11 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, View, TextInput, type TextInputProps } from 'react-native';
+import {
+  AccessibilityInfo,
+  View,
+  TextInput,
+  type TextInputInstance,
+  type TextInputProps,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
@@ -7,6 +13,7 @@ import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 export interface SmartInputProps extends TextInputProps {
   /** Left slot: emoji, attach, etc. */
@@ -44,6 +51,18 @@ interface RotatingPlaceholderOptions {
   typingInterval: number;
   pauseDuration: number;
   clearInterval: number;
+}
+
+interface SmartInputPlaceholderOptions {
+  value: string | undefined;
+  defaultValue: string | undefined;
+  placeholder: string | undefined;
+  examples: readonly string[] | undefined;
+  prefix: string;
+  typingInterval: number;
+  pauseDuration: number;
+  clearInterval: number;
+  onChangeText: TextInputProps['onChangeText'];
 }
 
 function useReducedMotion() {
@@ -131,116 +150,144 @@ function useRotatingPlaceholder({
   return animatedPlaceholder || prefix;
 }
 
-export const SmartInput = forwardRef<TextInput, SmartInputProps>(function SmartInput(
-  {
-    leftSlot,
-    centerSlot,
-    rightSlot,
-    variant = 'bar',
-    className,
-    inputClassName,
-    submitBehavior = 'newline',
-    safeArea = true,
-    placeholderExamples,
-    placeholderPrefix = 'e.g. ',
-    placeholderTypingInterval = 65,
-    placeholderPauseDuration = 2200,
-    placeholderClearInterval = 25,
-    placeholderTextColor,
-    placeholder,
-    value,
-    defaultValue,
-    onChangeText,
-    editable = true,
-    style,
-    ...props
-  },
-  ref
-) {
-  const insets = useSafeAreaInsets();
-  const colors = useThemeColors();
-  const interaction = useInteractionTokens();
-  const visual = useVisualTokens();
-  const bottomPadding = safeArea
-    ? Math.max(insets.bottom, visual.controlPaddingYSm)
-    : visual.controlPaddingYSm;
-  // When the field is controlled its owner already holds the answer, so derive it rather
-  // than mirroring it into state — mirroring cost a frame in which the rotating
-  // placeholder kept animating over text the user had already typed.
+function useSmartInputPlaceholder({
+  value,
+  defaultValue,
+  placeholder,
+  examples,
+  prefix,
+  typingInterval,
+  pauseDuration,
+  clearInterval,
+  onChangeText,
+}: SmartInputPlaceholderOptions) {
   const [uncontrolledHasText, setUncontrolledHasText] = useState(() => Boolean(defaultValue));
   const hasText = value !== undefined ? Boolean(value) : uncontrolledHasText;
-  const examplesKey = placeholderExamples?.join(SEPARATOR) ?? '';
-  const animatePlaceholder = placeholder === undefined && !hasText && Boolean(examplesKey);
+  const examplesKey = examples?.join(SEPARATOR) ?? '';
   const animatedPlaceholder = useRotatingPlaceholder({
-    active: animatePlaceholder,
+    active: placeholder === undefined && !hasText && Boolean(examplesKey),
     examplesKey,
-    prefix: placeholderPrefix,
-    typingInterval: placeholderTypingInterval,
-    pauseDuration: placeholderPauseDuration,
-    clearInterval: placeholderClearInterval,
+    prefix,
+    typingInterval,
+    pauseDuration,
+    clearInterval,
   });
 
-  const resolvedPlaceholder =
-    placeholder ?? (hasText || !examplesKey ? undefined : animatedPlaceholder);
+  return {
+    placeholder: placeholder ?? (hasText || !examplesKey ? undefined : animatedPlaceholder),
+    onChangeText: (text: string) => {
+      if (value === undefined) setUncontrolledHasText(Boolean(text));
+      onChangeText?.(text);
+    },
+  };
+}
 
-  return (
-    <View
-      className={cn(
-        'w-full flex-row items-center gap-2 bg-background',
-        variant === 'bar' && 'border-border',
-        variant === 'card' && 'border-border',
-        className
-      )}
-      style={[
-        {
-          paddingHorizontal: visual.controlPaddingXSm,
-          paddingTop: visual.controlPaddingYSm,
-          paddingBottom: bottomPadding,
-        },
-        variant === 'bar' ? { borderTopWidth: visual.borderWidthHairline } : null,
-        variant === 'card'
-          ? {
-              borderRadius: surfaceRadius(visual, 'xl'),
-              borderWidth: visual.borderWidthHairline,
-              ...shadowStyle(visual, colors, 'md'),
-            }
-          : null,
-      ]}
-    >
-      {leftSlot && <View className="shrink-0">{leftSlot}</View>}
-      {centerSlot && <View className="shrink-0">{centerSlot}</View>}
-      <TextInput
-        ref={ref}
-        style={[
-          controlRecipe(visual, 'default'),
-          typographyStyle(visual, 'label'),
-          variant === 'bar' ? { borderWidth: visual.borderWidthControl } : null,
-          { maxHeight: visual.smartInputMaxHeight },
-          !editable ? { opacity: interaction.disabledOpacity } : null,
-          style,
-        ]}
+function SmartInputSlot({ children }: { children: React.ReactNode }) {
+  return children ? <View className="shrink-0">{children}</View> : null;
+}
+
+export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps> = forwardRef(
+  function SmartInput(
+    {
+      leftSlot,
+      centerSlot,
+      rightSlot,
+      variant = 'bar',
+      className,
+      inputClassName,
+      submitBehavior = 'newline',
+      safeArea = true,
+      placeholderExamples,
+      placeholderPrefix = 'e.g. ',
+      placeholderTypingInterval = 65,
+      placeholderPauseDuration = 2200,
+      placeholderClearInterval = 25,
+      placeholderTextColor,
+      placeholder,
+      value,
+      defaultValue,
+      onChangeText,
+      editable = true,
+      style,
+      ...props
+    },
+    ref
+  ) {
+    const insets = useSafeAreaInsets();
+    const colors = useThemeColors();
+    const interaction = useInteractionTokens();
+    const visual = useVisualTokens();
+    const bottomPadding = safeArea
+      ? Math.max(insets.bottom, visual.controlPaddingYSm)
+      : visual.controlPaddingYSm;
+    const placeholderState = useSmartInputPlaceholder({
+      value,
+      defaultValue,
+      placeholder,
+      examples: placeholderExamples,
+      prefix: placeholderPrefix,
+      typingInterval: placeholderTypingInterval,
+      pauseDuration: placeholderPauseDuration,
+      clearInterval: placeholderClearInterval,
+      onChangeText,
+    });
+
+    return (
+      <View
         className={cn(
-          'flex-1 text-foreground placeholder:text-muted-foreground',
-          focusRing,
-          variant === 'bar' && 'border-border bg-muted',
-          variant === 'card' && 'bg-transparent',
-          inputClassName
+          'w-full flex-row items-center gap-2 bg-background',
+          variant === 'bar' && 'border-border',
+          variant === 'card' && 'border-border',
+          className
         )}
-        multiline
-        submitBehavior={submitBehavior}
-        textAlignVertical="top"
-        placeholderTextColor={placeholderTextColor ?? colors.placeholder}
-        placeholder={resolvedPlaceholder}
-        value={value}
-        defaultValue={defaultValue}
-        onChangeText={(text) => {
-          if (value === undefined) setUncontrolledHasText(Boolean(text));
-          onChangeText?.(text);
-        }}
-        editable={editable}
-        {...props}
-      />
-      {rightSlot && <View className="shrink-0">{rightSlot}</View>}
-    </View>
-  );
-});
+        style={[
+          {
+            paddingHorizontal: visual.controlPaddingXSm,
+            paddingTop: visual.controlPaddingYSm,
+            paddingBottom: bottomPadding,
+          },
+          variant === 'bar' ? { borderTopWidth: visual.borderWidthHairline } : null,
+          variant === 'card'
+            ? {
+                borderRadius: surfaceRadius(visual, 'xl'),
+                borderWidth: visual.borderWidthHairline,
+                ...shadowStyle(visual, colors, 'md'),
+              }
+            : null,
+        ]}
+      >
+        <SmartInputSlot>{leftSlot}</SmartInputSlot>
+        <SmartInputSlot>{centerSlot}</SmartInputSlot>
+        <TextInput
+          ref={ref}
+          style={[
+            controlRecipe(visual, 'default'),
+            typographyStyle(visual, 'label'),
+            variant === 'bar' ? { borderWidth: visual.borderWidthControl } : null,
+            { maxHeight: visual.smartInputMaxHeight },
+            !editable ? { opacity: interaction.disabledOpacity } : null,
+            style,
+          ]}
+          className={cn(
+            'flex-1 text-foreground placeholder:text-muted-foreground',
+            focusRing,
+            variant === 'bar' && 'border-border bg-muted',
+            variant === 'card' && 'bg-transparent',
+            inputClassName
+          )}
+          multiline
+          submitBehavior={submitBehavior}
+          textAlignVertical="top"
+          placeholderTextColor={placeholderTextColor ?? colors.placeholder}
+          placeholder={placeholderState.placeholder}
+          value={value}
+          defaultValue={defaultValue}
+          onChangeText={placeholderState.onChangeText}
+          editable={editable}
+          {...props}
+        />
+        <SmartInputSlot>{rightSlot}</SmartInputSlot>
+      </View>
+    );
+  }
+);

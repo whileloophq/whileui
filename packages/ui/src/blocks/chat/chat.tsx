@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   useWindowDimensions,
+  type ScrollViewInstance,
 } from 'react-native';
 import { Text } from '../../components/text';
 import { SmartInput } from '../layout/smart-input';
@@ -182,7 +183,7 @@ export function Chat({
   className,
   messagesClassName,
 }: ChatProps) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const visual = useVisualTokens();
   const emptyTitleTypography = typographyStyle(visual, 'emphasis');
   const emptyDescriptionTypography = typographyStyle(visual, 'label');

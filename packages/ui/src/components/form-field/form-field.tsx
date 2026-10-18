@@ -1,10 +1,18 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { Text, View, type TextProps, type ViewProps } from 'react-native';
+import {
+  Text,
+  View,
+  type TextInstance,
+  type TextProps,
+  type ViewInstance,
+  type ViewProps,
+} from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const formFieldVariants = tv({
   base: 'w-full',
@@ -69,7 +77,7 @@ export interface FormHintProps extends TextProps {}
 
 export interface FormMessageProps extends TextProps {}
 
-const FormField = React.forwardRef<View, FormFieldProps>(
+const FormField: ForwardRefComponent<ViewInstance, FormFieldProps> = React.forwardRef(
   (
     {
       className,
@@ -101,7 +109,7 @@ const FormField = React.forwardRef<View, FormFieldProps>(
 
 FormField.displayName = 'FormField';
 
-const FormLabel = React.forwardRef<Text, FormLabelProps>(
+const FormLabel: ForwardRefComponent<TextInstance, FormLabelProps> = React.forwardRef(
   ({ className, showRequiredIndicator = true, children, style, ...props }, ref) => {
     const { invalid, disabled, required } = useContext(FormFieldContext);
     const visual = useVisualTokens();
@@ -127,7 +135,7 @@ const FormLabel = React.forwardRef<Text, FormLabelProps>(
 
 FormLabel.displayName = 'FormLabel';
 
-const FormControl = React.forwardRef<View, FormControlProps>(
+const FormControl: ForwardRefComponent<ViewInstance, FormControlProps> = React.forwardRef(
   ({ className, style, ...props }, ref) => {
     const { density, invalid, disabled } = useContext(FormFieldContext);
     const interaction = useInteractionTokens();
@@ -157,23 +165,25 @@ const FormControl = React.forwardRef<View, FormControlProps>(
 
 FormControl.displayName = 'FormControl';
 
-const FormHint = React.forwardRef<Text, FormHintProps>(({ className, style, ...props }, ref) => {
-  const { invalid } = useContext(FormFieldContext);
-  const visual = useVisualTokens();
+const FormHint: ForwardRefComponent<TextInstance, FormHintProps> = React.forwardRef(
+  ({ className, style, ...props }, ref) => {
+    const { invalid } = useContext(FormFieldContext);
+    const visual = useVisualTokens();
 
-  return (
-    <Text
-      ref={ref}
-      className={cn('text-muted-foreground', invalid && 'text-destructive-muted', className)}
-      style={[typographyStyle(visual, 'caption'), style]}
-      {...props}
-    />
-  );
-});
+    return (
+      <Text
+        ref={ref}
+        className={cn('text-muted-foreground', invalid && 'text-destructive-muted', className)}
+        style={[typographyStyle(visual, 'caption'), style]}
+        {...props}
+      />
+    );
+  }
+);
 
 FormHint.displayName = 'FormHint';
 
-const FormMessage = React.forwardRef<Text, FormMessageProps>(
+const FormMessage: ForwardRefComponent<TextInstance, FormMessageProps> = React.forwardRef(
   ({ className, children, style, ...props }, ref) => {
     const visual = useVisualTokens();
 

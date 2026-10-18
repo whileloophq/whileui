@@ -1,9 +1,17 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { Text, View, type TextProps, type ViewProps } from 'react-native';
+import {
+  Text,
+  View,
+  type TextInstance,
+  type TextProps,
+  type ViewInstance,
+  type ViewProps,
+} from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const dataRowVariants = tv({
   base: 'w-full flex-row items-center gap-3',
@@ -107,7 +115,7 @@ export interface DataRowValueProps extends TextProps {
   className?: string;
 }
 
-const DataRow = React.forwardRef<View, DataRowProps>(
+const DataRow: ForwardRefComponent<ViewInstance, DataRowProps> = React.forwardRef(
   ({ className, size = 'default', style, ...props }, ref) => {
     const visual = useVisualTokens();
     const contextValue = useMemo(() => ({ size }), [size]);
@@ -126,21 +134,29 @@ const DataRow = React.forwardRef<View, DataRowProps>(
 
 DataRow.displayName = 'DataRow';
 
-const DataRowLeft = React.forwardRef<View, DataRowLeftProps>(({ className, ...props }, ref) => {
-  return (
-    <View ref={ref} className={cn('shrink-0 items-center justify-center', className)} {...props} />
-  );
-});
+const DataRowLeft: ForwardRefComponent<ViewInstance, DataRowLeftProps> = React.forwardRef(
+  ({ className, ...props }, ref) => {
+    return (
+      <View
+        ref={ref}
+        className={cn('shrink-0 items-center justify-center', className)}
+        {...props}
+      />
+    );
+  }
+);
 
 DataRowLeft.displayName = 'DataRowLeft';
 
-const DataRowCenter = React.forwardRef<View, DataRowCenterProps>(({ className, ...props }, ref) => {
-  return <View ref={ref} className={cn('min-w-0 flex-1 gap-0.5', className)} {...props} />;
-});
+const DataRowCenter: ForwardRefComponent<ViewInstance, DataRowCenterProps> = React.forwardRef(
+  ({ className, ...props }, ref) => {
+    return <View ref={ref} className={cn('min-w-0 flex-1 gap-0.5', className)} {...props} />;
+  }
+);
 
 DataRowCenter.displayName = 'DataRowCenter';
 
-const DataRowRight = React.forwardRef<View, DataRowRightProps>(
+const DataRowRight: ForwardRefComponent<ViewInstance, DataRowRightProps> = React.forwardRef(
   ({ className, style, ...props }, ref) => {
     const visual = useVisualTokens();
     return (
@@ -156,7 +172,7 @@ const DataRowRight = React.forwardRef<View, DataRowRightProps>(
 
 DataRowRight.displayName = 'DataRowRight';
 
-const DataRowLabel = React.forwardRef<Text, DataRowLabelProps>(
+const DataRowLabel: ForwardRefComponent<TextInstance, DataRowLabelProps> = React.forwardRef(
   ({ className, style, ...props }, ref) => {
     const { size } = useContext(DataRowContext);
     const visual = useVisualTokens();
@@ -175,8 +191,8 @@ const DataRowLabel = React.forwardRef<Text, DataRowLabelProps>(
 
 DataRowLabel.displayName = 'DataRowLabel';
 
-const DataRowDescription = React.forwardRef<Text, DataRowDescriptionProps>(
-  ({ className, style, ...props }, ref) => {
+const DataRowDescription: ForwardRefComponent<TextInstance, DataRowDescriptionProps> =
+  React.forwardRef(({ className, style, ...props }, ref) => {
     const { size } = useContext(DataRowContext);
     const visual = useVisualTokens();
 
@@ -193,12 +209,11 @@ const DataRowDescription = React.forwardRef<Text, DataRowDescriptionProps>(
         {...props}
       />
     );
-  }
-);
+  });
 
 DataRowDescription.displayName = 'DataRowDescription';
 
-const DataRowValue = React.forwardRef<Text, DataRowValueProps>(
+const DataRowValue: ForwardRefComponent<TextInstance, DataRowValueProps> = React.forwardRef(
   ({ className, style, ...props }, ref) => {
     const { size } = useContext(DataRowContext);
     const visual = useVisualTokens();

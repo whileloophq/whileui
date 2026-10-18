@@ -5,6 +5,7 @@ import { cn } from '../../lib/cn';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 export interface TooltipProps {
   onOpenChange?: (open: boolean) => void;
@@ -46,59 +47,57 @@ function Tooltip({
   );
 }
 
-const TooltipTrigger = React.forwardRef<
-  React.ComponentRef<typeof TooltipPrimitive.Trigger>,
-  TooltipTriggerProps
->(({ className, ...props }, ref) => (
-  <TooltipPrimitive.Trigger ref={ref} className={cn(className)} {...props} />
-));
+const TooltipTrigger: ForwardRefComponent<TooltipPrimitive.TriggerRef, TooltipTriggerProps> =
+  React.forwardRef(({ className, ...props }, ref) => (
+    <TooltipPrimitive.Trigger ref={ref} className={cn(className)} {...props} />
+  ));
 TooltipTrigger.displayName = 'TooltipTrigger';
 
-const TooltipContent = React.forwardRef<
-  React.ComponentRef<typeof TooltipPrimitive.Content>,
-  TooltipContentProps
->(({ className, sideOffset = 4, portalHost, children, style, ...props }, ref) => {
-  const visual = useVisualTokens();
-  const colors = useThemeColors();
-  const resolvedStyle = StyleSheet.flatten([
-    Platform.OS === 'web' ? undefined : contentStyles,
-    {
-      borderRadius: surfaceRadius(visual, 'md'),
-      borderWidth: visual.borderWidthHairline,
-      borderColor: colors.border,
-      paddingHorizontal: visual.controlPaddingXSm,
-      paddingVertical: visual.controlPaddingYSm,
-    },
-    shadowStyle(visual, colors, 'md'),
-    style,
-  ]) as ViewStyle;
+const TooltipContent: ForwardRefComponent<TooltipPrimitive.ContentRef, TooltipContentProps> =
+  React.forwardRef(({ className, sideOffset = 4, portalHost, children, style, ...props }, ref) => {
+    const visual = useVisualTokens();
+    const colors = useThemeColors();
+    const resolvedStyle = StyleSheet.flatten([
+      Platform.OS === 'web' ? undefined : contentStyles,
+      {
+        borderRadius: surfaceRadius(visual, 'md'),
+        borderWidth: visual.borderWidthHairline,
+        borderColor: colors.border,
+        paddingHorizontal: visual.controlPaddingXSm,
+        paddingVertical: visual.controlPaddingYSm,
+      },
+      shadowStyle(visual, colors, 'md'),
+      style,
+    ]) as ViewStyle;
 
-  return (
-    <TooltipPrimitive.Portal hostName={portalHost}>
-      <TooltipPrimitive.Overlay style={Platform.OS !== 'web' ? StyleSheet.absoluteFill : undefined}>
-        <TooltipPrimitive.Content
-          ref={ref}
-          sideOffset={sideOffset}
-          className={cn(
-            'z-50 overflow-hidden bg-primary',
-            'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
-            className
-          )}
-          style={resolvedStyle}
-          {...props}
+    return (
+      <TooltipPrimitive.Portal hostName={portalHost}>
+        <TooltipPrimitive.Overlay
+          style={Platform.OS !== 'web' ? StyleSheet.absoluteFill : undefined}
         >
-          {typeof children === 'string' ? (
-            <Text className="text-primary-foreground" style={typographyStyle(visual, 'caption')}>
-              {children}
-            </Text>
-          ) : (
-            children
-          )}
-        </TooltipPrimitive.Content>
-      </TooltipPrimitive.Overlay>
-    </TooltipPrimitive.Portal>
-  );
-});
+          <TooltipPrimitive.Content
+            ref={ref}
+            sideOffset={sideOffset}
+            className={cn(
+              'z-50 overflow-hidden bg-primary',
+              'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
+              className
+            )}
+            style={resolvedStyle}
+            {...props}
+          >
+            {typeof children === 'string' ? (
+              <Text className="text-primary-foreground" style={typographyStyle(visual, 'caption')}>
+                {children}
+              </Text>
+            ) : (
+              children
+            )}
+          </TooltipPrimitive.Content>
+        </TooltipPrimitive.Overlay>
+      </TooltipPrimitive.Portal>
+    );
+  });
 TooltipContent.displayName = 'TooltipContent';
 
 const contentStyles: ViewStyle = {

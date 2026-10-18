@@ -1,5 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Platform, Pressable, Text, TextInput, View, type TextInputProps } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+  type TextInputInstance,
+  type TextInputProps,
+} from 'react-native';
 import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
@@ -7,6 +15,7 @@ import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const numericInputVariants = tv({
   base: 'w-full flex-row items-center border-border bg-muted',
@@ -92,7 +101,212 @@ export interface NumericInputProps
   unstyled?: boolean;
 }
 
-const NumericInput = React.forwardRef<TextInput, NumericInputProps>(
+interface NumericInputModelOptions {
+  value: number | null | undefined;
+  defaultValue: number | undefined;
+  min: number | undefined;
+  max: number | undefined;
+  step: number;
+  editable: boolean;
+  onValueChange: NumericInputProps['onValueChange'];
+  onBlur: TextInputProps['onBlur'];
+}
+
+function useNumericInputModel({
+  value,
+  defaultValue,
+  min,
+  max,
+  step,
+  editable,
+  onValueChange,
+  onBlur,
+}: NumericInputModelOptions) {
+  const [internalText, setInternalText] = useState(() => toInputText(defaultValue));
+  const isControlled = value !== undefined;
+  const textValue = isControlled ? toInputText(value) : internalText;
+  const currentValue = useMemo(() => parseNumericText(textValue), [textValue]);
+
+  const applyNumericValue = useCallback(
+    (nextValue: number | null) => {
+      const clamped = nextValue === null ? null : clampValue(nextValue, min, max);
+      if (!isControlled) setInternalText(toInputText(clamped));
+      onValueChange?.(clamped);
+    },
+    [isControlled, max, min, onValueChange]
+  );
+
+  const handleTextChange = useCallback(
+    (nextText: string) => {
+      if (!/^-?\d*(?:[.,]\d*)?$/.test(nextText)) return;
+      if (!isControlled) setInternalText(nextText);
+      onValueChange?.(parseNumericText(nextText));
+    },
+    [isControlled, onValueChange]
+  );
+
+  const handleBlur = useCallback<NonNullable<TextInputProps['onBlur']>>(
+    (event) => {
+      const parsed = parseNumericText(textValue);
+      if (parsed !== null) applyNumericValue(roundToStepPrecision(parsed, step));
+      onBlur?.(event);
+    },
+    [applyNumericValue, onBlur, step, textValue]
+  );
+
+  const nudge = useCallback(
+    (delta: -1 | 1) => {
+      const baseline = currentValue ?? min ?? 0;
+      applyNumericValue(roundToStepPrecision(baseline + delta * step, step));
+    },
+    [applyNumericValue, currentValue, min, step]
+  );
+
+  return {
+    textValue,
+    handleTextChange,
+    handleBlur,
+    nudge,
+    canDecrease: editable && (min === undefined || currentValue === null || currentValue > min),
+    canIncrease: editable && (max === undefined || currentValue === null || currentValue < max),
+  };
+}
+
+type NumericInputSize = NonNullable<NumericInputProps['size']>;
+
+function numericInputTextStyle(
+  visual: ReturnType<typeof useVisualTokens>,
+  size: NumericInputSize,
+  unstyled: boolean,
+  style: TextInputProps['style']
+) {
+  const base = {
+    ...typographyStyle(visual, size === 'compact' ? 'caption' : 'label'),
+    paddingVertical: size === 'compact' ? visual.controlPaddingYSm : visual.controlPaddingYDefault,
+    paddingHorizontal: unstyled ? 0 : visual.controlPaddingXDefault,
+  };
+  return Platform.OS === 'web'
+    ? [{ ...base, width: '100%' as const, minWidth: 0 }, style]
+    : [base, style];
+}
+
+function NumericAffix({
+  side,
+  visual,
+  children,
+}: {
+  side: 'prefix' | 'suffix';
+  visual: ReturnType<typeof useVisualTokens>;
+  children: React.ReactNode;
+}) {
+  if (!children) return null;
+  const spacing = Math.max(8, Math.round(visual.controlPaddingXDefault * 0.5));
+  return (
+    <View style={side === 'prefix' ? { paddingRight: spacing } : { paddingLeft: spacing }}>
+      {children}
+    </View>
+  );
+}
+
+interface NumericStepperButtonProps {
+  delta: -1 | 1;
+  enabled: boolean;
+  label: string;
+  symbol: string;
+  size: number;
+  radius: number;
+  model: ReturnType<typeof useNumericInputModel>;
+  interaction: ReturnType<typeof useInteractionTokens>;
+  visual: ReturnType<typeof useVisualTokens>;
+}
+
+function NumericStepperButton({
+  delta,
+  enabled,
+  label,
+  symbol,
+  size,
+  radius,
+  model,
+  interaction,
+  visual,
+}: NumericStepperButtonProps) {
+  const feedbackStyle = withInteractivePressableStyle(undefined, interaction, {
+    disabled: !enabled,
+    disabledVariant: 'subtle',
+    pressedVariant: 'default',
+  });
+  return (
+    <Pressable
+      className="shrink-0 items-center justify-center bg-secondary"
+      style={(state) => {
+        const baseStyle =
+          typeof feedbackStyle === 'function' ? feedbackStyle(state) : feedbackStyle;
+        return [baseStyle, { width: size, height: size, borderRadius: radius }];
+      }}
+      onPress={() => model.nudge(delta)}
+      disabled={!enabled}
+      hitSlop={4}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Text className="font-medium text-foreground" style={typographyStyle(visual, 'body')}>
+        {symbol}
+      </Text>
+    </Pressable>
+  );
+}
+
+function NumericSteppers({
+  visible,
+  inset,
+  size,
+  radius,
+  model,
+  interaction,
+  visual,
+}: {
+  visible: boolean;
+  inset: number;
+  size: number;
+  radius: number;
+  model: ReturnType<typeof useNumericInputModel>;
+  interaction: ReturnType<typeof useInteractionTokens>;
+  visual: ReturnType<typeof useVisualTokens>;
+}) {
+  if (!visible) return null;
+  return (
+    <View
+      className="shrink-0 flex-row items-center"
+      style={{ gap: inset, paddingLeft: Math.max(6, inset) }}
+    >
+      <NumericStepperButton
+        delta={-1}
+        enabled={model.canDecrease}
+        label="Decrease value"
+        symbol="−"
+        size={size}
+        radius={radius}
+        model={model}
+        interaction={interaction}
+        visual={visual}
+      />
+      <NumericStepperButton
+        delta={1}
+        enabled={model.canIncrease}
+        label="Increase value"
+        symbol="+"
+        size={size}
+        radius={radius}
+        model={model}
+        interaction={interaction}
+        visual={visual}
+      />
+    </View>
+  );
+}
+
+const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = React.forwardRef(
   (
     {
       className,
@@ -120,84 +334,16 @@ const NumericInput = React.forwardRef<TextInput, NumericInputProps>(
     const colors = useThemeColors();
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
-    const [internalText, setInternalText] = useState(() => toInputText(defaultValue));
-    const isControlled = value !== undefined;
-    const textValue = isControlled ? toInputText(value) : internalText;
-
-    const currentValue = useMemo(() => parseNumericText(textValue), [textValue]);
-
-    const setTextAndValue = useCallback(
-      (nextText: string) => {
-        if (!isControlled) {
-          setInternalText(nextText);
-        }
-        onValueChange?.(parseNumericText(nextText));
-      },
-      [isControlled, onValueChange]
-    );
-
-    const applyNumericValue = useCallback(
-      (nextValue: number | null) => {
-        if (nextValue === null) {
-          if (!isControlled) {
-            setInternalText('');
-          }
-          onValueChange?.(null);
-          return;
-        }
-
-        const clamped = clampValue(nextValue, min, max);
-        if (!isControlled) {
-          setInternalText(toInputText(clamped));
-        }
-        onValueChange?.(clamped);
-      },
-      [isControlled, max, min, onValueChange]
-    );
-
-    const handleTextChange = (nextText: string) => {
-      const isNumericLike = /^-?\d*(?:[.,]\d*)?$/.test(nextText);
-      if (!isNumericLike) {
-        return;
-      }
-
-      setTextAndValue(nextText);
-    };
-
-    const handleBlur: TextInputProps['onBlur'] = (event) => {
-      const parsed = parseNumericText(textValue);
-      if (parsed !== null) {
-        const rounded = roundToStepPrecision(parsed, step);
-        const clamped = clampValue(rounded, min, max);
-        if (!isControlled) {
-          setInternalText(toInputText(clamped));
-        }
-        onValueChange?.(clamped);
-      }
-      onBlur?.(event);
-    };
-
-    const canDecrease =
-      editable && (min === undefined || currentValue === null || currentValue > min);
-    const canIncrease =
-      editable && (max === undefined || currentValue === null || currentValue < max);
-    const stepDownStyle = withInteractivePressableStyle(undefined, interaction, {
-      disabled: !canDecrease,
-      disabledVariant: 'subtle',
-      pressedVariant: 'default',
+    const model = useNumericInputModel({
+      value,
+      defaultValue,
+      min,
+      max,
+      step,
+      editable,
+      onValueChange,
+      onBlur,
     });
-    const stepUpStyle = withInteractivePressableStyle(undefined, interaction, {
-      disabled: !canIncrease,
-      disabledVariant: 'subtle',
-      pressedVariant: 'default',
-    });
-
-    const nudge = (delta: -1 | 1) => {
-      const baseline = currentValue ?? min ?? 0;
-      const raw = baseline + delta * step;
-      applyNumericValue(roundToStepPrecision(raw, step));
-    };
-
     const controlHeight = size === 'compact' ? visual.controlHeightSm : visual.controlHeightDefault;
     // Steppers render as inset soft buttons, centered inside the field shell.
     const stepInset = Math.max(3, Math.round(controlHeight * 0.1));
@@ -223,13 +369,9 @@ const NumericInput = React.forwardRef<TextInput, NumericInputProps>(
           !editable ? { opacity: interaction.disabledOpacity } : undefined,
         ]}
       >
-        {prefix ? (
-          <View
-            style={{ paddingRight: Math.max(8, Math.round(visual.controlPaddingXDefault * 0.5)) }}
-          >
-            {prefix}
-          </View>
-        ) : null}
+        <NumericAffix side="prefix" visual={visual}>
+          {prefix}
+        </NumericAffix>
         <View
           className="min-w-0 flex-1"
           style={Platform.OS === 'web' ? { minWidth: 0, flex: 1 } : undefined}
@@ -237,91 +379,28 @@ const NumericInput = React.forwardRef<TextInput, NumericInputProps>(
           <TextInput
             ref={ref}
             className={cn(numericInputTextVariants({ size }), 'w-full', focusRing, inputClassName)}
-            style={
-              Platform.OS === 'web'
-                ? [
-                    {
-                      ...typographyStyle(visual, size === 'compact' ? 'caption' : 'label'),
-                      width: '100%',
-                      minWidth: 0,
-                      paddingVertical:
-                        size === 'compact'
-                          ? visual.controlPaddingYSm
-                          : visual.controlPaddingYDefault,
-                      paddingHorizontal: unstyled ? 0 : visual.controlPaddingXDefault,
-                    },
-                    styleProp,
-                  ]
-                : [
-                    {
-                      ...typographyStyle(visual, size === 'compact' ? 'caption' : 'label'),
-                      paddingVertical:
-                        size === 'compact'
-                          ? visual.controlPaddingYSm
-                          : visual.controlPaddingYDefault,
-                      paddingHorizontal: unstyled ? 0 : visual.controlPaddingXDefault,
-                    },
-                    styleProp,
-                  ]
-            }
-            value={textValue}
-            onChangeText={handleTextChange}
-            onBlur={handleBlur}
+            style={numericInputTextStyle(visual, size, unstyled, styleProp)}
+            value={model.textValue}
+            onChangeText={model.handleTextChange}
+            onBlur={model.handleBlur}
             keyboardType="decimal-pad"
             editable={editable}
             placeholderTextColor={placeholderTextColor ?? colors.placeholder}
             {...props}
           />
         </View>
-        {suffix ? (
-          <View
-            style={{ paddingLeft: Math.max(8, Math.round(visual.controlPaddingXDefault * 0.5)) }}
-          >
-            {suffix}
-          </View>
-        ) : null}
-
-        {showSteppers ? (
-          <View
-            className="shrink-0 flex-row items-center"
-            style={{ gap: stepInset, paddingLeft: Math.max(6, stepInset) }}
-          >
-            <Pressable
-              className="shrink-0 items-center justify-center bg-secondary"
-              style={(state) => {
-                const baseStyle =
-                  typeof stepDownStyle === 'function' ? stepDownStyle(state) : stepDownStyle;
-                return [baseStyle, { width: stepSize, height: stepSize, borderRadius: stepRadius }];
-              }}
-              onPress={() => nudge(-1)}
-              disabled={!canDecrease}
-              hitSlop={4}
-              accessibilityRole="button"
-              accessibilityLabel="Decrease value"
-            >
-              <Text className="font-medium text-foreground" style={typographyStyle(visual, 'body')}>
-                −
-              </Text>
-            </Pressable>
-            <Pressable
-              className="shrink-0 items-center justify-center bg-secondary"
-              style={(state) => {
-                const baseStyle =
-                  typeof stepUpStyle === 'function' ? stepUpStyle(state) : stepUpStyle;
-                return [baseStyle, { width: stepSize, height: stepSize, borderRadius: stepRadius }];
-              }}
-              onPress={() => nudge(1)}
-              disabled={!canIncrease}
-              hitSlop={4}
-              accessibilityRole="button"
-              accessibilityLabel="Increase value"
-            >
-              <Text className="font-medium text-foreground" style={typographyStyle(visual, 'body')}>
-                +
-              </Text>
-            </Pressable>
-          </View>
-        ) : null}
+        <NumericAffix side="suffix" visual={visual}>
+          {suffix}
+        </NumericAffix>
+        <NumericSteppers
+          visible={showSteppers}
+          inset={stepInset}
+          size={stepSize}
+          radius={stepRadius}
+          model={model}
+          interaction={interaction}
+          visual={visual}
+        />
       </View>
     );
   }

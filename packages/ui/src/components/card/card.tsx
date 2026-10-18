@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, type StyleProp, type ViewProps, type ViewStyle, type TextProps } from 'react-native';
+import {
+  View,
+  type StyleProp,
+  type ViewInstance,
+  type ViewProps,
+  type ViewStyle,
+  type TextInstance,
+  type TextProps,
+} from 'react-native';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
@@ -7,6 +15,7 @@ import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-s
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfacePadding, typographyStyle, type ShadowTier } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const cardVariants = tv({
   base: 'border border-border bg-card',
@@ -34,7 +43,7 @@ export interface CardProps
   shadow?: ShadowTier;
 }
 
-const Card = React.forwardRef<View, CardProps>(
+const Card: ForwardRefComponent<ViewInstance, CardProps> = React.forwardRef(
   (
     {
       className,
@@ -93,15 +102,17 @@ Card.displayName = 'Card';
 
 export interface CardHeaderProps extends ViewProps {}
 
-const CardHeader = React.forwardRef<View, CardHeaderProps>(({ className, ...props }, ref) => {
-  return <View ref={ref} className={cn('pb-3', className)} {...props} />;
-});
+const CardHeader: ForwardRefComponent<ViewInstance, CardHeaderProps> = React.forwardRef(
+  ({ className, ...props }, ref) => {
+    return <View ref={ref} className={cn('pb-3', className)} {...props} />;
+  }
+);
 
 CardHeader.displayName = 'CardHeader';
 
 export interface CardTitleProps extends TextProps {}
 
-const CardTitle = React.forwardRef<React.ComponentRef<typeof Text>, CardTitleProps>(
+const CardTitle: ForwardRefComponent<TextInstance, CardTitleProps> = React.forwardRef(
   ({ className, style, ...props }, ref) => {
     const visual = useVisualTokens();
     return (
@@ -119,7 +130,7 @@ CardTitle.displayName = 'CardTitle';
 
 export interface CardDescriptionProps extends TextProps {}
 
-const CardDescription = React.forwardRef<React.ComponentRef<typeof Text>, CardDescriptionProps>(
+const CardDescription: ForwardRefComponent<TextInstance, CardDescriptionProps> = React.forwardRef(
   ({ className, style, ...props }, ref) => {
     const visual = useVisualTokens();
     return (
@@ -137,17 +148,21 @@ CardDescription.displayName = 'CardDescription';
 
 export interface CardContentProps extends ViewProps {}
 
-const CardContent = React.forwardRef<View, CardContentProps>(({ className, ...props }, ref) => {
-  return <View ref={ref} className={cn('pb-3', className)} {...props} />;
-});
+const CardContent: ForwardRefComponent<ViewInstance, CardContentProps> = React.forwardRef(
+  ({ className, ...props }, ref) => {
+    return <View ref={ref} className={cn('pb-3', className)} {...props} />;
+  }
+);
 
 CardContent.displayName = 'CardContent';
 
 export interface CardFooterProps extends ViewProps {}
 
-const CardFooter = React.forwardRef<View, CardFooterProps>(({ className, ...props }, ref) => {
-  return <View ref={ref} className={cn('flex-row items-center pt-1', className)} {...props} />;
-});
+const CardFooter: ForwardRefComponent<ViewInstance, CardFooterProps> = React.forwardRef(
+  ({ className, ...props }, ref) => {
+    return <View ref={ref} className={cn('flex-row items-center pt-1', className)} {...props} />;
+  }
+);
 
 CardFooter.displayName = 'CardFooter';
 

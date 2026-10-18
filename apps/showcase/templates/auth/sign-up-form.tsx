@@ -1,24 +1,19 @@
 /**
  * SignUpForm — Copy-paste template
- * Copy this file into your app and customize. Uses @thewhileloop/whileui primitives.
+ * Copy this file with auth-form-footer.tsx and customize. Uses WhileUI primitives.
  */
 import { useState } from 'react';
 import { View } from 'react-native';
 import {
-  Button,
-  ButtonText,
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
   Input,
   Label,
-  Pressable,
-  Separator,
-  Text,
 } from '@thewhileloop/whileui';
+import { AuthFormFooter } from './auth-form-footer';
 
 export interface SignUpFormProps {
   onSubmit?: (data: {
@@ -83,36 +78,15 @@ export function SignUpForm({
           />
         </View>
       </CardContent>
-      <CardFooter className="flex-col gap-4">
-        <Button className="w-full" onPress={handleSubmit}>
-          <ButtonText>Create Account</ButtonText>
-        </Button>
-
-        <View className="flex-row items-center gap-3 w-full">
-          <Separator className="flex-1" />
-          <Text className="text-xs text-muted-foreground uppercase">or</Text>
-          <Separator className="flex-1" />
-        </View>
-
-        <View className="flex-row gap-3 w-full">
-          <Button variant="outline" className="flex-1" onPress={onGooglePress}>
-            <ButtonText>Google</ButtonText>
-          </Button>
-          <Button variant="outline" className="flex-1" onPress={onApplePress}>
-            <ButtonText>Apple</ButtonText>
-          </Button>
-        </View>
-
-        <Pressable
-          onPress={onSignIn}
-          className="flex-row justify-center"
-          accessibilityRole="button"
-        >
-          <Text className="text-sm text-center text-muted-foreground">
-            Already have an account? <Text className="text-primary font-medium">Sign In</Text>
-          </Text>
-        </Pressable>
-      </CardFooter>
+      <AuthFormFooter
+        primaryLabel="Create Account"
+        onPrimaryPress={handleSubmit}
+        onGooglePress={onGooglePress}
+        onApplePress={onApplePress}
+        accountPrompt="Already have an account?"
+        accountAction="Sign In"
+        onAccountPress={onSignIn}
+      />
     </Card>
   );
 }

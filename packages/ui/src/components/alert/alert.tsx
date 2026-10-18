@@ -1,9 +1,17 @@
 import React from 'react';
-import { View, Text, type ViewProps, type TextProps } from 'react-native';
+import {
+  View,
+  Text,
+  type ViewInstance,
+  type ViewProps,
+  type TextInstance,
+  type TextProps,
+} from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const alertVariants = tv({
   base: 'w-full border',
@@ -23,30 +31,32 @@ const alertVariants = tv({
 
 export interface AlertProps extends ViewProps, VariantProps<typeof alertVariants> {}
 
-const Alert = React.forwardRef<View, AlertProps>(({ className, variant, style, ...props }, ref) => {
-  const visual = useVisualTokens();
-  return (
-    <View
-      ref={ref}
-      className={cn(alertVariants({ variant }), className)}
-      style={[
-        {
-          borderRadius: surfaceRadius(visual, 'lg'),
-          borderWidth: visual.borderWidthHairline,
-          padding: surfacePadding(visual, 'sm'),
-        },
-        style,
-      ]}
-      {...props}
-    />
-  );
-});
+const Alert: ForwardRefComponent<ViewInstance, AlertProps> = React.forwardRef(
+  ({ className, variant, style, ...props }, ref) => {
+    const visual = useVisualTokens();
+    return (
+      <View
+        ref={ref}
+        className={cn(alertVariants({ variant }), className)}
+        style={[
+          {
+            borderRadius: surfaceRadius(visual, 'lg'),
+            borderWidth: visual.borderWidthHairline,
+            padding: surfacePadding(visual, 'sm'),
+          },
+          style,
+        ]}
+        {...props}
+      />
+    );
+  }
+);
 
 Alert.displayName = 'Alert';
 
 export interface AlertTitleProps extends TextProps {}
 
-const AlertTitle = React.forwardRef<Text, AlertTitleProps>(
+const AlertTitle: ForwardRefComponent<TextInstance, AlertTitleProps> = React.forwardRef(
   ({ className, style, ...props }, ref) => {
     const visual = useVisualTokens();
     return (
@@ -64,7 +74,7 @@ AlertTitle.displayName = 'AlertTitle';
 
 export interface AlertDescriptionProps extends TextProps {}
 
-const AlertDescription = React.forwardRef<Text, AlertDescriptionProps>(
+const AlertDescription: ForwardRefComponent<TextInstance, AlertDescriptionProps> = React.forwardRef(
   ({ className, style, ...props }, ref) => {
     const visual = useVisualTokens();
     return (

@@ -4,9 +4,12 @@ module.exports = {
   // Jest probes `watchman --version` before it runs; a wedged watchman daemon blocks that
   // call forever and the suite never starts. Node's own crawler is fast enough here.
   watchman: false,
-  // Worklets ships a `.native` implementation that expects the native module to be
-  // installed; this resolver steers Jest to the plain-JS one instead.
-  resolver: 'react-native-worklets/jest/resolver',
+  // Jest has no native CSS event sink. The local resolver selects Reanimated's
+  // platform-neutral initializer while leaving its testable animation engine intact.
+  resolver: '<rootDir>/jest.resolver.cjs',
+  moduleNameMapper: {
+    '^react-native-worklets$': '<rootDir>/../../node_modules/react-native-worklets/src/mock.ts',
+  },
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
   // RN and its ecosystem publish untranspiled Flow/ESM; everything listed here

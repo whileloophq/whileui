@@ -1,5 +1,4 @@
 import { I18nManager } from 'react-native';
-import { getAnimatedStyle } from 'react-native-reanimated';
 import { act, fireEvent, render, screen } from '../../test/render';
 import { DrawerMenu } from './drawer-menu';
 
@@ -10,11 +9,26 @@ type Rendered = Awaited<ReturnType<typeof render>>;
 /** The panel is the one animated view whose style carries a transform. */
 function panelTranslateX(result: Rendered) {
   const [panel] = result.root!.queryAll((instance) => {
-    const style = getAnimatedStyle(instance as never) as { transform?: unknown[] } | undefined;
-    return Array.isArray(style?.transform);
+    const className = instance.props.className as unknown;
+    return (
+      typeof instance.type === 'string' &&
+      typeof className === 'string' &&
+      className.includes('relative overflow-hidden')
+    );
   });
-  const style = getAnimatedStyle(panel as never) as { transform: { translateX: number }[] };
-  return style.transform[0].translateX;
+  if (!panel) {
+    throw new Error('Drawer panel has no animated transform');
+  }
+  const style = panel.props.style as Array<{ transform?: { translateX?: unknown }[] }>;
+  const transform = style.find((entry) => entry?.transform)?.transform;
+  if (!transform) {
+    throw new Error('Drawer panel has no translate transform');
+  }
+  const translate = transform[0];
+  if (typeof translate.translateX !== 'number') {
+    throw new Error('Drawer panel has no numeric translateX');
+  }
+  return translate.translateX;
 }
 
 describe('DrawerMenu', () => {
@@ -49,7 +63,9 @@ describe('DrawerMenu', () => {
 
     await result.rerender(<DrawerMenu visible={false} onClose={jest.fn()} sections={sections} />);
     await result.rerender(<DrawerMenu visible onClose={jest.fn()} sections={sections} />);
-    jest.runAllTimers();
+    await act(() => {
+      jest.runAllTimers();
+    });
     expect(screen.getByRole('button', { name: 'History' })).toBeOnTheScreen();
 
     await result.rerender(<DrawerMenu visible={false} onClose={jest.fn()} sections={sections} />);

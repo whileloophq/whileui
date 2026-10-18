@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -47,7 +47,7 @@ function formatDisplayDate(dateString: string | null | undefined): string {
   });
 }
 
-export function DatePickerModal({
+function DatePickerModalSession({
   value,
   onValueChange,
   open,
@@ -90,17 +90,6 @@ export function DatePickerModal({
     [arrowColor, arrowFontSize]
   );
   const [draftDate, setDraftDate] = useState<string | null>(value ?? null);
-  const prevOpenRef = useRef(open);
-
-  useEffect(() => {
-    if (open && !prevOpenRef.current) {
-      setDraftDate(value ?? null);
-    } else if (!open && prevOpenRef.current) {
-      setDraftDate(null);
-    }
-
-    prevOpenRef.current = open;
-  }, [open, value]);
 
   const markedDates = useMemo(() => {
     if (!draftDate) return undefined;
@@ -222,6 +211,11 @@ export function DatePickerModal({
       </Modal>
     </>
   );
+}
+
+export function DatePickerModal(props: DatePickerModalProps) {
+  const sessionKey = props.open ? 'open' : 'closed';
+  return <DatePickerModalSession key={sessionKey} {...props} />;
 }
 
 /** Compact trigger showing formatted date. Use as DatePickerModal's trigger prop. */

@@ -4,7 +4,7 @@
 
 Beautiful, accessible, themeable components built with [Uniwind](https://uniwind.dev) + Tailwind CSS v4.
 
-**Requirements:** React 19+, React Native 0.81+, Expo 52+ (if using Expo). Supports React Native Web.
+**Requirements:** React 19.3+, React Native 0.88+, Expo 58+ (if using Expo). Supports React Native Web.
 
 WhileUI has one renderer: React Native. iOS, Android and React Native Web are all
 production targets — iOS and Android set the interaction baseline. See
@@ -15,7 +15,7 @@ production targets — iOS and Android set the interaction baseline. See
 
 ```bash
 bun add @thewhileloop/whileui
-bun add react@^19.0.0 react-native@^0.81.0 uniwind@^1.0.0 tailwindcss@^4.0.0 react-native-reanimated react-native-safe-area-context react-native-screens
+bun add react@^19.3.0 react-native@^0.88.0 uniwind@^1.12.2 tailwindcss@^4.0.0 react-native-reanimated react-native-safe-area-context react-native-screens
 # Only if you use Select, Popover, Tooltip, or HoverCard:
 bun add @rn-primitives/portal @rn-primitives/hooks @rn-primitives/slot @rn-primitives/select @rn-primitives/popover @rn-primitives/tooltip @rn-primitives/hover-card
 ```
@@ -851,7 +851,8 @@ Optional RN fallback tokens (hex/rgb/hsl/named):
 }
 ```
 
-Or use the first-party ThemeBridge helper with optional persistence:
+Or use the first-party theme bridge with optional persistence. The hook owns theme
+state and exposes event-driven setters:
 
 ```tsx
 import { useThemeBridge, type ThemeBridgeAdapter } from '@thewhileloop/whileui';
@@ -864,6 +865,16 @@ const adapter: ThemeBridgeAdapter = {
 };
 
 const { mode, resolvedTheme, setMode, cycleMode } = useThemeBridge({ adapter });
+```
+
+When another store already owns the mode, mount the controlled bridge once near the
+application root. Change `mode` in the owning event handler; the bridge applies and
+persists it without mirroring state back through a callback effect.
+
+```tsx
+import { ThemeBridge } from '@thewhileloop/whileui';
+
+<ThemeBridge mode={mode} adapter={adapter} />;
 ```
 
 ## Focus rings
@@ -1550,7 +1561,8 @@ announces as a heading to assistive technology — as do `DropdownMenuLabel` and
 
 ## SignInForm
 
-Copy from `apps/showcase/templates/auth/sign-in-form.tsx`, then:
+Copy `sign-in-form.tsx` and its sibling `auth-form-footer.tsx` from
+`apps/showcase/templates/auth/`, then:
 
 ```tsx
 import { SignInForm } from './templates/auth'; // or your path
@@ -1574,7 +1586,8 @@ import { SignInForm } from './templates/auth'; // or your path
 
 ## SignUpForm
 
-Copy from `apps/showcase/templates/auth/sign-up-form.tsx`, then:
+Copy `sign-up-form.tsx` and its sibling `auth-form-footer.tsx` from
+`apps/showcase/templates/auth/`, then:
 
 ```tsx
 import { SignUpForm } from './templates/auth'; // or your path

@@ -409,13 +409,7 @@ function AlertDialogContent({
       );
     }
     return (
-      <View
-        pointerEvents="box-none"
-        style={[
-          StyleSheet.absoluteFill,
-          { zIndex: 100, elevation: Platform.OS === 'android' ? 24 : undefined },
-        ]}
-      >
+      <View pointerEvents="box-none" style={[StyleSheet.absoluteFill, { zIndex: 100 }]}>
         {themedBody}
       </View>
     );

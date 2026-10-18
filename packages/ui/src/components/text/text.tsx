@@ -1,8 +1,9 @@
 import React from 'react';
-import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
+import { Text as RNText, type TextInstance, type TextProps as RNTextProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useResolveFontFamily } from '../../lib/font-context';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const textVariants = tv({
   base: 'text-foreground',
@@ -34,7 +35,7 @@ const textVariants = tv({
 
 export interface TextProps extends RNTextProps, VariantProps<typeof textVariants> {}
 
-const Text = React.forwardRef<RNText, TextProps>(
+const Text: ForwardRefComponent<TextInstance, TextProps> = React.forwardRef(
   ({ className, variant, size, style, ...props }, ref) => {
     const resolved = cn(textVariants({ variant, size }), className);
     const font = useResolveFontFamily(resolved);

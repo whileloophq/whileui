@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -92,7 +92,7 @@ function buildMarkedDates(start: string, end: string, theme: CalendarTheme): Mar
   return marked;
 }
 
-export function DateRangePickerModal({
+function DateRangePickerModalSession({
   value,
   onValueChange,
   open,
@@ -137,19 +137,6 @@ export function DateRangePickerModal({
 
   const [draftStart, setDraftStart] = useState<string | null>(value?.start ?? null);
   const [draftEnd, setDraftEnd] = useState<string | null>(value?.end ?? null);
-  const prevOpenRef = useRef(open);
-
-  useEffect(() => {
-    if (open && !prevOpenRef.current) {
-      setDraftStart(value?.start ?? null);
-      setDraftEnd(value?.end ?? null);
-    } else if (!open && prevOpenRef.current) {
-      setDraftStart(null);
-      setDraftEnd(null);
-    }
-
-    prevOpenRef.current = open;
-  }, [open, value]);
 
   const markedDates = useMemo((): MarkedDates => {
     const color = calendarTheme.selectedDayBackgroundColor;
@@ -303,6 +290,11 @@ export function DateRangePickerModal({
       </Modal>
     </>
   );
+}
+
+export function DateRangePickerModal(props: DateRangePickerModalProps) {
+  const sessionKey = props.open ? 'open' : 'closed';
+  return <DateRangePickerModalSession key={sessionKey} {...props} />;
 }
 
 /** Compact trigger showing formatted range. Use as DateRangePickerModal's trigger prop. */

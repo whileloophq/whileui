@@ -3,10 +3,10 @@ import {
   Pressable,
   Text,
   View,
-  type DimensionValue,
   type PressableProps,
   type TextProps,
   type ViewProps,
+  type ViewStyle,
 } from 'react-native';
 import { cn } from '../../lib/cn';
 import { focusRingInset } from '../../lib/focus-ring';
@@ -243,8 +243,8 @@ function SegmentedControlItem({
     disabled: finalDisabled,
     pressedVariant: 'default',
   });
-  const wrapBasisStyle = wrap
-    ? { flexBasis: `${visual.segmentedWrapBasisRatio * 100}%` as DimensionValue }
+  const wrapBasisStyle: ViewStyle | undefined = wrap
+    ? { flexBasis: `${visual.segmentedWrapBasisRatio * 100}%` }
     : undefined;
   const tokenStyle = getSegmentedItemStyle(visual, colors, size, variant, selected);
   const contextValue = useMemo(() => ({ selected, size }), [selected, size]);

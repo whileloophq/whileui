@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Platform,
   Pressable as RNPressable,
+  type PressableInstance,
   type PressableProps as RNPressableProps,
   type PressableStateCallbackType,
   type ViewStyle,
@@ -13,6 +14,7 @@ import {
   type PressedVariant,
 } from '../../lib/interaction-tokens';
 import { useMotionPolicy } from '../../lib/motion-policy';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 export interface PressableProps extends RNPressableProps {
   className?: string;
@@ -39,7 +41,7 @@ function disabledOpacity(
   return tokens.disabledOpacity;
 }
 
-const Pressable = React.forwardRef<React.ComponentRef<typeof RNPressable>, PressableProps>(
+const Pressable: ForwardRefComponent<PressableInstance, PressableProps> = React.forwardRef(
   (
     {
       className,

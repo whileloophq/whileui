@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import { View, type ViewInstance, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const stackVariants = tv({
   base: 'flex-col',
@@ -43,7 +44,7 @@ export interface StackProps
   className?: string;
 }
 
-const Stack = React.forwardRef<React.ComponentRef<typeof View>, StackProps>(
+const Stack: ForwardRefComponent<ViewInstance, StackProps> = React.forwardRef(
   ({ className, gap, align, justify, ...props }, ref) => {
     return (
       <View

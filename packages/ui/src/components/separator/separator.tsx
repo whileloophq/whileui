@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import { View, type ViewInstance, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 export interface SeparatorProps extends ViewProps {
   orientation?: 'horizontal' | 'vertical';
 }
 
-const Separator = React.forwardRef<View, SeparatorProps>(
+const Separator: ForwardRefComponent<ViewInstance, SeparatorProps> = React.forwardRef(
   ({ className, orientation = 'horizontal', ...props }, ref) => {
     return (
       <View

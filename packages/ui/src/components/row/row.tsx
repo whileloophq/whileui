@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import { View, type ViewInstance, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const rowVariants = tv({
   base: 'flex-row',
@@ -42,7 +43,7 @@ export interface RowProps extends Omit<ViewProps, 'className'>, VariantProps<typ
   className?: string;
 }
 
-const Row = React.forwardRef<React.ComponentRef<typeof View>, RowProps>(
+const Row: ForwardRefComponent<ViewInstance, RowProps> = React.forwardRef(
   ({ className, gap, align, justify, ...props }, ref) => {
     return (
       <View ref={ref} className={cn(rowVariants({ gap, align, justify }), className)} {...props} />

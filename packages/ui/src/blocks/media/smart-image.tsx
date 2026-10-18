@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, type ViewProps, type ImageProps as RNImageProps } from 'react-native';
-import { Image } from 'expo-image';
+import { View, type ViewInstance, type ViewProps } from 'react-native';
+import { Image, type ImageProps } from 'expo-image';
 import { Skeleton } from '../../components/skeleton';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens, type VisualTokens } from '../../lib/visual-tokens';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const smartImageVariants = tv({
   base: 'overflow-hidden',
@@ -46,17 +47,17 @@ function resolveRadius(visual: VisualTokens, radius: SmartImageRadius): number {
 export interface SmartImageProps
   extends Omit<ViewProps, 'className'>, VariantProps<typeof smartImageVariants> {
   className?: string;
-  source: RNImageProps['source'];
+  source: ImageProps['source'];
   alt: string;
   skeleton?: boolean;
   skeletonClassName?: string;
   transition?: number;
   onLoad?: () => void;
   onError?: () => void;
-  fallbackSource?: RNImageProps['source'];
+  fallbackSource?: ImageProps['source'];
 }
 
-const SmartImage = React.forwardRef<View, SmartImageProps>(
+const SmartImage: ForwardRefComponent<ViewInstance, SmartImageProps> = React.forwardRef(
   (
     {
       className,

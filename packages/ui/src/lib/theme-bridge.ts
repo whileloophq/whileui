@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { Uniwind, useUniwind } from 'uniwind';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -14,7 +14,6 @@ export interface ThemeBridgeProps {
   mode?: ThemeMode;
   initialMode?: ThemeMode;
   adapter?: ThemeBridgeAdapter;
-  onModeChange?: (mode: ThemeMode) => void;
 }
 
 export interface UseThemeBridgeOptions {
@@ -126,22 +125,30 @@ export function useThemeBridge({
   );
 }
 
-export function ThemeBridge({
-  mode: controlledMode,
-  initialMode = 'system',
+function ControlledThemeBridge({
+  mode,
   adapter,
-  onModeChange,
-}: ThemeBridgeProps) {
-  const { mode, setMode } = useThemeBridge({ initialMode, adapter });
-  const effectiveMode = controlledMode ?? mode;
-
+}: {
+  mode: ThemeMode;
+  adapter?: ThemeBridgeAdapter;
+}) {
   useEffect(() => {
-    setMode(effectiveMode);
-  }, [effectiveMode, setMode]);
-
-  useEffect(() => {
-    onModeChange?.(effectiveMode);
-  }, [effectiveMode, onModeChange]);
+    void syncThemeMode(mode, adapter);
+  }, [adapter, mode]);
 
   return null;
+}
+
+function UncontrolledThemeBridge({
+  initialMode,
+  adapter,
+}: Pick<ThemeBridgeProps, 'initialMode' | 'adapter'>) {
+  useThemeBridge({ initialMode, adapter });
+  return null;
+}
+
+export function ThemeBridge({ mode, initialMode = 'system', adapter }: ThemeBridgeProps) {
+  return mode === undefined
+    ? createElement(UncontrolledThemeBridge, { initialMode, adapter })
+    : createElement(ControlledThemeBridge, { mode, adapter });
 }

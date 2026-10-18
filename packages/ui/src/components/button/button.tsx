@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { Text, View, type TextProps, type ViewProps } from 'react-native';
+import { Text, View, type PressableInstance, type TextProps, type ViewProps } from 'react-native';
 import { Pressable, type PressableProps } from '../pressable';
 import { Spinner } from '../spinner';
 import { cn } from '../../lib/cn';
@@ -9,6 +9,7 @@ import { useResolveFontFamily } from '../../lib/font-context';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, typographyStyle, type TypographyRole } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 interface ButtonContextValue {
   variant: VariantProps<typeof buttonVariants>['variant'];
@@ -114,7 +115,7 @@ export interface ButtonIconProps extends ViewProps {
   className?: string;
 }
 
-const Button = React.forwardRef<React.ComponentRef<typeof Pressable>, ButtonProps>(
+const Button: ForwardRefComponent<PressableInstance, ButtonProps> = React.forwardRef(
   (
     {
       className,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import { View, type ViewInstance, type ViewProps } from 'react-native';
 import {
   FormControl,
   FormField,
@@ -11,6 +11,7 @@ import {
 import { cn } from '../../lib/cn';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 export interface LabeledFieldProps extends Omit<FormFieldProps, 'children'> {
   label?: React.ReactNode;
@@ -78,11 +79,10 @@ function LabeledField({
   );
 }
 
-const LabeledFieldControl = React.forwardRef<View, LabeledFieldControlProps>(
-  ({ className, ...props }, ref) => {
+const LabeledFieldControl: ForwardRefComponent<ViewInstance, LabeledFieldControlProps> =
+  React.forwardRef(({ className, ...props }, ref) => {
     return <View ref={ref} className={cn('min-w-0 flex-1', className)} {...props} />;
-  }
-);
+  });
 
 LabeledFieldControl.displayName = 'LabeledFieldControl';
 

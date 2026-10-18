@@ -1,9 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { View, Image, Text, type ViewProps, type ImageProps } from 'react-native';
+import {
+  View,
+  Image,
+  Text,
+  type ViewInstance,
+  type ViewProps,
+  type ImageProps,
+} from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const avatarVariants = tv({
   base: 'relative flex shrink-0 overflow-hidden rounded-full',
@@ -41,7 +49,7 @@ const AvatarContext = React.createContext<{
   setImageLoaded: () => {},
 });
 
-const Avatar = React.forwardRef<React.ComponentRef<typeof View>, AvatarProps>(
+const Avatar: ForwardRefComponent<ViewInstance, AvatarProps> = React.forwardRef(
   ({ className, size, ...props }, ref) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const contextValue = useMemo(() => ({ imageLoaded, setImageLoaded }), [imageLoaded]);

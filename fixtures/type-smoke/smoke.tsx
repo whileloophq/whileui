@@ -11,7 +11,7 @@
  * the API becomes *more* permissive, which is how a prop contract quietly erodes.
  */
 import { createRef } from 'react';
-import type { TextInput } from 'react-native';
+import type { TextInputInstance } from 'react-native';
 
 // --- the root entry ---------------------------------------------------------
 import {
@@ -62,7 +62,7 @@ void badVariant;
 
 // Refs reach the underlying host component. (`AppShell` takes none — it is a plain
 // function component despite extending `ViewProps`. Recorded, not invented here.)
-const inputRef = createRef<TextInput>();
+const inputRef = createRef<TextInputInstance>();
 
 // Async refresh handlers are accepted, because every real one is async.
 const onRefresh = async () => {};

@@ -1,8 +1,15 @@
 import '@testing-library/react-native/dist/matchers/extend-expect';
 
-// Reanimated runs for real here — there is no UI thread in Jest, so worklets are
-// plain functions and animated values settle synchronously. `jest.config.cjs` points
-// the resolver away from the worklets `.native` build, which needs the native module.
+// SDK 58 initializes the native Worklets and CSS bridges during module import.
+// `jest.config.cjs` selects their supported test-safe paths.
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual('react-native-reanimated/mock'),
+  interpolate: (value: number, input: number[], output: number[]) => {
+    const inputSpan = input[input.length - 1] - input[0];
+    const progress = inputSpan === 0 ? 0 : (value - input[0]) / inputSpan;
+    return output[0] + progress * (output[output.length - 1] - output[0]);
+  },
+}));
 
 // Uniwind resolves CSS variables from Metro-compiled CSS, which Jest has no way to
 // produce. Returning undefined drives components down the same fallback path they

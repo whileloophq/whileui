@@ -264,7 +264,10 @@ const ButtonContext = createContext({ variant: 'default', size: 'default' });
 ### React Native Limitations
 
 - SafeAreaView: use `react-native-safe-area-context` (RN's deprecated)
-- **CSS box-shadow**: Not supported. Use `shadow-sm/md/lg` classes (soft shadows) or stacked Views for hard-edge 3D effects (NeoPOP style)
+- **Shadows:** use the shared shadow recipes/classes rather than ad-hoc platform props.
+  React Native 0.88 supports `boxShadow` on the New Architecture, but Android outset
+  shadows require Android 9+, so the recipe keeps the supported-platform fallback.
+  Use stacked Views for hard-edge 3D effects (NeoPOP style).
 - **Icon colors**: `@expo/vector-icons` requires hex values, not CSS classes. Use `useIconColors()` from the UI package (reads from global.css via `useCSSVariable`)
 - **Other RN primitives requiring hex**: Spinner defaults to `useThemeColors().foreground`. Input, Textarea, NumericInput, SmartInput default `placeholderTextColor` to `mutedForeground`. Add optional override props when needed.
 - **Custom fonts on Android**: Pass only `fontFamily` in style—never `fontWeight`. Passing both triggers `setTypeface(_, BOLD)` and synthetic bold, distorting B/D/P/R. Use `FontProvider` + `useResolveFontFamily` (Text, ButtonText, Label).
@@ -357,8 +360,9 @@ Add to this file when you discover:
 - **SDK bumps must carry non-bundled packages too:** Expo pins what it bundles, but `uniwind`, `tailwindcss` and similar are on their own. Leaving one behind breaks Metro (`Invariant Violation: Unexpectedly escaped traversal`) while typecheck stays green. After any SDK bump, run an actual `expo export` — `tsc` does not exercise the bundler.
 - **RN 0.86 removed `StyleSheet.absoluteFillObject`:** Use `StyleSheet.absoluteFill`, which is now the same plain (frozen) style object.
 - **React Native 0.86 requires Xcode ≥ 16.1:** `pod install` raises `Please upgrade XCode` below that (`react-native/scripts/cocoapods/helpers.rb`, `min_xcode_version_supported`). An iOS native build is impossible on an older toolchain — nothing in the library can work around it.
+- **RN 0.88 strict API types make primitive instance types explicit:** Use exported instance types such as `ViewInstance`, `TextInstance`, `TextInputInstance`, `PressableInstance` and `ScrollViewInstance` for refs. Exported `forwardRef` components need an explicit public `ForwardRefComponent` annotation; otherwise declaration emit names React Native's private strict-API paths and fails portability checks.
 - **`className` is silently dropped on `react-native-safe-area-context`'s `SafeAreaView`:** it is a native view, and Uniwind only wraps React Native's own components. Symptom: padding, background and any caller `className` simply do not apply — measured as literal zero padding on device. Fix: keep the safe area bare (`style={{ flex: 1 }}`) and put every class on a child `View`. Uniwind exports its own `SafeAreaView`, but it wraps React Native's deprecated one, so it is not the answer.
-- **`ImageBackground` + `absoluteFill` does not fill on web:** React Native Web copies `width`/`height` from the outer style onto the inner `Image`, and `absoluteFill` carries neither — the image renders at its intrinsic size and leaves a visible seam where it ends. Put `width: '100%', height: '100%'` in `imageStyle`, which is applied last.
+- **`ImageBackground` is deprecated in RN 0.88:** Compose an absolutely positioned `Image` behind the content. Give it explicit `width: '100%'` and `height: '100%'`; `absoluteFill` alone leaves the RNW image at its intrinsic size and creates a seam.
 - **Android release packaging validates an image's bytes against its extension:** Expo's JS export can accept JPEG data named `.png`, but AAPT rejects it during `assembleRelease`. Keep the filename extension aligned with the actual encoding and include a native release build in asset-change evidence.
 - **Native projects are generated, not tracked:** `apps/*/ios` and `apps/*/android` come from `expo prebuild` and are gitignored. The showcase stays a managed Expo app; never hand-edit them.
 - **React 19 deprecated `React.MutableRefObject` and `React.ElementRef`:** Use `React.RefObject<T>` (its `current` is mutable now) and `React.ComponentRef<typeof X>`. `no-deprecated` catches both.

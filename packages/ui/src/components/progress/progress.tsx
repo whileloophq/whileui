@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, type ViewProps } from 'react-native';
+import { View, type ViewInstance, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const progressVariants = tv({
   base: 'h-3 w-full overflow-hidden rounded-full bg-secondary',
@@ -22,7 +23,7 @@ export interface ProgressProps extends ViewProps, VariantProps<typeof progressVa
   indicatorClassName?: string;
 }
 
-const Progress = React.forwardRef<View, ProgressProps>(
+const Progress: ForwardRefComponent<ViewInstance, ProgressProps> = React.forwardRef(
   ({ className, value = 0, size, indicatorClassName, ...props }, ref) => {
     const clampedValue = Math.max(0, Math.min(100, value));
 

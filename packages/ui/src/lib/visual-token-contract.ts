@@ -85,12 +85,7 @@ export interface VisualTokens {
 
 export type VisualTokenKey = keyof VisualTokens;
 export type VisualTokenGroup =
-  | 'foundation'
-  | 'typography'
-  | 'depth'
-  | 'motion'
-  | 'surface'
-  | 'component';
+  'foundation' | 'typography' | 'depth' | 'motion' | 'surface' | 'component';
 export type VisualTokenKind = 'pixel' | 'ratio' | 'scalar' | 'number' | 'boolean';
 
 export interface VisualTokenSpec {

@@ -27,6 +27,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PKG = join(ROOT, 'packages/ui');
+const NPM_CACHE = join(tmpdir(), 'whileui-npm-cache');
+mkdirSync(NPM_CACHE, { recursive: true });
 
 // `maxBuffer` is explicit because the default truncates stdout at 64 kB, and attw's
 // JSON report crosses that as soon as the export map grows. A truncated report parsed
@@ -63,7 +65,7 @@ async function walk(dir) {
 step('Packing');
 run('npm', ['run', 'build'], { cwd: ROOT });
 const packed = JSON.parse(
-  run('npm', ['pack', '--json', '--pack-destination', tmpdir()], { cwd: PKG })
+  run('npm', ['pack', '--json', '--cache', NPM_CACHE, '--pack-destination', tmpdir()], { cwd: PKG })
 );
 const tarball = join(tmpdir(), packed[0].filename);
 console.log(

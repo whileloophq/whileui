@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, type TextInputProps } from 'react-native';
+import { View, TextInput, type TextInputInstance, type TextInputProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
@@ -7,6 +7,7 @@ import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const inputVariants = tv({
   base: 'w-full border-border bg-muted text-foreground',
@@ -28,7 +29,7 @@ export interface InputProps extends TextInputProps, VariantProps<typeof inputVar
   inputClassName?: string;
 }
 
-const Input = React.forwardRef<TextInput, InputProps>(
+const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardRef(
   (
     {
       className,

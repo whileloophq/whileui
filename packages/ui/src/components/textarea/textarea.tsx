@@ -1,5 +1,10 @@
 import React from 'react';
-import { TextInput, type TextInputProps, type TextStyle } from 'react-native';
+import {
+  TextInput,
+  type TextInputInstance,
+  type TextInputProps,
+  type TextStyle,
+} from 'react-native';
 import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
@@ -7,6 +12,7 @@ import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle, type TypographyRole } from '../../lib/recipes';
+import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const textareaVariants = tv({
   base: 'w-full border-border bg-muted text-foreground',
@@ -33,7 +39,7 @@ export interface TextareaProps
   className?: string;
 }
 
-const Textarea = React.forwardRef<React.ComponentRef<typeof TextInput>, TextareaProps>(
+const Textarea: ForwardRefComponent<TextInputInstance, TextareaProps> = React.forwardRef(
   ({ className, size = 'default', placeholderTextColor, ...props }, ref) => {
     const colors = useThemeColors();
     const interaction = useInteractionTokens();

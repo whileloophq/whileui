@@ -36,17 +36,22 @@ of an error or missing decision.
 
 ```text
 Current phase: Phase 2 — Interaction engine
-Current task: P2-03 — Gesture and scroll-ownership audit
-Status: in progress
+Current task: none in progress. P2-03 is blocked on hardware; P3-01 is unstarted and
+  its prerequisite is disputed — see the Phase 2 gate note in P2-03
+Status: blocked
 Branch: main
-Last verified commit: the commit that added these lines (`git log -1`)
-Working tree at handoff: P2-03 implementation and evidence uncommitted
-Last command run: bun run verify
+Last verified commit: the Expo 58 migration commit (`git log -1`)
+Working tree at handoff: clean
+Last command run: nvm exec 24 bun run verify
 Last command result: passed — format, lint, typecheck, 60 unit tests, build, packed
   tarball, iOS and Android exports, 86 Chromium/WebKit tests
-Next safe action: capture drawer and sheet release traces on representative physical
-  iOS and Android devices; record them here, then complete P2-03 and advance to P3-01
-Blockers: representative physical iOS and Android devices are not attached
+Next safe action: attach a physical iOS device and a lower-tier physical Android device,
+  build release artifacts for both and capture drawer and sheet traces; record them in
+  P2-03, which then closes. If that hardware stays out of reach, decide explicitly
+  whether the simulator and emulator release runs satisfy the Phase 2 exit, record that
+  decision in P2-03, and only then start P3-01
+Blockers: P2-03 needs release traces from physical iOS and Android devices. None
+  attached. Nothing else in the repository is waiting on a decision
 ```
 
 The commit and working-tree lines are historical hints, not authority. Always run
@@ -184,7 +189,7 @@ Also corrected the package contract: root-exported `SmartImage` and `ProductCard
 statically import `expo-image`, so it is now a required peer instead of an optional peer
 that could crash a consumer at startup.
 
-### [~] P2-03 — Gesture and scroll-ownership audit
+### [!] P2-03 — Gesture and scroll-ownership audit
 
 **Goal:** make cancellation and gesture ownership explicit for Tier 1 drawer, sheet,
 pull-to-refresh and scroll interactions.
@@ -258,10 +263,28 @@ Evidence recorded 2026-10-18:
   not frame work. No touched component updates React state from a scroll or animation
   frame.
 
-Evidence still owed: release traces for drawer and sheet on representative physical
-iOS and Android devices. Simulator/emulator release flows prove behavior but do not
-satisfy the performance-evidence contract. Nested scrolling under forced RTL also
-remains a documented follow-up rather than a P2-03 acceptance claim.
+**Blocked 2026-10-18.** Implementation and every reproducible gate are complete. What
+remains cannot be produced on this machine.
+
+**Blocker:** release traces for the drawer and the sheet on representative physical iOS
+and Android devices. None is attached. The release flows on the iPhone 17 Pro simulator
+and the Pixel 8 emulator prove behavior, and `PLAN.md` > Evidence model does not let
+either stand in for performance acceptance.
+
+**Unblocked by:** one current physical iOS device and one lower-tier physical Android
+device; release artifacts built for both; drawer and sheet traces captured and recorded
+here showing no frame work on the JS thread. The task closes on that record alone — no
+source change is expected.
+
+**On the Phase 2 gate:** the phase exit asks that release-build gestures are verified on
+iOS and Android, which the simulator and emulator release runs satisfy as written. The
+outstanding evidence is the performance half, which this task lists as its own
+acceptance criterion. Whether that gates P3-01 is a decision for the next session; it is
+recorded here rather than resolved, because resolving it either way would relax a
+contract or stall a phase without the authority to do so.
+
+**Follow-up, not a blocker:** nested scrolling under forced RTL on a device. Forcing RTL
+needs a showcase switch that restarts the app.
 
 ## Phase 3 — Overlays and keyboard
 
@@ -542,6 +565,57 @@ manual screen-reader, RTL and large-text checks; telemetry tied to the released 
 
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
+
+### 2026-10-18 — P2-03 blocked on hardware; Expo 58 migration committed
+
+- Outcome: committed the Expo 58 migration as one change and moved P2-03 from `[~]` to
+  `[!]`. No task is in progress; the repository is waiting on physical devices, not on
+  work. Recorded, without resolving, that the Phase 2 exit wording is satisfied by the
+  simulator and emulator release runs while P2-03's own acceptance criteria are not.
+- Changed files: `IMPLEMENTATION.md` only. The committed tree is the one the previous
+  session verified, unchanged.
+- Checks run and results: see below.
+- Evidence added: none. This session produced no new evidence by design.
+- Remaining risk or blocker: P2-03 release traces need physical iOS and Android devices.
+  Until the Phase 2 gate question is settled, starting P3-01 would skip a prerequisite.
+- Next safe action: attach the two devices, capture drawer and sheet traces, record them
+  in P2-03. Failing that, settle the gate question explicitly before P3-01.
+
+### 2026-10-18 — React quality and performance-pattern cleanup
+
+- Outcome: resolved all 19 React Doctor findings through state-boundary fixes, drawer
+  virtualization, focused hooks/components and shared showcase template composition;
+  no rules or files were suppressed.
+- Changed files: date-picker sessions, ThemeBridge, DrawerMenu, SmartInput,
+  NumericInput, AlertDialog overlay layering, showcase structure, auth templates,
+  tests, README and the pending major changeset.
+- Checks run and results: React Doctor passed 100/100 with zero findings across 191
+  package/showcase files; `nvm exec 24 bun run verify` passed format, zero-warning lint,
+  typecheck, 60 unit tests, build, package inspection, both native exports and all 86
+  Chromium/WebKit tests.
+- Evidence added: virtualized drawer sections, synchronous date draft reset, direct
+  controlled theme synchronization and warning-free timer coverage for drawer exits.
+- Remaining risk or blocker: real frame-time, startup and memory claims still require
+  release traces on representative physical iOS and Android hardware.
+- Next safe action: review and commit the clean SDK 58 migration, apply its Changeset
+  and publish the major release before upgrading a consuming app.
+
+### 2026-10-18 — Expo SDK 58 stack migration
+
+- Outcome: moved the supported stack to Expo SDK 58, React Native 0.88 and React 19.3;
+  adapted public ref contracts and test infrastructure to their stricter APIs.
+- Changed files: workspace/package metadata, showcase configuration, package and fixture
+  types, Jest/Reanimated setup, public documentation and a major-release changeset.
+- Checks run and results: Expo Doctor passed 20/20; `nvm exec 24 bun run verify` passed
+  format, zero-warning lint, typecheck, 60 unit tests, build, package inspection, iOS
+  and Android exports, and all 86 Chromium/WebKit tests.
+- Evidence added: a real packed-tarball consumer check, both production bundle targets,
+  browser accessibility/interaction coverage and an explicit Node 22.13+ toolchain
+  contract.
+- Remaining risk or blocker: the P2-03 physical-device evidence remains blocked on
+  representative attached hardware.
+- Next safe action: review and commit the migration, apply its Changeset and publish the
+  major release before upgrading a consuming app to SDK 58.
 
 ### 2026-10-18 — P2-03 release-build interaction evidence
 

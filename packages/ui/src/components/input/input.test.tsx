@@ -1,5 +1,5 @@
 import { createRef, useState } from 'react';
-import { Text, type TextInput } from 'react-native';
+import { Text, type TextInputInstance } from 'react-native';
 import { render, screen, userEvent } from '../../test/render';
 import { Input } from './input';
 
@@ -54,7 +54,7 @@ describe('Input', () => {
   });
 
   it('forwards its ref to the text input', async () => {
-    const ref = createRef<TextInput>();
+    const ref = createRef<TextInputInstance>();
     await render(<Input ref={ref} placeholder="Email" />);
     expect(ref.current).not.toBeNull();
   });

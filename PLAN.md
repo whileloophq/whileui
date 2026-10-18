@@ -50,9 +50,9 @@ is a constraint on the roadmap.
 One known-good stack at a time, pinned to the current Expo SDK. No N-1 matrix, no bare
 React Native promise, no Old Architecture support.
 
-**The package, the showcase and the proving product all run this stack as of
-2026-09-13.** Phase 0 moved them together from SDK 54 / RN 0.81.5 / React 19.1 and
-tightened the published peer ranges in the same change.
+**The package and showcase run this stack as of 2026-10-18.** A consuming product must
+move to this stack before taking the corresponding WhileUI release. Phase 0 established
+that policy by moving the library and its proving product together from SDK 54.
 
 For anything Expo bundles, take the version from that SDK's `bundledNativeModules.json`,
 never from npm `latest`. For everything else — `uniwind`, `tailwindcss`, tooling — track
@@ -61,16 +61,16 @@ Metro breaks.
 
 | Layer        | Pinned                                                                           |
 | ------------ | -------------------------------------------------------------------------------- |
-| Expo SDK     | 57 (`expo@57.0.x`)                                                               |
-| React Native | 0.86.3, New Architecture required                                                |
-| React        | 19.2.3                                                                           |
-| Web renderer | `react-native-web@~0.21.0`                                                       |
-| Motion       | `react-native-reanimated@4.5.1` + `react-native-worklets@0.10.1`                 |
-| Gesture      | `react-native-gesture-handler@~2.32.0`                                           |
+| Expo SDK     | 58 (`expo@58.0.x`)                                                               |
+| React Native | 0.88.0, New Architecture required                                                |
+| React        | 19.3.0                                                                           |
+| Web renderer | `react-native-web@^0.21.4`                                                       |
+| Motion       | `react-native-reanimated@4.7.1` + `react-native-worklets@0.13.0`                 |
+| Gesture      | `react-native-gesture-handler@~3.3.0`                                            |
 | Styling      | `uniwind@^1.12` + `tailwindcss@^4`                                               |
 | Behavior     | `@rn-primitives/*`, pinned exactly                                               |
-| Test runtime | `jest-expo@~57.0.x` + React Native Testing Library                               |
-| Toolchain    | `bun@1.3.9`, TypeScript 6.0.3                                                    |
+| Test runtime | `jest-expo@~58.0.x` + Jest 30 + React Native Testing Library                     |
+| Toolchain    | Node ≥22.13.0, `bun@1.3.9`, TypeScript 6.0.3                                     |
 | Browsers     | Chromium and WebKit gated per PR; Firefox on release                             |
 | Devices      | Current iOS simulator, current Android emulator, one physical lower-tier Android |
 
@@ -272,8 +272,8 @@ Two corrections to earlier drafts of this plan:
 ## Distribution contract
 
 The library is published and consumed through npm even by our own apps, so publishing
-mistakes are product bugs. Peer ranges track the supported stack above — `expo >=57`,
-`react-native >=0.86`, `react >=19.2`, `reanimated >=4.5`, `worklets >=0.10` — and are
+mistakes are product bugs. Peer ranges track the supported stack above — `expo >=58`,
+`react-native >=0.88`, `react >=19.3`, `reanimated >=4.7`, `worklets >=0.13` — and are
 tightened in the same change as an SDK bump, never left behind at the old floor.
 
 - **Test the packed tarball, not the workspace.** `bun run verify:package` packs one and
@@ -380,10 +380,13 @@ cross-platform and distribution problems before three phases of work sit on top 
 
 ### Phase 0 — Baseline and stack upgrade
 
-Status as of 2026-09-13: done.
+Status as of 2026-10-18: done.
 
-- [x] Move `packages/ui` and `apps/showcase` to the Expo 57 stack above, and tighten the
-      published peer ranges to match.
+- [x] Move `packages/ui` and `apps/showcase` to the then-current Expo 57 stack, and
+      tighten the published peer ranges to match.
+- [x] Refresh the package and showcase to Expo 58 / React Native 0.88 / React 19.3 when
+      that became the current stable stack, including strict ref-instance declarations
+      and the matching test runtime.
 - [x] Stability inventory (`docs/stability.md`): every family → maturity → the evidence
       behind it. 80 families, all `experimental`, 30 with a production call site, 0 with
       tests.

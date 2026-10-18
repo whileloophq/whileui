@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
+  FlatList,
   Pressable,
   Modal,
   StatusBar,
   Platform,
   StyleSheet,
-  ImageBackground,
+  Image,
   Alert as SystemAlert,
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -276,11 +277,55 @@ function resolveBackdropColor(value: string | number | undefined, fallback: stri
   return trimmed.length > 0 ? trimmed : fallback;
 }
 
+function resolveBackdropPresentation(
+  dark: boolean,
+  isAndroid: boolean,
+  tokens: (string | number | undefined)[]
+) {
+  const [baseToken, imageOpacityToken, imageBlurToken, tintToken, veilToken] = tokens;
+  const configuredImageOpacity = Math.max(
+    0,
+    Math.min(1, parseBackdropNumber(imageOpacityToken, dark ? 0.75 : 0.85))
+  );
+  const configuredImageBlurRadius = Math.max(
+    0,
+    Math.round(parseBackdropNumber(imageBlurToken, dark ? 12 : 8))
+  );
+  return {
+    source: dark ? darkBackdropImg : lightBackdropImg,
+    base: resolveBackdropColor(baseToken, dark ? 'rgba(31, 28, 36, 1)' : 'rgba(254, 251, 251, 1)'),
+    imageOpacity: isAndroid ? configuredImageOpacity * 0.3 : configuredImageOpacity,
+    imageBlurRadius: isAndroid
+      ? Math.min(configuredImageBlurRadius, dark ? 4 : 2)
+      : configuredImageBlurRadius,
+    tint: resolveBackdropColor(
+      tintToken,
+      dark
+        ? isAndroid
+          ? 'rgba(236, 72, 153, 0.01)'
+          : 'rgba(236, 72, 153, 0.02)'
+        : isAndroid
+          ? 'rgba(219, 39, 119, 0.005)'
+          : 'rgba(219, 39, 119, 0.01)'
+    ),
+    veil: resolveBackdropColor(
+      veilToken,
+      dark
+        ? isAndroid
+          ? 'rgba(18, 14, 23, 0.6)'
+          : 'rgba(18, 14, 23, 0.35)'
+        : isAndroid
+          ? 'rgba(254, 251, 251, 0.58)'
+          : 'rgba(254, 251, 251, 0.25)'
+    ),
+  };
+}
+
 function ThemedBackdrop() {
   const { theme } = useUniwind();
   const dark = theme === 'dark';
   const isAndroid = Platform.OS === 'android';
-  const [baseToken, imageOpacityToken, imageBlurToken, tintToken, veilToken] = useCSSVariable([
+  const tokens = useCSSVariable([
     '--ui-showcase-backdrop-base',
     '--ui-showcase-backdrop-image-opacity',
     '--ui-showcase-backdrop-image-blur',
@@ -288,21 +333,7 @@ function ThemedBackdrop() {
     '--ui-showcase-backdrop-veil',
   ]);
 
-  const configuredImageOpacity = Math.max(
-    0,
-    Math.min(1, parseBackdropNumber(imageOpacityToken, dark ? 0.75 : 0.85))
-  );
-  const imageOpacity = isAndroid ? configuredImageOpacity * 0.3 : configuredImageOpacity;
-  const configuredImageBlurRadius = Math.max(
-    0,
-    Math.round(parseBackdropNumber(imageBlurToken, dark ? 12 : 8))
-  );
-  const imageBlurRadius = isAndroid
-    ? Math.min(configuredImageBlurRadius, dark ? 4 : 2)
-    : configuredImageBlurRadius;
-
-  const bgSource = dark ? darkBackdropImg : lightBackdropImg;
-  const fallbackBg = dark ? 'rgba(31, 28, 36, 1)' : 'rgba(254, 251, 251, 1)';
+  const presentation = resolveBackdropPresentation(dark, isAndroid, tokens);
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
@@ -310,35 +341,26 @@ function ThemedBackdrop() {
         style={[
           StyleSheet.absoluteFill,
           {
-            backgroundColor: resolveBackdropColor(baseToken, fallbackBg),
+            backgroundColor: presentation.base,
           },
         ]}
       />
-      <ImageBackground
-        source={bgSource}
+      <Image
+        source={presentation.source}
         resizeMode="cover"
-        blurRadius={imageBlurRadius}
-        // React Native Web's ImageBackground copies width/height off the outer style,
-        // and `absoluteFill` has neither — so its Image falls back to the asset's intrinsic
-        // 1024x1024 and the backdrop stops dead partway across a wider window. `imageStyle`
-        // is applied last, so the size has to be stated here.
-        imageStyle={{ opacity: imageOpacity, width: '100%', height: '100%' }}
-        style={StyleSheet.absoluteFill}
+        blurRadius={presentation.imageBlurRadius}
+        // Width and height stay explicit because `absoluteFill` alone leaves the web
+        // image at its intrinsic dimensions on a wide viewport.
+        style={[
+          StyleSheet.absoluteFill,
+          { opacity: presentation.imageOpacity, width: '100%', height: '100%' },
+        ]}
       />
       <View
         style={[
           StyleSheet.absoluteFill,
           {
-            backgroundColor: resolveBackdropColor(
-              tintToken,
-              dark
-                ? isAndroid
-                  ? 'rgba(236, 72, 153, 0.01)'
-                  : 'rgba(236, 72, 153, 0.02)'
-                : isAndroid
-                  ? 'rgba(219, 39, 119, 0.005)'
-                  : 'rgba(219, 39, 119, 0.01)'
-            ),
+            backgroundColor: presentation.tint,
           },
         ]}
       />
@@ -346,16 +368,7 @@ function ThemedBackdrop() {
         style={[
           StyleSheet.absoluteFill,
           {
-            backgroundColor: resolveBackdropColor(
-              veilToken,
-              dark
-                ? isAndroid
-                  ? 'rgba(18, 14, 23, 0.6)'
-                  : 'rgba(18, 14, 23, 0.35)'
-                : isAndroid
-                  ? 'rgba(254, 251, 251, 0.58)'
-                  : 'rgba(254, 251, 251, 0.25)'
-            ),
+            backgroundColor: presentation.veil,
           },
         ]}
       />
@@ -468,6 +481,135 @@ function MotionPolicyDemo() {
   );
 }
 
+type ShowcaseIconColors = ReturnType<typeof useIconColors>;
+type ShowcaseCategory = (typeof categories)[number];
+
+function toDrawerItem(
+  category: ShowcaseCategory,
+  activeKey: CategoryKey,
+  colors: ShowcaseIconColors
+) {
+  return {
+    key: category.key,
+    label: category.label,
+    icon: (
+      <Feather
+        name={category.icon}
+        size={20}
+        color={activeKey === category.key ? colors.primary : colors.muted}
+      />
+    ),
+  };
+}
+
+function createShowcaseDrawerSections(activeKey: CategoryKey, colors: ShowcaseIconColors) {
+  return [
+    {
+      title: 'Components',
+      items: categories.slice(0, 4).map((item) => toDrawerItem(item, activeKey, colors)),
+    },
+    {
+      title: 'Blocks',
+      items: categories.slice(4).map((item) => toDrawerItem(item, activeKey, colors)),
+    },
+  ];
+}
+
+function CategoryPill({
+  category,
+  active,
+  onSelect,
+  colors,
+}: {
+  category: ShowcaseCategory;
+  active: boolean;
+  onSelect: (key: CategoryKey) => void;
+  colors: ShowcaseIconColors;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      aria-pressed={active}
+      onPress={() => onSelect(category.key)}
+      className={cn(
+        'flex-row items-center gap-2 rounded-full px-4 py-2.5',
+        focusRing,
+        active ? 'bg-primary' : 'bg-muted'
+      )}
+    >
+      <Feather
+        name={category.icon}
+        size={14}
+        color={active ? colors.primaryForeground : colors.muted}
+      />
+      <Text
+        className={cn(
+          'text-sm font-medium',
+          active ? 'text-primary-foreground' : 'text-muted-foreground'
+        )}
+      >
+        {category.label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function CategoryStrip({
+  activeKey,
+  onSelect,
+  colors,
+}: {
+  activeKey: CategoryKey;
+  onSelect: (key: CategoryKey) => void;
+  colors: ShowcaseIconColors;
+}) {
+  const renderItem = React.useCallback(
+    ({ item }: { item: ShowcaseCategory }) => (
+      <CategoryPill
+        category={item}
+        active={activeKey === item.key}
+        onSelect={onSelect}
+        colors={colors}
+      />
+    ),
+    [activeKey, colors, onSelect]
+  );
+  return (
+    <FlatList
+      horizontal
+      data={categories}
+      keyExtractor={(item) => item.key}
+      renderItem={renderItem}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingHorizontal: 20, gap: 6 }}
+    />
+  );
+}
+
+function ShowcaseCategoryContent({
+  activeKey,
+  themeMode,
+  onThemeModeChange,
+}: {
+  activeKey: CategoryKey;
+  themeMode: ThemeMode;
+  onThemeModeChange: (mode: ThemeMode) => void;
+}) {
+  const content: Partial<Record<CategoryKey, React.ReactNode>> = {
+    primitives: <PrimitivesTab themeMode={themeMode} onThemeModeChange={onThemeModeChange} />,
+    controls: <ControlsTab />,
+    overlays: <OverlaysTab />,
+    forms: <FormsBlocksTab />,
+    auth: <AuthBlocksTab />,
+    navigation: <NavigationBlocksTab />,
+    layout: <LayoutBlocksTab />,
+    profile: <ProfileBlocksTab />,
+    lists: <ListsBlocksTab />,
+    commerce: <CommerceBlocksTab />,
+  };
+  return content[activeKey] ?? content.primitives;
+}
+
 function AppContent() {
   const { theme } = useUniwind();
   const insets = useSafeAreaInsets();
@@ -489,11 +631,7 @@ function AppContent() {
       <SafeAreaProvider>
         <View style={{ flex: 1 }} className="bg-background">
           <ThemedBackdrop />
-          <StatusBar
-            barStyle={theme === 'light' ? 'dark-content' : 'light-content'}
-            translucent
-            backgroundColor="transparent"
-          />
+          <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} />
           <SplashScreen
             logo={
               <View className="h-24 w-24 rounded-3xl bg-primary items-center justify-center">
@@ -514,44 +652,13 @@ function AppContent() {
     );
   }
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'primitives':
-        return <PrimitivesTab themeMode={themeMode} onThemeModeChange={setThemeMode} />;
-      case 'controls':
-        return <ControlsTab />;
-      case 'overlays':
-        return <OverlaysTab />;
-      case 'forms':
-        return <FormsBlocksTab />;
-      case 'auth':
-        return <AuthBlocksTab />;
-      case 'navigation':
-        return <NavigationBlocksTab />;
-      case 'layout':
-        return <LayoutBlocksTab />;
-      case 'profile':
-        return <ProfileBlocksTab />;
-      case 'lists':
-        return <ListsBlocksTab />;
-      case 'commerce':
-        return <CommerceBlocksTab />;
-      default:
-        return <PrimitivesTab themeMode={themeMode} onThemeModeChange={setThemeMode} />;
-    }
-  };
-
   if (activeTab === 'chat') {
     return (
       <SafeAreaProvider>
         <ThemeBridge mode={themeMode} adapter={showcaseThemeAdapter} />
         <View style={{ flex: 1 }} className="bg-background">
           <ThemedBackdrop />
-          <StatusBar
-            barStyle={theme === 'light' ? 'dark-content' : 'light-content'}
-            translucent
-            backgroundColor="transparent"
-          />
+          <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} />
           <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
             <ChatBlocksTab
               onBack={() => {
@@ -582,17 +689,9 @@ function AppContent() {
               },
               {
                 title: 'Other Blocks',
-                items: categories.flatMap((cat) =>
-                  cat.key === 'chat'
-                    ? []
-                    : [
-                        {
-                          key: cat.key,
-                          label: cat.label,
-                          icon: <Feather name={cat.icon} size={20} color={colors.muted} />,
-                        },
-                      ]
-                ),
+                items: categories
+                  .filter((category) => category.key !== 'chat')
+                  .map((category) => toDrawerItem(category, activeTab, colors)),
               },
             ]}
             activeKey={activeTab}
@@ -627,11 +726,7 @@ function AppContent() {
       <ThemeBridge mode={themeMode} adapter={showcaseThemeAdapter} />
       <View style={{ flex: 1 }} className="bg-background">
         <ThemedBackdrop />
-        <StatusBar
-          barStyle={theme === 'light' ? 'dark-content' : 'light-content'}
-          translucent
-          backgroundColor="transparent"
-        />
+        <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} />
         <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
           <View className="flex-1 web:max-w-4xl web:w-full web:self-center">
             <View className="px-5 pt-4 pb-2">
@@ -681,56 +776,34 @@ function AppContent() {
             </View>
 
             <View className="mt-3 mb-3">
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 20, gap: 6 }}
-              >
-                {categories.map((cat) => (
-                  <Pressable
-                    key={cat.key}
-                    // A filter chip row, not a tablist —  would need a
-                    // parent, and the scroll container sits between them.
-                    accessibilityRole="button"
-                    aria-pressed={activeTab === cat.key}
-                    onPress={() => {
-                      triggerHaptic('selection');
-                      setActiveTab(cat.key);
-                    }}
-                    className={cn(
-                      'flex-row items-center gap-2 rounded-full px-4 py-2.5',
-                      focusRing,
-                      activeTab === cat.key ? 'bg-primary' : 'bg-muted'
-                    )}
-                  >
-                    <Feather
-                      name={cat.icon}
-                      size={14}
-                      color={activeTab === cat.key ? colors.primaryForeground : colors.muted}
-                    />
-                    <Text
-                      className={cn(
-                        'text-sm font-medium',
-                        activeTab === cat.key ? 'text-primary-foreground' : 'text-muted-foreground'
-                      )}
-                    >
-                      {cat.label}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
+              <CategoryStrip
+                activeKey={activeTab}
+                colors={colors}
+                onSelect={(key) => {
+                  triggerHaptic('selection');
+                  setActiveTab(key);
+                }}
+              />
             </View>
 
             <ScrollView
               style={{ flex: 1 }}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingBottom: Math.max(40, insets.bottom + 24),
-                paddingHorizontal: 20,
-                flexGrow: 1,
-              }}
+              contentContainerStyle={{ flexGrow: 1 }}
             >
-              {renderContent()}
+              <View
+                style={{
+                  paddingBottom: Math.max(40, insets.bottom + 24),
+                  paddingHorizontal: 20,
+                  flexGrow: 1,
+                }}
+              >
+                <ShowcaseCategoryContent
+                  activeKey={activeTab}
+                  themeMode={themeMode}
+                  onThemeModeChange={setThemeMode}
+                />
+              </View>
             </ScrollView>
           </View>
         </SafeAreaView>
@@ -739,139 +812,7 @@ function AppContent() {
         <DrawerMenu
           visible={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          sections={[
-            {
-              title: 'Components',
-              items: [
-                {
-                  key: 'primitives',
-                  label: 'All Components',
-                  icon: (
-                    <Feather
-                      name="box"
-                      size={20}
-                      color={activeTab === 'primitives' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'controls',
-                  label: 'Controls',
-                  icon: (
-                    <Feather
-                      name="sliders"
-                      size={20}
-                      color={activeTab === 'controls' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'overlays',
-                  label: 'Overlays',
-                  icon: (
-                    <Feather
-                      name="layers"
-                      size={20}
-                      color={activeTab === 'overlays' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'forms',
-                  label: 'Forms',
-                  icon: (
-                    <Feather
-                      name="edit-3"
-                      size={20}
-                      color={activeTab === 'forms' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-              ],
-            },
-            {
-              title: 'Blocks',
-              items: [
-                {
-                  key: 'auth',
-                  label: 'Auth',
-                  icon: (
-                    <Feather
-                      name="lock"
-                      size={20}
-                      color={activeTab === 'auth' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'navigation',
-                  label: 'Navigation',
-                  icon: (
-                    <Feather
-                      name="compass"
-                      size={20}
-                      color={activeTab === 'navigation' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'layout',
-                  label: 'Layout',
-                  icon: (
-                    <Feather
-                      name="layout"
-                      size={20}
-                      color={activeTab === 'layout' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'chat',
-                  label: 'Chat',
-                  icon: (
-                    <Feather
-                      name="message-circle"
-                      size={20}
-                      color={(activeTab as CategoryKey) === 'chat' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'profile',
-                  label: 'Profile',
-                  icon: (
-                    <Feather
-                      name="user"
-                      size={20}
-                      color={activeTab === 'profile' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'lists',
-                  label: 'Lists',
-                  icon: (
-                    <Feather
-                      name="list"
-                      size={20}
-                      color={activeTab === 'lists' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-                {
-                  key: 'commerce',
-                  label: 'Commerce',
-                  icon: (
-                    <Feather
-                      name="shopping-bag"
-                      size={20}
-                      color={activeTab === 'commerce' ? colors.primary : colors.muted}
-                    />
-                  ),
-                },
-              ],
-            },
-          ]}
+          sections={createShowcaseDrawerSections(activeTab, colors)}
           activeKey={activeTab}
           onSelect={(key) => {
             setActiveTab(key as CategoryKey);
@@ -1539,191 +1480,185 @@ function OverlaysTab() {
         </View>
       </Section>
 
-      <Section title="Disclosure" subtitle="Accordions, collapsibles, and tabs">
-        <Accordion type="single" collapsible>
-          <AccordionItem value="item-1">
-            <AccordionTrigger>
-              <Text className="text-foreground font-medium">Is it fully native?</Text>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Text className="text-muted-foreground">
-                Yes. Every component renders native Views, Text, and Pressables — no web views.
-              </Text>
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-2">
-            <AccordionTrigger>
-              <Text className="text-foreground font-medium">Can I customize the theme?</Text>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Text className="text-muted-foreground">
-                Yes. All design tokens live in global.css — change one file to redesign everything.
-              </Text>
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-3">
-            <AccordionTrigger>
-              <Text className="text-foreground font-medium">Does it support dark mode?</Text>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Text className="text-muted-foreground">
-                Yes. Use the theme toggle above to see every component adapt instantly.
-              </Text>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+      <OverlayDisclosureDemos />
 
-        <Collapsible className="border border-border rounded-xl p-4 mt-2">
-          <View className="flex-row items-center justify-between">
-            <Text className="font-semibold text-foreground">What's included</Text>
-            <CollapsibleTrigger className="p-2 rounded-lg active:bg-accent">
-              <Text className="text-sm font-medium text-primary">Show</Text>
-            </CollapsibleTrigger>
-          </View>
-          <CollapsibleContent className="overflow-hidden">
-            <View className="gap-2 mt-3">
-              <View className="flex-row items-center gap-2 p-2.5 bg-muted rounded-lg">
-                <Text className="text-sm text-foreground">34 headless components</Text>
-              </View>
-              <View className="flex-row items-center gap-2 p-2.5 bg-muted rounded-lg">
-                <Text className="text-sm text-foreground">31 pre-built blocks</Text>
-              </View>
-              <View className="flex-row items-center gap-2 p-2.5 bg-muted rounded-lg">
-                <Text className="text-sm text-foreground">Full theming via design tokens</Text>
-              </View>
-            </View>
-          </CollapsibleContent>
-        </Collapsible>
-
-        <Tabs defaultValue="preview" className="mt-4">
-          <TabsList className="w-full">
-            <TabsTrigger value="preview">
-              <Text className="text-foreground">Preview</Text>
-            </TabsTrigger>
-            <TabsTrigger value="code">
-              <Text className="text-foreground">Code</Text>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="preview">
-            <Card>
-              <CardHeader>
-                <CardTitle>Welcome back</CardTitle>
-                <CardDescription>Your workspace is ready.</CardDescription>
-              </CardHeader>
-              <CardContent className="gap-3">
-                <Label>Email</Label>
-                <Input placeholder="you@company.com" />
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full">
-                  <ButtonText>Continue</ButtonText>
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-          <TabsContent value="code">
-            <Card>
-              <CardContent className="py-6">
-                <Text className="text-sm text-muted-foreground font-medium">
-                  {
-                    '<Card>\n  <CardHeader>\n    <CardTitle>Welcome back</CardTitle>\n  </CardHeader>\n  <CardContent>\n    <Input placeholder="..." />\n  </CardContent>\n</Card>'
-                  }
-                </Text>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </Section>
-
-      <Section title="Data Display" subtitle="Avatars, aspect ratios, and hover cards">
-        <View className="flex-row gap-3 items-center">
-          <Avatar>
-            <AvatarFallback>WU</AvatarFallback>
-          </Avatar>
-          <Avatar>
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <Avatar>
-            <AvatarFallback>MK</AvatarFallback>
-          </Avatar>
-          <View className="w-28">
-            <AspectRatio ratio={16 / 9}>
-              <View className="flex-1 bg-muted rounded-lg items-center justify-center">
-                <Text className="text-xs text-muted-foreground">16:9</Text>
-              </View>
-            </AspectRatio>
-          </View>
-        </View>
-
-        <HoverCard>
-          <HoverCardTrigger asChild>
-            <Button variant="link">
-              <ButtonText>@whileui (Hover/Press)</ButtonText>
-            </Button>
-          </HoverCardTrigger>
-          <HoverCardContent>
-            <View className="flex-row gap-3">
-              <Avatar>
-                <AvatarFallback>WU</AvatarFallback>
-              </Avatar>
-              <View className="flex-1">
-                <Text className="text-sm font-semibold text-foreground">@whileui</Text>
-                <Text className="text-sm text-muted-foreground">
-                  Beautiful, accessible native components for React Native.
-                </Text>
-              </View>
-            </View>
-          </HoverCardContent>
-        </HoverCard>
-
-        <Menubar>
-          <MenubarMenu>
-            <MenubarTrigger>
-              <Text className="text-foreground text-sm">File</Text>
-            </MenubarTrigger>
-            <MenubarContent>
-              <MenubarLabel>Project</MenubarLabel>
-              <MenubarItem>
-                <Text className="text-foreground">New Project</Text>
-              </MenubarItem>
-              <MenubarItem>
-                <Text className="text-foreground">Open</Text>
-              </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>
-                <Text className="text-foreground">Export</Text>
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger>
-              <Text className="text-foreground text-sm">Edit</Text>
-            </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem>
-                <Text className="text-foreground">Undo</Text>
-              </MenubarItem>
-              <MenubarItem>
-                <Text className="text-foreground">Redo</Text>
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger>
-              <Text className="text-foreground text-sm">View</Text>
-            </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem>
-                <Text className="text-foreground">Zoom In</Text>
-              </MenubarItem>
-              <MenubarItem>
-                <Text className="text-foreground">Zoom Out</Text>
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-        </Menubar>
-      </Section>
+      <OverlayDataDisplayDemos />
     </View>
+  );
+}
+
+function OverlayDisclosureDemos() {
+  return (
+    <Section title="Disclosure" subtitle="Accordions, collapsibles, and tabs">
+      <Accordion type="single" collapsible>
+        <AccordionItem value="item-1">
+          <AccordionTrigger>
+            <Text className="text-foreground font-medium">Is it fully native?</Text>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Text className="text-muted-foreground">
+              Yes. Every component renders native Views, Text, and Pressables — no web views.
+            </Text>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-2">
+          <AccordionTrigger>
+            <Text className="text-foreground font-medium">Can I customize the theme?</Text>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Text className="text-muted-foreground">
+              Yes. All design tokens live in global.css — change one file to redesign everything.
+            </Text>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-3">
+          <AccordionTrigger>
+            <Text className="text-foreground font-medium">Does it support dark mode?</Text>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Text className="text-muted-foreground">
+              Yes. Use the theme toggle above to see every component adapt instantly.
+            </Text>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      <Collapsible className="border border-border rounded-xl p-4 mt-2">
+        <View className="flex-row items-center justify-between">
+          <Text className="font-semibold text-foreground">What's included</Text>
+          <CollapsibleTrigger className="p-2 rounded-lg active:bg-accent">
+            <Text className="text-sm font-medium text-primary">Show</Text>
+          </CollapsibleTrigger>
+        </View>
+        <CollapsibleContent className="overflow-hidden">
+          <View className="gap-2 mt-3">
+            {[
+              '34 headless components',
+              '31 pre-built blocks',
+              'Full theming via design tokens',
+            ].map((item) => (
+              <View key={item} className="flex-row items-center gap-2 p-2.5 bg-muted rounded-lg">
+                <Text className="text-sm text-foreground">{item}</Text>
+              </View>
+            ))}
+          </View>
+        </CollapsibleContent>
+      </Collapsible>
+      <Tabs defaultValue="preview" className="mt-4">
+        <TabsList className="w-full">
+          <TabsTrigger value="preview">
+            <Text className="text-foreground">Preview</Text>
+          </TabsTrigger>
+          <TabsTrigger value="code">
+            <Text className="text-foreground">Code</Text>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="preview">
+          <Card>
+            <CardHeader>
+              <CardTitle>Welcome back</CardTitle>
+              <CardDescription>Your workspace is ready.</CardDescription>
+            </CardHeader>
+            <CardContent className="gap-3">
+              <Label>Email</Label>
+              <Input placeholder="you@company.com" />
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full">
+                <ButtonText>Continue</ButtonText>
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        <TabsContent value="code">
+          <Card>
+            <CardContent className="py-6">
+              <Text className="text-sm text-muted-foreground font-medium">
+                {
+                  '<Card>\n  <CardHeader>\n    <CardTitle>Welcome back</CardTitle>\n  </CardHeader>\n  <CardContent>\n    <Input placeholder="..." />\n  </CardContent>\n</Card>'
+                }
+              </Text>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </Section>
+  );
+}
+
+function OverlayDataDisplayDemos() {
+  return (
+    <Section title="Data Display" subtitle="Avatars, aspect ratios, and hover cards">
+      <View className="flex-row gap-3 items-center">
+        {['WU', 'JD', 'MK'].map((initials) => (
+          <Avatar key={initials}>
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+        ))}
+        <View className="w-28">
+          <AspectRatio ratio={16 / 9}>
+            <View className="flex-1 bg-muted rounded-lg items-center justify-center">
+              <Text className="text-xs text-muted-foreground">16:9</Text>
+            </View>
+          </AspectRatio>
+        </View>
+      </View>
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <Button variant="link">
+            <ButtonText>@whileui (Hover/Press)</ButtonText>
+          </Button>
+        </HoverCardTrigger>
+        <HoverCardContent>
+          <View className="flex-row gap-3">
+            <Avatar>
+              <AvatarFallback>WU</AvatarFallback>
+            </Avatar>
+            <View className="flex-1">
+              <Text className="text-sm font-semibold text-foreground">@whileui</Text>
+              <Text className="text-sm text-muted-foreground">
+                Beautiful, accessible native components for React Native.
+              </Text>
+            </View>
+          </View>
+        </HoverCardContent>
+      </HoverCard>
+      <Menubar>
+        <MenubarMenu>
+          <MenubarTrigger>
+            <Text className="text-foreground text-sm">File</Text>
+          </MenubarTrigger>
+          <MenubarContent>
+            <MenubarLabel>Project</MenubarLabel>
+            {['New Project', 'Open'].map((item) => (
+              <MenubarItem key={item}>
+                <Text className="text-foreground">{item}</Text>
+              </MenubarItem>
+            ))}
+            <MenubarSeparator />
+            <MenubarItem>
+              <Text className="text-foreground">Export</Text>
+            </MenubarItem>
+          </MenubarContent>
+        </MenubarMenu>
+        {[
+          { label: 'Edit', items: ['Undo', 'Redo'] },
+          { label: 'View', items: ['Zoom In', 'Zoom Out'] },
+        ].map((menu) => (
+          <MenubarMenu key={menu.label}>
+            <MenubarTrigger>
+              <Text className="text-foreground text-sm">{menu.label}</Text>
+            </MenubarTrigger>
+            <MenubarContent>
+              {menu.items.map((item) => (
+                <MenubarItem key={item}>
+                  <Text className="text-foreground">{item}</Text>
+                </MenubarItem>
+              ))}
+            </MenubarContent>
+          </MenubarMenu>
+        ))}
+      </Menubar>
+    </Section>
   );
 }
 
@@ -2423,102 +2358,7 @@ function LayoutBlocksTab() {
         </View>
       </Section>
 
-      <Section
-        title="Content Skeleton"
-        subtitle="Layout placeholder while loading. Use instead of spinner when you need layout preview."
-      >
-        <View className="gap-6">
-          <View>
-            <Text className="mb-2 text-sm text-muted-foreground">Full page preview (list)</Text>
-            <View className="min-h-[320px] rounded-xl border border-border overflow-hidden bg-background">
-              <ContentSkeleton variant="list" rows={5} className="flex-1" />
-            </View>
-          </View>
-          <View>
-            <Text className="mb-2 text-sm text-muted-foreground">Variants</Text>
-            <View className="gap-4">
-              <View>
-                <Text className="mb-1 text-xs text-muted-foreground">list</Text>
-                <View className="rounded-xl border border-border overflow-hidden bg-background">
-                  <ContentSkeleton variant="list" rows={2} />
-                </View>
-              </View>
-              <View>
-                <Text className="mb-1 text-xs text-muted-foreground">card</Text>
-                <ContentSkeleton variant="card" />
-              </View>
-              <View>
-                <Text className="mb-1 text-xs text-muted-foreground">generic</Text>
-                <View className="rounded-xl border border-border overflow-hidden bg-background">
-                  <ContentSkeleton variant="generic" />
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Section>
-
-      <Section
-        title="Page Skeleton"
-        subtitle="Variant-based page layouts: dashboard, list, settings, card, generic. Replaces app-specific skeletons."
-      >
-        <View className="gap-6">
-          <View>
-            <Text className="mb-2 text-sm text-muted-foreground">Variants</Text>
-            <View className="gap-4">
-              <View>
-                <Text className="mb-1 text-xs text-muted-foreground">dashboard</Text>
-                <View className="rounded-xl border border-border overflow-hidden bg-background">
-                  <PageSkeleton variant="dashboard" />
-                </View>
-              </View>
-              <View>
-                <Text className="mb-1 text-xs text-muted-foreground">list (count=5)</Text>
-                <View className="rounded-xl border border-border overflow-hidden bg-background">
-                  <PageSkeleton variant="list" count={5} />
-                </View>
-              </View>
-              <View>
-                <Text className="mb-1 text-xs text-muted-foreground">settings (count=6)</Text>
-                <View className="rounded-xl border border-border overflow-hidden bg-background">
-                  <PageSkeleton variant="settings" count={6} />
-                </View>
-              </View>
-              <View>
-                <Text className="mb-1 text-xs text-muted-foreground">card</Text>
-                <PageSkeleton variant="card" />
-              </View>
-              <View>
-                <Text className="mb-1 text-xs text-muted-foreground">generic</Text>
-                <View className="rounded-xl border border-border overflow-hidden bg-background">
-                  <PageSkeleton variant="generic" />
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Section>
-
-      <Section
-        title="Screen Skeleton"
-        subtitle="Header slot or placeholder + page content skeleton for no-layout-jump loading states."
-      >
-        <View className="gap-4">
-          <View className="rounded-xl border border-border overflow-hidden bg-background">
-            <ScreenSkeleton variant="list" count={4} headerPlaceholder />
-          </View>
-          <View className="rounded-xl border border-border overflow-hidden bg-background">
-            <ScreenSkeleton
-              variant="dashboard"
-              header={
-                <View className="px-4 pt-4 pb-2 border-b border-border">
-                  <Text className="text-base font-medium text-foreground">Overview</Text>
-                </View>
-              }
-            />
-          </View>
-        </View>
-      </Section>
+      <LayoutSkeletonDemos />
 
       <Section
         title="AppShell loading swap"
@@ -2596,6 +2436,77 @@ function LayoutBlocksTab() {
         </View>
       </Section>
     </View>
+  );
+}
+
+function LayoutSkeletonDemos() {
+  return (
+    <>
+      <Section
+        title="Content Skeleton"
+        subtitle="Layout placeholder while loading. Use instead of spinner when you need layout preview."
+      >
+        <View className="gap-6">
+          <View>
+            <Text className="mb-2 text-sm text-muted-foreground">Full page preview (list)</Text>
+            <View className="min-h-[320px] rounded-xl border border-border overflow-hidden bg-background">
+              <ContentSkeleton variant="list" rows={5} className="flex-1" />
+            </View>
+          </View>
+          <View>
+            <Text className="mb-2 text-sm text-muted-foreground">Variants</Text>
+            <View className="gap-4">
+              {(['list', 'card', 'generic'] as const).map((variant) => (
+                <View key={variant}>
+                  <Text className="mb-1 text-xs text-muted-foreground">{variant}</Text>
+                  <View className="rounded-xl border border-border overflow-hidden bg-background">
+                    <ContentSkeleton variant={variant} rows={variant === 'list' ? 2 : undefined} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      </Section>
+      <Section
+        title="Page Skeleton"
+        subtitle="Variant-based page layouts: dashboard, list, settings, card, generic."
+      >
+        <View className="gap-4">
+          {(['dashboard', 'list', 'settings', 'card', 'generic'] as const).map((variant) => (
+            <View key={variant}>
+              <Text className="mb-1 text-xs text-muted-foreground">{variant}</Text>
+              <View className="rounded-xl border border-border overflow-hidden bg-background">
+                <PageSkeleton
+                  variant={variant}
+                  count={variant === 'list' ? 5 : variant === 'settings' ? 6 : undefined}
+                />
+              </View>
+            </View>
+          ))}
+        </View>
+      </Section>
+      <Section
+        title="Screen Skeleton"
+        subtitle="Header slot or placeholder plus page content skeleton."
+      >
+        <View className="gap-4">
+          <View className="rounded-xl border border-border overflow-hidden bg-background">
+            <ScreenSkeleton variant="list" count={4} headerPlaceholder />
+          </View>
+          <View className="rounded-xl border border-border overflow-hidden bg-background">
+            <ScreenSkeleton
+              variant="dashboard"
+              header={
+                <View className="px-4 pt-4 pb-2 border-b border-border">
+                  <Text className="text-base font-medium text-foreground">Overview</Text>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Section>
+    </>
   );
 }
 
