@@ -1850,6 +1850,13 @@ import {
 | blurIntensity | `number`                                                           | medium preset          |
 | blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'surfaceTranslucent'` |
 
+`SheetContent` is a `ScrollView` and accepts its props. It enables nested scrolling and
+keeps taps on inputs while the keyboard is open (`keyboardShouldPersistTaps="handled"`).
+Your `contentContainerStyle` is merged after the default padding. Tapping the backdrop
+closes the sheet; a drag across the backdrop does not, so a missed scroll never dismisses
+it. There is no drag-to-dismiss: close with the backdrop, Android back, Escape on web or
+`SheetClose`.
+
 ## Header
 
 ```tsx
@@ -1981,6 +1988,12 @@ import { PullToRefreshScrollView } from '@thewhileloop/whileui';
 | refreshing   | `boolean`                     | Whether refresh is in progress                                                                                  |
 | onRefresh    | `() => void \| Promise<void>` | Called when user pulls to refresh. Not awaited — drive the spinner with `refreshing`, and catch your own errors |
 | refreshColor | `string`                      | Optional hex override; defaults to primary                                                                      |
+
+The scroll view owns the refresh gesture; don't pass `refreshControl`. It bounces even
+when content is shorter than the screen, so a short list can still be pulled. Screen
+reader users get the same refresh as a **Refresh** accessibility action, since they
+cannot pull. It is ignored while `refreshing` is true, and any `accessibilityActions` you
+pass are kept.
 
 ## EmptyState
 

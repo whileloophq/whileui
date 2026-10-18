@@ -18,6 +18,7 @@ import { cn } from '../../lib/cn';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { useTapOnly } from '../../lib/tap-only';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
 import {
@@ -73,6 +74,7 @@ export function Sheet({
   const colors = useThemeColors();
   const visual = useVisualTokens();
   const onClose = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const backdropPress = useTapOnly(onClose);
   const contextValue = useMemo(() => ({ onClose }), [onClose]);
   const frostedSurface = useFrostedSurface({
     frosted,
@@ -146,13 +148,13 @@ export function Sheet({
         style={{ backgroundColor: frosted ? 'transparent' : colors.overlay }}
       >
         {frostedBackdrop}
-        {/* Tap-to-dismiss only. Without this it is an unlabelled accessibility element
-            sitting above the sheet; screen reader users close from inside. */}
+        {/* Tap-to-dismiss only, and a tap only: a drag across it must not close the sheet.
+            Not an accessibility element; screen reader users close from inside. */}
         <Pressable
           accessible={false}
           importantForAccessibility="no"
           className="flex-1"
-          onPress={onClose}
+          {...backdropPress}
         />
         <View
           className={cn(

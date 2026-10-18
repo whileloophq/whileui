@@ -39,6 +39,7 @@ android/app/build/
 DEPLOY.md
 TODO.md
 CONSUMERS.md
+.delta/
 
 # Editor
 .vscode/

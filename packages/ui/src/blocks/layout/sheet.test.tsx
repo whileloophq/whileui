@@ -2,7 +2,7 @@ import { render, screen } from '../../test/render';
 import { Text } from '../../components/text';
 import { Sheet, SheetContent } from './sheet';
 
-describe('SheetContent', () => {
+describe('Sheet', () => {
   it('owns nested scrolling while preserving caller content styles', async () => {
     await render(
       <Sheet open onOpenChange={jest.fn()} maxHeight="half">
@@ -21,5 +21,20 @@ describe('SheetContent', () => {
         { paddingBottom: 48 },
       ])
     );
+  });
+
+  it('closes from the platform dismiss request — Android back, web Escape', async () => {
+    const onOpenChange = jest.fn();
+    const result = await render(
+      <Sheet open onOpenChange={onOpenChange}>
+        <SheetContent>
+          <Text>Body</Text>
+        </SheetContent>
+      </Sheet>
+    );
+
+    const [modal] = result.root!.queryAll((instance) => instance.type === 'Modal');
+    modal!.props.onRequestClose();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });

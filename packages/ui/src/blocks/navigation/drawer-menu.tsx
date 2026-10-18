@@ -4,6 +4,7 @@ import {
   Pressable,
   Platform,
   Modal,
+  I18nManager,
   ScrollView,
   useWindowDimensions,
   StyleSheet,
@@ -25,6 +26,7 @@ import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/i
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, surfaceRadius } from '../../lib/recipes';
 import { useMotionPolicy } from '../../lib/motion-policy';
+import { useTapOnly } from '../../lib/tap-only';
 import {
   useFrostedSurface,
   useFrostedBackdrop,
@@ -78,6 +80,7 @@ export function DrawerMenu({
   const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const motion = useMotionPolicy();
+  const backdropPress = useTapOnly(onClose);
   const frostedSurface = useFrostedSurface({
     frosted,
     blurIntensity,
@@ -166,8 +169,11 @@ export function DrawerMenu({
     pointerEvents: progress.value > 0 ? 'auto' : 'none',
   }));
 
+  // React Native swaps `left` for `right` under RTL, so the panel already sits on the
+  // trailing edge; the translate has to start off-screen on that same side.
+  const offscreenX = I18nManager.isRTL ? drawerWidth : -drawerWidth;
   const drawerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: interpolate(progress.value, [0, 1], [-drawerWidth, 0]) }],
+    transform: [{ translateX: interpolate(progress.value, [0, 1], [offscreenX, 0]) }],
   }));
 
   const containerStyle = useAnimatedStyle(() => ({
@@ -190,12 +196,12 @@ export function DrawerMenu({
         ]}
       >
         {frostedBackdrop}
-        {/* Backdrop: tap-to-dismiss only, not a control. */}
+        {/* Backdrop: tap-to-dismiss only, not a control, and a drag across it is not a tap. */}
         <Pressable
           accessible={false}
           importantForAccessibility="no"
           style={StyleSheet.absoluteFill}
-          onPress={onClose}
+          {...backdropPress}
         />
       </Animated.View>
 

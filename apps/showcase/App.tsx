@@ -261,8 +261,8 @@ const triggerHaptic = (type: 'light' | 'medium' | 'selection' = 'light') => {
   }
 };
 
-const darkBackdropImg = require('./assets/dark-backdrop.png');
-const lightBackdropImg = require('./assets/light-backdrop.png');
+const darkBackdropImg = require('./assets/dark-backdrop.jpg');
+const lightBackdropImg = require('./assets/light-backdrop.jpg');
 
 function parseBackdropNumber(value: string | number | undefined, fallback: number): number {
   if (value === undefined || value === null) return fallback;

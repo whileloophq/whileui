@@ -40,14 +40,13 @@ Current task: P2-03 — Gesture and scroll-ownership audit
 Status: in progress
 Branch: main
 Last verified commit: the commit that added these lines (`git log -1`)
-Working tree at handoff: clean
+Working tree at handoff: P2-03 implementation and evidence uncommitted
 Last command run: bun run verify
-Last command result: passed — format, lint, typecheck, 53 unit tests, build, packed
+Last command result: passed — format, lint, typecheck, 60 unit tests, build, packed
   tarball, iOS and Android exports, 86 Chromium/WebKit tests
-Next safe action: run e2e/maestro/scroll-ownership.yaml on iOS and Android and record
-  the result; then write the gesture hierarchy for Sheet, DrawerMenu and
-  PullToRefreshScrollView in the P2-03 notes before changing implementation further
-Blockers: none
+Next safe action: capture drawer and sheet release traces on representative physical
+  iOS and Android devices; record them here, then complete P2-03 and advance to P3-01
+Blockers: representative physical iOS and Android devices are not attached
 ```
 
 The commit and working-tree lines are historical hints, not authority. Always run
@@ -206,16 +205,63 @@ release traces on representative devices; packed fixtures pass.
 
 **Review cards:** 02, 05, 07, 08, 09, 10, 11.
 
-**Notes/evidence:** In progress. Landed so far, under contract tests and pending native
-evidence: `SheetContent` is a real `ScrollView` owner (`nestedScrollEnabled`,
-`keyboardShouldPersistTaps`, caller `contentContainerStyle` merged); `DrawerMenu` puts its
-sections in one `ScrollView` and follows the motion policy for open/close timing;
-`PullToRefreshScrollView` owns `refreshControl` and defaults `alwaysBounceVertical` so
-short iOS content can still pull. `react-native-gesture-handler` is declared as a peer
-and installed in both fixtures. `e2e/maestro/scroll-ownership.yaml` is written but has
-not yet been run on a device, so nothing above counts as accepted. Not started: the
-written gesture hierarchy, `PanResponder` inventory, cancellation and unmount tests,
-non-drag alternatives, RTL and nested-scroll verification, release traces.
+**Notes/evidence:** Implementation complete 2026-09-29; device and browser evidence
+pending. Nothing here is accepted until the evidence below passes.
+
+Gesture hierarchy and scroll owner, as implemented:
+
+| Family                    | Host                                    | Scroll owner                                     | Dismiss / action paths                                                  | Drag path                       |
+| ------------------------- | --------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------- |
+| `Sheet`                   | RN `Modal` (slide)                      | `SheetContent` `ScrollView`, nested scrolling on | backdrop tap, `onRequestClose` (Android back, web Escape), `SheetClose` | none; no drag-to-dismiss        |
+| `DrawerMenu`              | Android `Modal`; overlay view elsewhere | sections `ScrollView`                            | backdrop tap, `onRequestClose`, item select                             | none; no swipe-to-open or close |
+| `PullToRefreshScrollView` | caller's screen                         | its own `ScrollView` with `RefreshControl`       | **Refresh** accessibility action                                        | pull, native `RefreshControl`   |
+
+- **No `PanResponder` and no JS-thread `Animated`** in any of the three. The drawer is
+  one Reanimated shared value driven by `withTiming`; nothing updates React state per
+  frame. The package has no Gesture Handler call site yet — the peer is declared for
+  the first drag interaction, and none of these needs one.
+- **Defect found and fixed:** a drag across a `Sheet` or `DrawerMenu` backdrop closed
+  it. `lib/tap-only` drops a press whose finger moved past the touch slop. Found by the
+  first Android run of the scroll-ownership flow; recorded in `docs/stability.md`.
+- **Non-drag paths:** the sheet and drawer have no drag to replace. Pull-to-refresh now
+  offers a **Refresh** accessibility action, ignored while refreshing.
+- **RTL:** the drawer slides in from the right under RTL, where React Native has already
+  moved its `left` inset. Contract-tested by the exit direction.
+- **Cancellation, navigation and unmount:** reopening the drawer mid-exit keeps it
+  mounted; selecting an item reports it and the drawer unmounts once the owner closes
+  it; unmounting mid-exit leaves no timer that can throw. Contract-tested.
+- **Backgrounding:** `e2e/maestro/drawer-lifecycle.yaml` closes the drawer and leaves
+  the app during the exit, then asserts on return that the drawer is gone and the
+  screen still takes input.
+- **Not covered:** nested scrolling under RTL on a device. Forcing RTL needs a
+  showcase switch that restarts the app; left as a follow-up rather than added here.
+
+Evidence recorded 2026-10-18:
+
+- All four Maestro flows pass against release builds on the iPhone 17 Pro simulator
+  and Pixel 8 API Baklava emulator: button activation, alert-dialog accessibility,
+  drawer background/unmount lifecycle and scroll ownership. The final flow proves both
+  halves of the defect: a backdrop drag leaves the sheet open, then two in-sheet drags
+  reveal the end of its content.
+- Chromium and WebKit pass all 86 Playwright/axe tests. Package verification passes the
+  packed consumer checks, `publint` and `attw`. The iOS and Android Expo exports pass.
+- `bun run verify` passes in full after the final source, docs, asset and flow changes:
+  format, lint, typecheck, 60 unit tests, package build and inspection, both native
+  exports and all 86 browser tests.
+- A real Android `assembleRelease` exposed two showcase assets whose JPEG bytes had
+  `.png` names. Renaming them to `.jpg` fixed AAPT packaging; the ARM64 release APK then
+  built, installed and ran the Android Maestro suite.
+- React Doctor scanned the five touched source files. Its nine warnings are explained:
+  the showcase's large-component/dynamic-padding findings predate this change; the
+  drawer intentionally maps a bounded navigation model inside its scroll owner; and
+  the drawer's control-flow warning reflects discrete visibility/cancellation states,
+  not frame work. No touched component updates React state from a scroll or animation
+  frame.
+
+Evidence still owed: release traces for drawer and sheet on representative physical
+iOS and Android devices. Simulator/emulator release flows prove behavior but do not
+satisfy the performance-evidence contract. Nested scrolling under forced RTL also
+remains a documented follow-up rather than a P2-03 acceptance claim.
 
 ## Phase 3 — Overlays and keyboard
 
@@ -496,6 +542,21 @@ manual screen-reader, RTL and large-text checks; telemetry tied to the released 
 
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
+
+### 2026-10-18 — P2-03 release-build interaction evidence
+
+- Outcome: fixed backdrop drag cancellation, completed the iOS/Android release-flow
+  matrix and corrected Android-native packaging for two mislabeled showcase images.
+- Checks run and results: focused unit suites passed (10 tests); format, lint and
+  typecheck passed; package verification, both native exports and all 86 browser tests
+  passed; all four Maestro flows passed on both mobile simulators.
+- Evidence added: explicit scroll owners, discrete cancellation/lifecycle tests, a
+  screen-reader refresh action, RTL exit direction and device-level backdrop/nested
+  scroll assertions.
+- Remaining blocker: the acceptance contract requires release traces on representative
+  physical iOS and Android hardware; neither is attached.
+- Next safe action: capture those two traces, document results, mark P2-03 complete and
+  advance the single in-progress marker to P3-01.
 
 ### 2026-09-27 — P2-02 shared press feedback
 

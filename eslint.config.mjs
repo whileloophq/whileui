@@ -19,6 +19,7 @@ export default tseslint.config(
       '**/build/**',
       '**/node_modules/**',
       '**/.expo/**',
+      '**/.delta/**',
       '**/.turbo/**',
       '**/*.generated.*',
     ],

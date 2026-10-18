@@ -6,30 +6,45 @@ name: Drawer and sheet keep one explicit scroll owner
 - extendedWaitUntil:
     visible: 'Typography'
     timeout: 60000
+
+# The drawer's sections live in their own scroll view: a long menu reaches its last
+# entry without moving the page behind it.
 - tapOn:
     text: '.*Open menu.*'
 - scrollUntilVisible:
     element:
-      text: 'Layout'
+      text: '.*Layout.*'
     direction: DOWN
     centerElement: true
 - tapOn:
-    text: 'Layout'
-- swipe:
-    direction: UP
-    duration: 1500
-- swipe:
-    direction: UP
-    duration: 1500
-- swipe:
-    direction: UP
-    duration: 800
+    text: '.*Layout.*'
+
+- scrollUntilVisible:
+    element:
+      id: 'open-sheet-test'
+    direction: DOWN
+    visibilityPercentage: 50
+    waitToSettleTimeoutMs: 1000
 - tapOn:
-    id: '.*open-sheet-test.*'
+    id: 'open-sheet-test'
 - assertVisible: 'Settings'
+
+# A drag that starts and ends on the backdrop is not a tap; the sheet stays open.
 - swipe:
-    direction: UP
-    duration: 1000
+    start: '50%, 30%'
+    end: '50%, 10%'
+    duration: 600
+- assertVisible: 'Settings'
+
+# A drag inside the half-height sheet scrolls the sheet's own content, not the page.
+- swipe:
+    start: '50%, 85%'
+    end: '50%, 62%'
+    duration: 800
+- swipe:
+    start: '50%, 85%'
+    end: '50%, 62%'
+    duration: 800
 - assertVisible: 'End of sheet content'
 - assertVisible: 'Cancel'
 - tapOn:

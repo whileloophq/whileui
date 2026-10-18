@@ -328,6 +328,20 @@ The common thread: all four are things the eye catches instantly and an assertio
 to be written for specifically. Screenshots of the running app are evidence, and this
 entry exists so the next person treats them that way.
 
+## Scroll ownership — 2026-09-29
+
+The first Android run of `e2e/maestro/scroll-ownership.yaml` failed, and the failure was
+a real defect rather than a bad flow. **A swipe across a `Sheet` or `DrawerMenu` backdrop
+closed the overlay.** Both backdrops are full-screen `Pressable`s, and a press stays
+alive while the finger stays inside the view — so a drag that started and ended on the
+backdrop fired `onPress`. A user reaching for a half-height sheet's content and landing
+slightly above it lost the sheet. RNTL cannot see this, because it has no finger
+movement; only a device swipe does.
+
+Fixed with `useTapOnly`, which drops a press whose finger moved past the touch slop. The
+flow now asserts both halves: a drag on the backdrop leaves the sheet open, and a drag
+inside the sheet scrolls its own content to the end.
+
 ## Known gap — overlay edge padding on web
 
 `PopoverContent` now defaults its `insets` to safe area plus a margin, so a panel never

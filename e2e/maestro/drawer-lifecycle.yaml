@@ -1,0 +1,27 @@
+appId: dev.whileloop.showcase
+name: Drawer finishes closing when the app is backgrounded mid-exit
+---
+# The drawer unmounts on a timer after its exit animation. Backgrounding the app
+# during that window must not leave a stuck, invisible drawer swallowing touches.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: 'Typography'
+    timeout: 60000
+
+- tapOn:
+    text: '.*Open menu.*'
+- assertVisible: '(?i)blocks'
+
+# Backdrop tap, on the trailing side the panel does not cover, then leave at once.
+- tapOn:
+    point: '95%, 50%'
+- pressKey: Home
+- launchApp:
+    stopApp: false
+
+- assertNotVisible: '(?i)blocks'
+# The screen behind still takes input: the menu opens again.
+- tapOn:
+    text: '.*Open menu.*'
+- assertVisible: '(?i)blocks'
