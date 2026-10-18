@@ -185,6 +185,11 @@ never imported; that is the failure this rule exists to prevent.
 - Import `global.css` in `App.tsx` (not `index.ts`) for HMR
 - `cssEntryFile` must be **relative path string** (`'./global.css'`)
 - Monorepos: use `@source '../../packages/ui/src';` in CSS
+- **Installed from npm: `@source './node_modules/@thewhileloop/whileui/dist';`** — Tailwind
+  skips `node_modules`, so without it the package's classes are never detected and every
+  component renders unstyled. Measured: the directive is worth 83 kB of compiled styles in
+  an iOS bundle (4,547,637 vs 4,464,130 bytes); nothing errors without it
+- `withUniwindConfig(config, options)` takes the config first and is **not** curried
 - Docs: https://docs.uniwind.dev/llms-full.txt
 
 ## Theme System

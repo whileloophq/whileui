@@ -27,22 +27,31 @@ Use `npm install` instead of `bun add` if you prefer npm.
 1. **metro.config.js** (wrap with withUniwindConfig):
 
 ```js
+const { getDefaultConfig } = require('expo/metro-config');
 const { withUniwindConfig } = require('uniwind/metro');
 
-module.exports = withUniwindConfig({
+/** @type {import('expo/metro-config').MetroConfig} */
+const config = getDefaultConfig(__dirname);
+
+module.exports = withUniwindConfig(config, {
   cssEntryFile: './global.css',
-})({
-  // your metro config
 });
 ```
 
-> `withUniwindConfig` must be the outermost wrapper. `cssEntryFile` must be a relative path string.
+> `withUniwindConfig(config, options)` takes the config first and returns the wrapped
+> config — it is not curried. It must wrap the outermost config object, and
+> `cssEntryFile` must be a relative path string.
 
 2. **global.css** at app root:
 
 ```css
 @import 'tailwindcss';
 @import 'uniwind';
+
+/* Required when WhileUI is installed from npm. Tailwind does not scan
+   node_modules, so without this its class names are never detected and every
+   component renders unstyled. */
+@source './node_modules/@thewhileloop/whileui/dist';
 
 /* WhileUI Noir theme - copy this or create your own */
 @layer theme {
@@ -216,7 +225,9 @@ function MyScreen() {
 - **PortalHost:** Add `<PortalHost />` at app root for Select, Popover, Tooltip, HoverCard.
 - **Motion:** Wrap the root in `<MotionProvider>`; use `useMotionPolicy()` for semantic
   durations, the responsive spring, and reduced-motion behavior.
-- **Uniwind:** `withUniwindConfig` must wrap metro config. `global.css` at app root, imported in `App.tsx`.
+- **Uniwind:** `withUniwindConfig(config, options)` wraps metro config — config first, not
+  curried. `global.css` at app root, imported in `App.tsx`. Installing from npm also needs
+  `@source './node_modules/@thewhileloop/whileui/dist';` or every component renders unstyled.
 - **Reference:** Block props in `packages/ui/src/blocks` (core) and `apps/showcase/templates/` (auth, profile); flow patterns in README "Flow Patterns" section.
 
 ## Components
