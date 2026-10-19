@@ -216,6 +216,8 @@ import {
   DatePickerInline,
   DateRangePickerModal,
   DateRangePickerTrigger,
+  TimePickerModal,
+  TimePickerTrigger,
   type DateRange,
   cn,
   focusRing,
@@ -1764,6 +1766,8 @@ function FormsBlocksTab() {
   const [formSaving, setFormSaving] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [dateRangePickerOpen, setDateRangePickerOpen] = useState(false);
   const [selectedRange, setSelectedRange] = useState<DateRange | null>(null);
   const { toast } = useToast();
@@ -1863,6 +1867,20 @@ function FormsBlocksTab() {
           onOpenChange={setDatePickerOpen}
           trigger={<DatePickerTrigger value={selectedDate} placeholder="Pick a date" />}
           title="Select date"
+        />
+      </Section>
+
+      <Section title="Time Picker Modal" subtitle="Hour and minute wheels in the same sheet">
+        <TimePickerModal
+          value={selectedTime}
+          onValueChange={(t) => {
+            setSelectedTime(t);
+            if (t) toast({ title: 'Time selected', description: t });
+          }}
+          open={timePickerOpen}
+          onOpenChange={setTimePickerOpen}
+          trigger={<TimePickerTrigger value={selectedTime} placeholder="Pick a time" />}
+          title="Select time"
         />
       </Section>
 

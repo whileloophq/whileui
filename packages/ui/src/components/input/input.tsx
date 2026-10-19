@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TextInput, type TextInputInstance, type TextInputProps } from 'react-native';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
+import { focusFieldWrapper } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
@@ -15,6 +15,8 @@ const inputVariants = tv({
     variant: {
       default: 'border-border',
       error: 'border-destructive',
+      /** No border, no fill — for one large figure that is the screen's subject. */
+      plain: 'border-transparent bg-transparent',
     },
   },
   defaultVariants: {
@@ -39,6 +41,8 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
       variant,
       editable = true,
       placeholderTextColor,
+      onFocus,
+      onBlur,
       ...props
     },
     ref
@@ -46,19 +50,24 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
     const colors = useThemeColors();
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
+    // The border is on this wrapper and the focus is on the TextInput inside it, so the
+    // wrapper learns about focus from the events rather than a pseudo-class.
+    const [focused, setFocused] = useState(false);
+    const plain = variant === 'plain';
     return (
       <View
         className={cn(
           'flex-row items-center border-border bg-muted',
           inputVariants({ variant }),
+          focused && !plain && focusFieldWrapper,
           className
         )}
         style={[
           {
             minHeight: visual.controlHeightDefault,
-            borderWidth: visual.borderWidthControl,
+            borderWidth: plain ? 0 : visual.borderWidthControl,
             borderRadius: visual.radiusLg,
-            paddingHorizontal: visual.controlPaddingXDefault,
+            paddingHorizontal: plain ? 0 : visual.controlPaddingXDefault,
           },
           !editable ? { opacity: interaction.disabledOpacity } : undefined,
         ]}
@@ -73,8 +82,7 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
         <TextInput
           ref={ref}
           className={cn(
-            'flex-1 text-foreground placeholder:text-muted-foreground',
-            focusRing,
+            'flex-1 text-foreground placeholder:text-muted-foreground web:outline-none',
             inputClassName
           )}
           style={{
@@ -84,6 +92,14 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
           }}
           editable={editable}
           placeholderTextColor={placeholderTextColor ?? colors.placeholder}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
           {...props}
         />
         {suffix && (

@@ -9,7 +9,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
+import { focusFieldWrapper } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
@@ -325,6 +325,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
       size = 'default',
       editable = true,
       placeholderTextColor,
+      onFocus,
       onBlur,
       style: styleProp,
       ...props
@@ -334,6 +335,8 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
     const colors = useThemeColors();
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
+    // The border is on the wrapper and the focus on the field inside it.
+    const [focused, setFocused] = useState(false);
     const model = useNumericInputModel({
       value,
       defaultValue,
@@ -355,6 +358,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
         className={cn(
           numericInputVariants({ variant, size }),
           unstyled && 'bg-transparent',
+          focused && !unstyled && focusFieldWrapper,
           className
         )}
         style={[
@@ -378,11 +382,22 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
         >
           <TextInput
             ref={ref}
-            className={cn(numericInputTextVariants({ size }), 'w-full', focusRing, inputClassName)}
+            className={cn(
+              numericInputTextVariants({ size }),
+              'w-full web:outline-none',
+              inputClassName
+            )}
             style={numericInputTextStyle(visual, size, unstyled, styleProp)}
             value={model.textValue}
             onChangeText={model.handleTextChange}
-            onBlur={model.handleBlur}
+            onFocus={(event) => {
+              setFocused(true);
+              onFocus?.(event);
+            }}
+            onBlur={(event) => {
+              setFocused(false);
+              model.handleBlur(event);
+            }}
             keyboardType="decimal-pad"
             editable={editable}
             placeholderTextColor={placeholderTextColor ?? colors.placeholder}

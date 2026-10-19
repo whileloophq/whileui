@@ -416,6 +416,7 @@ Copy from `apps/showcase/templates/profile/`:
 | **DatePickerModal**      | Bottom sheet modal with calendar, compact trigger |
 | **DatePickerInline**     | Inline calendar for forms or dashboards           |
 | **DateRangePickerModal** | Range selection modal with period marking         |
+| **TimePickerModal**      | Hour and minute wheels in the same bottom sheet   |
 
 **Tokens without a renderer.** `@thewhileloop/whileui/tokens` exports the theme
 and visual contracts, the presets, and `deriveThemeColors(base, scheme)` — give it
@@ -1007,12 +1008,12 @@ import { Input } from '@thewhileloop/whileui';
 <Input placeholder="Email" variant="default" value={value} onChangeText={setValue} />;
 ```
 
-| Prop                 | Type                   | Default     | Description                                              |
-| -------------------- | ---------------------- | ----------- | -------------------------------------------------------- |
-| variant              | `'default' \| 'error'` | `'default'` | Input style variant                                      |
-| placeholder          | `string`               | —           | Placeholder text                                         |
-| placeholderTextColor | `string`               | —           | Hex for placeholder; defaults to theme `mutedForeground` |
-| editable             | `boolean`              | `true`      | Whether input is editable                                |
+| Prop                 | Type                              | Default     | Description                                                           |
+| -------------------- | --------------------------------- | ----------- | --------------------------------------------------------------------- |
+| variant              | `'default' \| 'error' \| 'plain'` | `'default'` | Input style; `plain` drops border and fill for a large display figure |
+| placeholder          | `string`                          | —           | Placeholder text                                                      |
+| placeholderTextColor | `string`                          | —           | Hex for placeholder; defaults to theme `mutedForeground`              |
+| editable             | `boolean`                         | `true`      | Whether input is editable                                             |
 
 ## NumericInput
 
@@ -1776,7 +1777,7 @@ const [value, setValue] = useState('');
 | `inputSafeArea`          | `boolean`            | SmartInput safe-area (default `true`)             |
 | `keyboardVerticalOffset` | `number`             | For header offset when keyboard opens             |
 
-## DatePickerModal / DatePickerInline / DateRangePickerModal
+## DatePickerModal / DatePickerInline / DateRangePickerModal / TimePickerModal
 
 Date selection blocks using react-native-calendars. Theme-aware via `useCalendarTheme` (Uniwind light/dark). Optional `theme` prop for custom RN color strings (hex/rgb/hsl/named). `CalendarTheme` maps to react-native-calendars Theme and supports `arrowColor`, `disabledArrowColor`, and optional font keys.
 
@@ -1786,6 +1787,8 @@ Date selection blocks using react-native-calendars. Theme-aware via `useCalendar
 
 **DateRangePickerModal** — Range selection with period marking. Use `DateRangePickerTrigger` as the trigger content.
 
+**TimePickerModal** — Hour and minute wheels (plus AM/PM under a 12-hour `hourCycle`) in the same bottom sheet, so a form's date and time fields open the same way. `value` is always `HH:MM` in 24-hour form. Each wheel is one `adjustable` element for assistive tech and the keyboard. Use `TimePickerTrigger` as the trigger content.
+
 ```tsx
 import {
   DatePickerModal,
@@ -1793,6 +1796,8 @@ import {
   DatePickerInline,
   DateRangePickerModal,
   DateRangePickerTrigger,
+  TimePickerModal,
+  TimePickerTrigger,
   type DateRange,
 } from '@thewhileloop/whileui';
 
@@ -1822,6 +1827,18 @@ const [range, setRange] = useState<DateRange | null>(null);
   onOpenChange={setRangeOpen}
   trigger={<DateRangePickerTrigger value={range} placeholder="Pick range" />}
 />;
+
+// Time (modal) — "HH:MM", 24-hour, whatever the wheels show
+const [time, setTime] = useState<string | null>(null);
+
+<TimePickerModal
+  value={time}
+  onValueChange={setTime}
+  open={timeOpen}
+  onOpenChange={setTimeOpen}
+  minuteStep={5}
+  trigger={<TimePickerTrigger value={time} placeholder="Pick a time" />}
+/>;
 ```
 
 | Prop                    | Type                                                               | Description                            |
@@ -1832,6 +1849,8 @@ const [range, setRange] = useState<DateRange | null>(null);
 | `trigger`               | `ReactNode`                                                        | Custom trigger (modal variants)        |
 | `minDate` / `maxDate`   | `string`                                                           | YYYY-MM-DD bounds                      |
 | `theme`                 | `CalendarTheme`                                                    | Override calendar colors               |
+| `hourCycle`             | `'h12' \| 'h23'`                                                   | Time picker wheels; defaults to locale |
+| `minuteStep`            | `number`                                                           | Minutes between options (default 1)    |
 | `frosted`               | `boolean`                                                          | Enable frosted surface for modal panel |
 | `blurIntensity`         | `number`                                                           | Override blur amount                   |
 | `blurTintToken`         | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | Tint token for frosted panel           |

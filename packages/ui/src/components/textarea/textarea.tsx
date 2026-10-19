@@ -6,7 +6,7 @@ import {
   type TextStyle,
 } from 'react-native';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
+import { focusField } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
@@ -65,7 +65,7 @@ const Textarea: ForwardRefComponent<TextInputInstance, TextareaProps> = React.fo
     return (
       <TextInput
         ref={ref}
-        className={cn(textareaVariants({ size }), focusRing, className)}
+        className={cn(textareaVariants({ size }), focusField, className)}
         style={style}
         multiline
         textAlignVertical="top"

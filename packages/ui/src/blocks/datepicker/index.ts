@@ -13,3 +13,11 @@ export {
   type DateRange,
 } from './date-range-picker-modal';
 export { useCalendarTheme, type CalendarTheme } from './use-calendar-theme';
+export {
+  TimePickerModal,
+  TimePickerTrigger,
+  formatDisplayTime,
+  parseTime,
+  type TimePickerModalProps,
+  type HourCycle,
+} from './time-picker-modal';

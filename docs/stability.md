@@ -77,7 +77,7 @@ Rendered in the showcase, never used in a shipping screen. A demo proves a compo
 renders; only a consumer proves it is useful. These stay `experimental` until a
 product pulls them, and they should not receive hardening work ahead of Tier 1.
 
-`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Menubar`, `MotionProvider`, `Popover`, `RadioGroup`, `Select`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
+`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Menubar`, `MotionProvider`, `Popover`, `RadioGroup`, `Select`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `TimePickerModal`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
 
 ## Tier 3 — neither shipped nor demonstrated (0)
 
@@ -226,13 +226,13 @@ Lists (19) had no roled controls at all.
 
 Roles were added across 29 sites in the library and 5 in the showcase:
 
-| Role                 | Where                                                                                                                                                                                |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `button`             | Every trigger and close (`Dialog`, `AlertDialog`, `Sheet`, `Collapsible`, `Accordion`, `DropdownMenu`, `ContextMenu`, `Menubar`, `Toast`, `Header`, `DrawerMenu`, both date pickers) |
-| `menuitem` + `menu`  | `DropdownMenu`, `ContextMenu`, `Menubar` items and their panels                                                                                                                      |
-| `tab` + `tablist`    | `Tabs`, `BottomNav`, `TabBar`, `FloatingBottomNav`                                                                                                                                   |
-| `radio`              | `RadioGroup` items, with `aria-checked`                                                                                                                                              |
-| conditional `button` | `ListItem` and `NotificationItem` — only when a handler was passed; a static row is not a control                                                                                    |
+| Role                 | Where                                                                                                                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `button`             | Every trigger and close (`Dialog`, `AlertDialog`, `Sheet`, `Collapsible`, `Accordion`, `DropdownMenu`, `ContextMenu`, `Menubar`, `Toast`, `Header`, `DrawerMenu`, the date and time pickers) |
+| `menuitem` + `menu`  | `DropdownMenu`, `ContextMenu`, `Menubar` items and their panels                                                                                                                              |
+| `tab` + `tablist`    | `Tabs`, `BottomNav`, `TabBar`, `FloatingBottomNav`                                                                                                                                           |
+| `radio`              | `RadioGroup` items, with `aria-checked`                                                                                                                                                      |
+| conditional `button` | `ListItem` and `NotificationItem` — only when a handler was passed; a static row is not a control                                                                                            |
 
 Two backdrops turned up in the same audit (`ConfirmActionSheet`, `DrawerMenu`) and got
 `accessible={false}` rather than a role.

@@ -40,8 +40,7 @@ const fabVariants = tv({
 });
 
 export interface FabProps
-  extends Omit<PressableProps, 'children'>,
-    VariantProps<typeof fabVariants> {
+  extends Omit<PressableProps, 'children'>, VariantProps<typeof fabVariants> {
   /**
    * What the action does, for screen readers. Required: a FAB is an icon with no
    * text, so without this it announces as an unlabelled button.
@@ -89,10 +88,16 @@ export interface FabGroupProps extends ViewProps {
 }
 
 /** Stacks secondary actions above a FAB, bottom-aligned. */
-const FABGroup: ForwardRefComponent<React.ComponentRef<typeof View>, FabGroupProps> =
-  React.forwardRef(({ className, ...props }, ref) => (
-    <View ref={ref} className={cn('absolute bottom-6 right-6 items-end gap-3', className)} {...props} />
-  ));
+const FABGroup: ForwardRefComponent<
+  React.ComponentRef<typeof View>,
+  FabGroupProps
+> = React.forwardRef(({ className, ...props }, ref) => (
+  <View
+    ref={ref}
+    className={cn('absolute bottom-6 right-6 items-end gap-3', className)}
+    {...props}
+  />
+));
 
 FABGroup.displayName = 'FABGroup';
 

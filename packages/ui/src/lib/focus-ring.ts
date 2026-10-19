@@ -26,3 +26,15 @@ export const focusRing =
  */
 export const focusRingInset =
   'web:outline-none web:focus-visible:ring-2 web:focus-visible:ring-ring';
+
+/**
+ * For text fields. Browsers treat every focus on a text field as keyboard focus, so a
+ * `:focus-visible` ring fires on a tap too — and an offset ring around a rounded field
+ * reads as a second, squarer border. A field shows focus the way the platforms do:
+ * its own border takes the ring colour. The class carries the colour; a field whose
+ * border lives on a wrapper (`Input`, `NumericInput`) applies it there from focus state.
+ */
+export const focusField = 'web:outline-none web:focus-visible:border-ring';
+
+/** The wrapper half of `focusField`: the border colour while the inner field has focus. */
+export const focusFieldWrapper = 'border-ring';
