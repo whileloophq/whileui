@@ -42,6 +42,7 @@ Phase 1 exit list is drawn from this tier.
 | `Alert`                   | component  |
 | `AlertDialog`             | component  |
 | `Badge`                   | component  |
+| `FAB`                     | component  |
 | `Button`                  | component  |
 | `Card`                    | component  |
 | `DataRow`                 | component  |
@@ -119,7 +120,8 @@ Four items deferred out of that work:
 - `KeyboardAwareScreen`'s actual contract — which `KeyboardAvoidingView` behaviour each
   platform gets — is not unit-testable. `KeyboardAvoidingView` consumes the prop rather
   than forwarding it, and RNTL v14 can only query host elements. Its suite covers
-  rendering only; keyboard avoidance is a native E2E gate.
+  rendering only. Avoidance is `e2e/maestro/keyboard-dock.yaml`; the web dock is
+  `e2e/keyboard-dock.spec.ts`.
 - ~~`AlertDialog` still has no accessible name.~~ Closed 2026-09-12 — the panel now reads
   its title out of the element tree at render time. Chasing this found the overlay
   containment defect below, which was the real problem underneath it.
@@ -345,6 +347,27 @@ movement; only a device swipe does.
 Fixed with `useTapOnly`, which drops a press whose finger moved past the touch slop. The
 flow now asserts both halves: a drag on the backdrop leaves the sheet open, and a drag
 inside the sheet scrolls its own content to the end.
+
+## Keyboard dock — 2026-10-18
+
+`KeyboardAwareScreen` was unit-tested for render only. The showcase's Smart Input demo
+is a 144px clip, so a field inside it never has to clear a keyboard. The flows now drive
+a full-screen dock instead.
+
+- `e2e/maestro/keyboard-dock.yaml` — type with the keyboard open, field and send button
+  stay visible, the word survives dismissal.
+- `e2e/maestro/otp.yaml` — `000000` is rejected, `123456` is accepted, a pasted `1234567`
+  is truncated to a verified code, PIN `0000` is accepted. The demo result text stays
+  until the next edit so the flow is not racing a timeout.
+- `e2e/maestro/keyboard-orientation.yaml` — the same dock in landscape. The showcase
+  orientation is `default` so the activity can rotate.
+- `e2e/keyboard-dock.spec.ts` — phone and desktop widths. The field is inside the
+  viewport, sitting at the bottom, reached by Tab, with a visible focus ring. Web does
+  not copy the native keyboard offset.
+
+Large text, RTL, IME composition, autofill, and a VoiceOver/TalkBack pass are still
+open. Device results belong in this section once a build that contains the screen has
+been run. The browser result belongs here once `keyboard-dock.spec.ts` has been run.
 
 ## Known gap — overlay edge padding on web
 

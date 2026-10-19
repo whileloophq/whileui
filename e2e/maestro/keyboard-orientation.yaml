@@ -1,0 +1,42 @@
+appId: dev.whileloop.showcase
+name: Docked field stays reachable in landscape
+---
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: 'Typography'
+    timeout: 60000
+
+- tapOn:
+    text: '.*Open menu.*'
+- scrollUntilVisible:
+    element:
+      text: '.*Layout.*'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    text: '.*Layout.*'
+- scrollUntilVisible:
+    element:
+      id: 'open-keyboard-screen'
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+    waitToSettleTimeoutMs: 1000
+- tapOn:
+    id: 'open-keyboard-screen'
+- assertVisible: 'The field and send button stay above the keyboard.'
+
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible:
+    id: 'keyboard-message'
+- assertVisible:
+    id: 'keyboard-send'
+- tapOn:
+    id: 'keyboard-message'
+- inputText: 'wide'
+- hideKeyboard
+- tapOn:
+    id: 'keyboard-send'
+- assertVisible: 'Sent: wide'
+- setOrientation: PORTRAIT

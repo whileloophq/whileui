@@ -1,0 +1,48 @@
+appId: dev.whileloop.showcase
+name: OTP accepts, rejects, and pastes a code
+---
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: 'Typography'
+    timeout: 60000
+
+- scrollUntilVisible:
+    element:
+      text: '.*try 123456.*'
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+    waitToSettleTimeoutMs: 1000
+
+# The result text stays until the next edit, so the assertion is not racing a timeout.
+- tapOn: 'Enter 6-digit verification code'
+- inputText: '000000'
+- hideKeyboard
+- assertVisible: 'Invalid code — try 123456'
+
+- tapOn: 'Enter 6-digit verification code'
+- eraseText
+- inputText: '123456'
+- hideKeyboard
+- assertVisible: 'Code verified!'
+
+# A longer paste is truncated to the field length. 1234567 becomes 123456.
+- tapOn: 'Enter 6-digit verification code'
+- eraseText
+- setClipboard: '1234567'
+- pasteText
+- hideKeyboard
+- assertVisible: 'Code verified!'
+
+- scrollUntilVisible:
+    element:
+      text: '.*4-digit PIN.*'
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+    waitToSettleTimeoutMs: 1000
+- tapOn: 'Enter 4-digit verification code'
+- inputText: '0000'
+- hideKeyboard
+- assertVisible: 'PIN accepted'

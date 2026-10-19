@@ -8,8 +8,9 @@ import { KeyboardAwareScreen } from './keyboard-aware-screen';
  * forwarding it to a host view, and RNTL v14 can only query host elements. Whether the
  * keyboard is actually avoided is a device question anyway.
  *
- * So the real contract here is covered by the native E2E gate, not by this file. What
- * remains unit-testable is that the screen renders and stays transparent to props.
+ * So the real contract here is `e2e/maestro/keyboard-dock.yaml` on a built app, and
+ * `e2e/keyboard-dock.spec.ts` for the web dock. What remains unit-testable is that the
+ * screen renders and stays transparent to props.
  */
 describe('KeyboardAwareScreen', () => {
   it('renders the screen it wraps', async () => {

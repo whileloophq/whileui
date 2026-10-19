@@ -25,6 +25,8 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import * as ExpoSplashScreen from 'expo-splash-screen';
 import './global.css';
+import { KeyboardDockScreen } from './keyboard-dock-screen';
+import { FabScreen } from './fab-screen';
 
 void ExpoSplashScreen.preventAutoHideAsync();
 import {
@@ -590,19 +592,23 @@ function ShowcaseCategoryContent({
   activeKey,
   themeMode,
   onThemeModeChange,
+  onOpenKeyboardScreen,
+  onOpenFabScreen,
 }: {
   activeKey: CategoryKey;
   themeMode: ThemeMode;
   onThemeModeChange: (mode: ThemeMode) => void;
+  onOpenKeyboardScreen: () => void;
+  onOpenFabScreen: () => void;
 }) {
   const content: Partial<Record<CategoryKey, React.ReactNode>> = {
     primitives: <PrimitivesTab themeMode={themeMode} onThemeModeChange={onThemeModeChange} />,
-    controls: <ControlsTab />,
+    controls: <ControlsTab onOpenFabScreen={onOpenFabScreen} />,
     overlays: <OverlaysTab />,
     forms: <FormsBlocksTab />,
     auth: <AuthBlocksTab />,
     navigation: <NavigationBlocksTab />,
-    layout: <LayoutBlocksTab />,
+    layout: <LayoutBlocksTab onOpenKeyboardScreen={onOpenKeyboardScreen} />,
     profile: <ProfileBlocksTab />,
     lists: <ListsBlocksTab />,
     commerce: <CommerceBlocksTab />,
@@ -624,6 +630,8 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<CategoryKey>('primitives');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [keyboardScreenOpen, setKeyboardScreenOpen] = useState(false);
+  const [fabScreenOpen, setFabScreenOpen] = useState(false);
   const colors = useIconColors();
 
   if (showSplash) {
@@ -802,6 +810,8 @@ function AppContent() {
                   activeKey={activeTab}
                   themeMode={themeMode}
                   onThemeModeChange={setThemeMode}
+                  onOpenKeyboardScreen={() => setKeyboardScreenOpen(true)}
+                  onOpenFabScreen={() => setFabScreenOpen(true)}
                 />
               </View>
             </ScrollView>
@@ -835,6 +845,16 @@ function AppContent() {
             </Text>
           }
         />
+        {keyboardScreenOpen ? (
+          <View style={[StyleSheet.absoluteFill, { zIndex: 20 }]} className="bg-background">
+            <KeyboardDockScreen onClose={() => setKeyboardScreenOpen(false)} />
+          </View>
+        ) : null}
+        {fabScreenOpen ? (
+          <View style={[StyleSheet.absoluteFill, { zIndex: 20 }]} className="bg-background">
+            <FabScreen onClose={() => setFabScreenOpen(false)} />
+          </View>
+        ) : null}
       </View>
     </SafeAreaProvider>
   );
@@ -1093,7 +1113,7 @@ function PrimitivesTab({
   );
 }
 
-function ControlsTab() {
+function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }) {
   const [radioVal, setRadioVal] = useState('option-1');
   const [massUnit, setMassUnit] = useState('kg');
   const [heightUnit, setHeightUnit] = useState('cm');
@@ -1109,6 +1129,14 @@ function ControlsTab() {
 
   return (
     <View>
+      <Section
+        title="FAB"
+        subtitle="A floating action button only behaves like itself over a full screen"
+      >
+        <Button onPress={onOpenFabScreen}>
+          <ButtonText>Open the FAB screen</ButtonText>
+        </Button>
+      </Section>
       <Section title="Selection" subtitle="SegmentedControl, radios, selects, and toggles">
         <SegmentedControl value={massUnit} onValueChange={setMassUnit} wrap={false}>
           <SegmentedControlItem value="kg">
@@ -1675,16 +1703,8 @@ function OTPInputDemo() {
           if (status !== 'idle') setStatus('idle');
         }}
         onComplete={(code) => {
-          if (code === '123456') {
-            setStatus('success');
-            setTimeout(() => {
-              setOtp('');
-              setStatus('idle');
-            }, 1200);
-          } else {
-            setStatus('error');
-            setTimeout(() => setOtp(''), 600);
-          }
+          // Stays until the next edit. A timeout here races the native OTP flow.
+          setStatus(code === '123456' ? 'success' : 'error');
         }}
         variant={status === 'error' ? 'error' : 'default'}
       />
@@ -1726,15 +1746,7 @@ function SecurePinDemo() {
           setPinOk(false);
         }}
         onComplete={(code) => {
-          if (code === '0000') {
-            setPinOk(true);
-            setTimeout(() => {
-              setPin('');
-              setPinOk(false);
-            }, 1200);
-          } else {
-            setTimeout(() => setPin(''), 400);
-          }
+          if (code === '0000') setPinOk(true);
         }}
       />
       {pinOk && <Text className="text-xs text-success">PIN accepted</Text>}
@@ -2167,7 +2179,7 @@ function CrashableChild() {
   );
 }
 
-function LayoutBlocksTab() {
+function LayoutBlocksTab({ onOpenKeyboardScreen }: { onOpenKeyboardScreen: () => void }) {
   const [showLoading, setShowLoading] = useState(false);
   const [shellLoading, setShellLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -2235,6 +2247,18 @@ function LayoutBlocksTab() {
         title="Smart Input"
         subtitle="Screen-owned keyboard handling, a safe-area dock, and rotating examples"
       >
+        <Text className="mb-3 text-sm text-muted-foreground">
+          The box below is a clip for browsing. The full screen is what the keyboard flows drive.
+        </Text>
+        <Button
+          variant="outline"
+          accessibilityLabel="Open keyboard screen"
+          testID="open-keyboard-screen"
+          onPress={onOpenKeyboardScreen}
+          className="mb-4 self-start"
+        >
+          <ButtonText>Open keyboard screen</ButtonText>
+        </Button>
         <KeyboardAwareScreen className="relative h-36 overflow-hidden rounded-xl border border-border">
           <DockedInput safeArea={false}>
             <SmartInput

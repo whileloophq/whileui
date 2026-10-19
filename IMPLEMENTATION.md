@@ -353,7 +353,8 @@ showcase and stability inventory updated.
 **Goal:** harden `KeyboardAwareScreen`, `DockedInput`, `SmartInput`, `Input`,
 `NumericInput`, `Textarea` and `OTPInput` against real platform keyboard behavior.
 
-**Prerequisites:** P3-01.
+**Prerequisites:** P3-01 for the overlay work. The keyboard flows do not use the
+coordinator, and they are not blocked on it.
 
 **Work:**
 
@@ -368,7 +369,19 @@ and wide widths; manual VoiceOver/TalkBack checklist recorded in `docs/stability
 
 **Review cards:** 01, 02, 05, 07, 09, 10, 11.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** Keyboard slice started 2026-10-18. The Layout tab's 144px Smart Input
+clip cannot prove avoidance, so the showcase opens a full-screen `KeyboardAwareScreen` +
+`DockedInput` (`apps/showcase/keyboard-dock-screen.tsx`). `e2e/maestro/keyboard-dock.yaml`
+types into that field with the keyboard open and asserts the field, the send button, and
+the submitted word. `e2e/maestro/otp.yaml` rejects `000000`, accepts `123456`, pastes
+`1234567` (truncated), and accepts PIN `0000`. The result text no longer clears on a
+timer, because that raced the flow. `e2e/keyboard-dock.spec.ts` checks the same dock at
+390px and 1280px: in the viewport, bottom-docked, Tab-reachable, focus ring visible. No
+native keyboard offset on web. `e2e/maestro/keyboard-orientation.yaml` repeats the dock
+check in landscape. The showcase orientation is `default` so that rotation is observable;
+Android `softwareKeyboardLayoutMode` is `resize`. Large text, RTL, IME composition,
+autofill, and the VoiceOver/TalkBack pass are still open. Run the device flows against a
+build that contains this screen.
 
 ## Phase 4 — Tokens and hot paths
 

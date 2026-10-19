@@ -14,9 +14,26 @@ What the layers below cannot prove, from `PLAN.md` > Evidence model:
   leaves every node in the UIAutomator tree, so the same flow passes there either way.
   **Run the iOS flow when you touch an overlay container.** Android will not save you.
 - **The OS keyboard** — `KeyboardAwareScreen` picks a `KeyboardAvoidingView` behaviour per
-  platform, and nothing below this can observe the result.
+  platform, and nothing below this can observe the result. `keyboard-dock.yaml` is that
+  check. `otp.yaml` is the code entry check. `keyboard-orientation.yaml` repeats the dock
+  in landscape, which requires the showcase orientation to be `default`.
 - **Android hardware back** dismissing the topmost overlay.
 - **`RefreshControl`**, which React Native Web does not implement at all.
+
+Largest system text is not part of `maestro test`, because it changes the device for
+every later flow. Run it on its own, then put the size back:
+
+```bash
+# iOS simulator. Default content size is large.
+xcrun simctl ui booted content_size accessibility-extra-extra-extra-large
+maestro test e2e/maestro/keyboard-dock.yaml
+xcrun simctl ui booted content_size large
+
+# Android emulator
+adb shell settings put system font_scale 1.3
+maestro --platform android test e2e/maestro/keyboard-dock.yaml
+adb shell settings put system font_scale 1.0
+```
 
 ## Running
 
