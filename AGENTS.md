@@ -190,6 +190,11 @@ never imported; that is the failure this rule exists to prevent.
   component renders unstyled. Measured: the directive is worth 83 kB of compiled styles in
   an iOS bundle (4,547,637 vs 4,464,130 bytes); nothing errors without it
 - `withUniwindConfig(config, options)` takes the config first and is **not** curried
+- **Uniwind rewrites every `from 'react-native'` to `uniwind/components` on native.**
+  That is how `className` reaches the primitives, and it exempts only importers inside
+  `react-native` itself. Any other package importing a **non-component** export gets
+  `undefined`. Exempt the ones that need the real module in `metro.config.js` — see
+  Tooling gotchas
 - Docs: https://docs.uniwind.dev/llms-full.txt
 
 ## Theme System
@@ -377,6 +382,26 @@ Add to this file when you discover:
 - **`className` is silently dropped on `react-native-safe-area-context`'s `SafeAreaView`:** it is a native view, and Uniwind only wraps React Native's own components. Symptom: padding, background and any caller `className` simply do not apply — measured as literal zero padding on device. Fix: keep the safe area bare (`style={{ flex: 1 }}`) and put every class on a child `View`. Uniwind exports its own `SafeAreaView`, but it wraps React Native's deprecated one, so it is not the answer.
 - **`ImageBackground` is deprecated in RN 0.88:** Compose an absolutely positioned `Image` behind the content. Give it explicit `width: '100%'` and `height: '100%'`; `absoluteFill` alone leaves the RNW image at its intrinsic size and creates a seam.
 - **Android release packaging validates an image's bytes against its extension:** Expo's JS export can accept JPEG data named `.png`, but AAPT rejects it during `assembleRelease`. Keep the filename extension aligned with the actual encoding and include a native release build in asset-change evidence.
+- **Every icon is silently missing on device while web is fine:** Symptom: `@expo/vector-icons`
+  glyphs render in the browser and nowhere on iOS or Android. The bundle builds, typecheck
+  and lint pass, and nothing fails until an `Icon` mounts and throws
+  `Cannot read property 'getAssetByID' of undefined`. Cause: Uniwind's native resolver
+  rewrites every `from 'react-native'` to `uniwind/components`
+  (`uniwind/dist/metro/index.mjs`), exempting only importers inside `react-native`.
+  `expo-asset` does `import { AssetRegistry } from 'react-native'`; the wrapper has no
+  such export, so `Asset.fromModule` throws and `Font.loadAsync` never resolves. Web
+  escapes it because Uniwind branches to a different resolver there. Fix: wrap
+  `resolveRequest` after `withUniwindConfig` and send `expo-asset`, `expo-font` and
+  `@expo/vector-icons` to Metro's own resolver — `apps/showcase/metro.config.js` is the
+  reference. Diagnosed by probing the app: `Object.keys(require('react-native'))` contained
+  nothing matching "asset", which is how you tell a rewrite from a missing export. This
+  generalises — **any** package importing a non-component export from `react-native` hits it.
+- **`Container` swallows a `flex-1` child unless you pass `fill`:** Symptom: a screen
+  whose only content is an `EmptyState` renders blank, or shows the icon with the text
+  clipped away. Cause: `EmptyState` is `flex-1 items-center justify-center`, and
+  `Container` only adds `flex-1` under its `fill` variant, so the box collapses to
+  content height. Nothing errors. Fix: `<Container size="sm" fill>` whenever the child
+  fills its parent.
 - **Native projects are generated, not tracked:** `apps/*/ios` and `apps/*/android` come from `expo prebuild` and are gitignored. The showcase stays a managed Expo app; never hand-edit them.
 - **React 19 deprecated `React.MutableRefObject` and `React.ElementRef`:** Use `React.RefObject<T>` (its `current` is mutable now) and `React.ComponentRef<typeof X>`. `no-deprecated` catches both.
 - **`eslint-plugin-react` does not support ESLint 10** (peer caps at `^9.7`), and its rules are mostly DOM JSX anyway. `react-hooks` `recommended-latest` plus type-aware `typescript-eslint` covers what matters here.
