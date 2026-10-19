@@ -1,5 +1,110 @@
 # @thewhileloop/whileui
 
+## 4.0.0
+
+### Major Changes
+
+- e9a77b2: Press, disabled, and motion timing are no longer CSS variables.
+
+  `useInteractionTokens` now always returns `INTERACTION_TOKENS`. A generated theme never
+  emitted these names, and reading them made Uniwind warn at startup before falling back
+  to the same numbers.
+
+  Delete these from any theme that set them. Nothing reads them anymore:
+
+  - `--ui-press-opacity`, `--ui-press-opacity-strong`
+  - `--ui-disabled-opacity`, `--ui-disabled-opacity-soft`, `--ui-disabled-opacity-subtle`
+  - `--ui-inactive-opacity`
+  - `--ui-motion-fast`, `--ui-motion-normal`, `--ui-motion-slow`
+  - `--ui-motion-spring-damping`, `--ui-motion-spring-stiffness`, `--ui-motion-spring-mass`
+  - `--ui-drawer-open-duration`, `--ui-drawer-close-duration`
+
+  `MotionProvider` still selects system, reduced, full, or disabled motion. It no longer
+  applies `--ui-motion-*` overrides. To change a duration or a press opacity, edit
+  `INTERACTION_TOKENS`; a preset cannot.
+
+### Minor Changes
+
+- 9d9e186: Add `FAB` and `FABGroup`, a floating action button.
+
+  Pulled by a consuming app that had written its own: a primary action raised above the
+  content is the shape most product screens end up needing, and every app re-deriving the
+  size, the shadow and the accessible name is how they drift apart.
+
+  ```tsx
+  <FAB label="New group" onPress={create}>
+    <Feather name="plus" size={24} color={icons.primaryForeground} />
+  </FAB>
+  ```
+
+  `label` is required, because a FAB is an icon with no text and would otherwise announce
+  as an unlabelled button. Sizes are 48 / 56 / 64, all of which clear the iOS 44pt and
+  Android 48dp minimums on their own, so a FAB never needs `hitSlop`. `placement` defaults
+  to floating bottom-right and can be set to `inline` for callers that position it
+  themselves.
+
+  It owns no icon dependency: the glyph is children, coloured from `useIconColors()`,
+  because icon libraries need a concrete colour rather than a class.
+
+- e9a77b2: Add `createThemePreset`, which builds a theme preset from the 25 base colours and
+  derives the other 27.
+
+  `ThemePreset.visual` has always been `Partial`, but `light` and `dark` are the full
+  52-key `ThemeColors`. Writing the literal therefore asks an author for every active
+  variant, soft variant, overlay, surface, interaction state and shadow — the values
+  `deriveThemeColors` already computes from the palette — and nothing in the type points
+  at that helper. The predictable outcome is a hand-written derivation that drifts from
+  the library's own; the bundled Atelier preset is 110 lines for this reason.
+
+  ```ts
+  const preset = createThemePreset({
+    name: 'acme',
+    description: 'Acme brand palette.',
+    light: lightBaseColors, // 25 keys
+    dark: darkBaseColors,
+    visual: { radiusLg: 12 }, // optional
+  });
+  ```
+
+  Nothing is removed: `ThemePreset` keeps its shape, and existing literals still compile.
+  Override a derived value by assigning to the returned preset.
+
+- b275324: Add `TimePickerModal` and `TimePickerTrigger`, the time half of `DatePickerModal`.
+
+  A form with a date field almost always has a time field beside it, and until now that
+  second field was a typed `HH:MM` box — a consuming app shipped exactly that. The picker
+  is two wheels (three with AM/PM) in the same bottom sheet as the date picker, so both
+  fields open the same way.
+
+  ```tsx
+  <TimePickerModal
+    value={time}
+    onValueChange={setTime}
+    open={open}
+    onOpenChange={setOpen}
+    trigger={<TimePickerTrigger value={time} placeholder="Pick a time" />}
+  />
+  ```
+
+  `value` is always `HH:MM` in 24-hour form; `hourCycle` chooses the wheels (12-hour with
+  AM/PM, or 24-hour) and defaults to the device locale's clock. `minuteStep` coarsens the
+  minute wheel. Each wheel is one `adjustable` element for VoiceOver, TalkBack and the
+  keyboard, so sixty minute rows never become sixty tab stops.
+
+### Patch Changes
+
+- 9667ee7: Correct the Uniwind setup instructions in the README, which did not work as written.
+
+  - `withUniwindConfig` was shown curried — `withUniwindConfig(options)(config)`. Its real
+    signature is `withUniwindConfig(config, options)`, so the documented form throws while
+    wiring up Metro. If you copied it, pass the config first.
+  - The `global.css` example omitted `@source './node_modules/@thewhileloop/whileui/dist';`.
+    Tailwind does not scan `node_modules`, so without that line this package's class names
+    are never detected and every component renders unstyled, with no error to explain it.
+    Add it to any app that installs WhileUI from npm.
+
+  No runtime code changed.
+
 ## 3.0.0
 
 ### Major Changes
