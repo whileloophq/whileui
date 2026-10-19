@@ -270,18 +270,19 @@ function MyScreen() {
 
 ### Display
 
-| Component       | Variants                                          | Notes                                                                           |
-| --------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **Card**        | padding (none, sm, default, lg), unstyled         | Compound: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter |
-| **Badge**       | default, secondary, destructive, outline, success | BadgeText sub-component                                                         |
-| **Alert**       | default, destructive, success, warning            | AlertTitle & AlertDescription                                                   |
-| **Avatar**      | sm, default, lg                                   | AvatarImage + AvatarFallback                                                    |
-| **DataRow**     | default, compact                                  | DataRow, DataRowLeft/Center/Right, DataRowLabel/Description/Value               |
-| **Separator**   | horizontal, vertical                              | Themed divider                                                                  |
-| **Progress**    | sm, default, lg                                   | Value-based progress bar with accessibility                                     |
-| **Spinner**     | sm, default, lg                                   | ActivityIndicator wrapper                                                       |
-| **Skeleton**    | pulse, shimmer                                    | Loading placeholder (pulse = opacity fade, shimmer = sweep)                     |
-| **AspectRatio** | —                                                 | Maintain aspect ratio container                                                 |
+| Component       | Variants                                                | Notes                                                                           |
+| --------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Card**        | padding (none, sm, default, lg), unstyled               | Compound: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter |
+| **Badge**       | default, secondary, destructive, outline, success       | BadgeText sub-component                                                         |
+| **FAB**         | default, secondary, destructive, surface; sm/default/lg | Floating action button. `label` required; pass your own icon as children        |
+| **Alert**       | default, destructive, success, warning                  | AlertTitle & AlertDescription                                                   |
+| **Avatar**      | sm, default, lg                                         | AvatarImage + AvatarFallback                                                    |
+| **DataRow**     | default, compact                                        | DataRow, DataRowLeft/Center/Right, DataRowLabel/Description/Value               |
+| **Separator**   | horizontal, vertical                                    | Themed divider                                                                  |
+| **Progress**    | sm, default, lg                                         | Value-based progress bar with accessibility                                     |
+| **Spinner**     | sm, default, lg                                         | ActivityIndicator wrapper                                                       |
+| **Skeleton**    | pulse, shimmer                                          | Loading placeholder (pulse = opacity fade, shimmer = sweep)                     |
+| **AspectRatio** | —                                                       | Maintain aspect ratio container                                                 |
 
 ### Layout
 
@@ -444,6 +445,33 @@ The literal form asks for all 52 colours per scheme, including every active vari
 soft variant, overlay, surface, interaction state and shadow. Those are exactly what
 `deriveThemeColors` computes, so hand-writing them produces a second derivation that
 drifts from the library's. Override a derived value by assigning to the result.
+
+### FAB
+
+One primary action, raised above the content. It owns no icon dependency — pass the
+glyph as children and colour it from `useIconColors()`, because icon libraries need a
+concrete colour rather than a class.
+
+```tsx
+import { FAB, useIconColors } from '@thewhileloop/whileui';
+import { Feather } from '@expo/vector-icons';
+
+const icons = useIconColors();
+
+<FAB label="New group" onPress={create}>
+  <Feather name="plus" size={24} color={icons.primaryForeground} />
+</FAB>;
+```
+
+| Prop        | Type                                             | Default    | Notes                                   |
+| ----------- | ------------------------------------------------ | ---------- | --------------------------------------- |
+| `label`     | `string`                                         | —          | Required. The accessible name           |
+| `variant`   | `default \| secondary \| destructive \| surface` | `default`  |                                         |
+| `size`      | `sm \| default \| lg`                            | `default`  | 48 / 56 / 64 — all clear touch minimums |
+| `placement` | `floating \| floating-left \| inline`            | `floating` | `inline` lets the caller position it    |
+
+`FABGroup` stacks secondary actions above one. Sizes start at 48dp, so a FAB never
+needs `hitSlop`.
 
 ## Layout Primitives (Stack, Row)
 

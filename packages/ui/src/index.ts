@@ -171,6 +171,14 @@ export {
 } from './components/badge';
 
 export {
+  FAB,
+  FABGroup,
+  fabVariants,
+  type FabProps,
+  type FabGroupProps,
+} from './components/fab';
+
+export {
   Alert,
   AlertTitle,
   AlertDescription,
