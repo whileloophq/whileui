@@ -95,6 +95,70 @@ test.describe('Select', () => {
 
     expect(alpha).toBe(1);
   });
+
+  test('focused options use the subtle interaction state', async ({ page }) => {
+    await page
+      .getByRole('button', { name: /Select a framework/ })
+      .first()
+      .click();
+
+    const option = page.getByRole('option').first();
+    await expect(option).toBeFocused();
+
+    const colors = await option.evaluate((element) => {
+      const probe = document.createElement('div');
+      probe.style.backgroundColor = 'var(--color-state-hover)';
+      probe.style.color = 'var(--color-foreground)';
+      document.body.appendChild(probe);
+
+      const actual = getComputedStyle(element);
+      const expected = getComputedStyle(probe);
+      const result = {
+        background: actual.backgroundColor,
+        expectedBackground: expected.backgroundColor,
+        foreground: actual.color,
+        expectedForeground: expected.color,
+      };
+      probe.remove();
+      return result;
+    });
+
+    expect(colors.background).toBe(colors.expectedBackground);
+    expect(colors.foreground).toBe(colors.expectedForeground);
+  });
+
+  test('long values truncate without displacing the chevron', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+
+    const trigger = page.getByRole('button', { name: /Select a framework/ }).first();
+    const initialHeight = (await trigger.boundingBox())?.height ?? 0;
+    await trigger.click();
+    await page
+      .getByRole('option', { name: 'React Native for desktop and embedded devices' })
+      .click();
+
+    const selectedTrigger = page
+      .getByRole('button', { name: /React Native for desktop and embedded devices/ })
+      .first();
+    const value = selectedTrigger.getByTestId('select-value');
+    const chevron = selectedTrigger.getByTestId('select-chevron');
+    const [triggerBox, valueBox, chevronBox] = await Promise.all([
+      selectedTrigger.boundingBox(),
+      value.boundingBox(),
+      chevron.boundingBox(),
+    ]);
+
+    expect(triggerBox?.height ?? 0).toBeLessThanOrEqual(initialHeight + 1);
+    expect(valueBox?.x ?? 0).toBeGreaterThanOrEqual(triggerBox?.x ?? 0);
+    expect((valueBox?.x ?? 0) + (valueBox?.width ?? 0)).toBeLessThanOrEqual(
+      (chevronBox?.x ?? 0) - 1
+    );
+    expect((chevronBox?.x ?? 0) + (chevronBox?.width ?? 0)).toBeLessThanOrEqual(
+      (triggerBox?.x ?? 0) + (triggerBox?.width ?? 0)
+    );
+
+    await expect(value).toHaveCSS('overflow', 'hidden');
+  });
 });
 
 /**

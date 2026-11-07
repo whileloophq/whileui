@@ -8,6 +8,8 @@ import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
+import { webAutofillField } from '../../lib/web-autofill';
+import { useFormFieldState } from '../form-field/form-field';
 
 const inputVariants = tv({
   base: 'w-full border-border bg-muted text-foreground',
@@ -25,6 +27,7 @@ const inputVariants = tv({
 });
 
 export interface InputProps extends TextInputProps, VariantProps<typeof inputVariants> {
+  'aria-invalid'?: boolean;
   className?: string;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
@@ -39,7 +42,8 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
       suffix,
       inputClassName,
       variant,
-      editable = true,
+      editable,
+      'aria-invalid': ariaInvalid,
       placeholderTextColor,
       onFocus,
       onBlur,
@@ -50,15 +54,18 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
     const colors = useThemeColors();
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
+    const field = useFormFieldState();
+    const effectiveEditable = editable ?? !field.disabled;
+    const effectiveVariant = variant ?? (field.invalid ? 'error' : 'default');
     // The border is on this wrapper and the focus is on the TextInput inside it, so the
     // wrapper learns about focus from the events rather than a pseudo-class.
     const [focused, setFocused] = useState(false);
-    const plain = variant === 'plain';
+    const plain = effectiveVariant === 'plain';
     return (
       <View
         className={cn(
           'flex-row items-center border-border bg-muted',
-          inputVariants({ variant }),
+          inputVariants({ variant: effectiveVariant }),
           focused && !plain && focusFieldWrapper,
           className
         )}
@@ -69,7 +76,7 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
             borderRadius: visual.radiusLg,
             paddingHorizontal: plain ? 0 : visual.controlPaddingXDefault,
           },
-          !editable ? { opacity: interaction.disabledOpacity } : undefined,
+          !effectiveEditable ? { opacity: interaction.disabledOpacity } : undefined,
         ]}
       >
         {prefix && (
@@ -83,6 +90,7 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
           ref={ref}
           className={cn(
             'flex-1 text-foreground placeholder:text-muted-foreground web:outline-none',
+            !plain && webAutofillField,
             inputClassName
           )}
           style={{
@@ -90,7 +98,8 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
             minHeight: visual.controlHeightDefault - 2,
             paddingVertical: visual.controlPaddingYDefault,
           }}
-          editable={editable}
+          editable={effectiveEditable}
+          aria-invalid={ariaInvalid ?? field.invalid}
           placeholderTextColor={placeholderTextColor ?? colors.placeholder}
           onFocus={(event) => {
             setFocused(true);

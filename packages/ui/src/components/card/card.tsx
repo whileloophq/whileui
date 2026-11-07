@@ -1,20 +1,18 @@
 import React from 'react';
 import {
   View,
-  type StyleProp,
   type ViewInstance,
   type ViewProps,
-  type ViewStyle,
   type TextInstance,
   type TextProps,
 } from 'react-native';
 import { Text } from '../text';
+import { Surface } from '../surface';
 import { cn } from '../../lib/cn';
 import { tv, type VariantProps } from '../../lib/tv';
-import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import type { FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useVisualTokens } from '../../lib/visual-tokens';
-import { useThemeColors } from '../../lib/theme-colors';
-import { shadowStyle, surfacePadding, typographyStyle, type ShadowTier } from '../../lib/recipes';
+import { typographyStyle, type ShadowTier } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 
 const cardVariants = tv({
@@ -59,41 +57,22 @@ const Card: ForwardRefComponent<ViewInstance, CardProps> = React.forwardRef(
     },
     ref
   ) => {
-    const visual = useVisualTokens();
-    const colors = useThemeColors();
-    const frostedSurface = useFrostedSurface({
-      frosted,
-      blurIntensity,
-      blurTintToken,
-      defaultTintToken: 'card',
-      defaultBlurPreset: 'subtle',
-    });
-    const effectivePadding = surfacePadding(visual, padding ?? 'default');
-    const cardStyle: StyleProp<ViewStyle> = [
-      {
-        borderRadius: unstyled ? 0 : visual.radiusXl,
-        padding: unstyled ? 0 : effectivePadding,
-        borderWidth: unstyled ? 0 : visual.borderWidthHairline,
-      },
-      unstyled ? null : shadowStyle(visual, colors, shadow),
-      frostedSurface.surfaceStyle,
-      style,
-    ];
-
     return (
-      <View
+      <Surface
         ref={ref}
-        className={cn(
-          cardVariants({ padding, unstyled }),
-          frosted && 'relative overflow-hidden bg-transparent',
-          className
-        )}
-        style={cardStyle}
+        level="base"
+        padding={unstyled ? 'none' : (padding ?? 'default')}
+        bordered={!unstyled}
+        shadow={unstyled ? 'none' : shadow}
+        frosted={frosted}
+        blurIntensity={blurIntensity}
+        blurTintToken={blurTintToken}
+        className={cn(cardVariants({ padding, unstyled }), className)}
+        style={[unstyled ? { borderRadius: 0 } : null, style]}
         {...props}
       >
-        {frostedSurface.overlay}
         {children}
-      </View>
+      </Surface>
     );
   }
 );

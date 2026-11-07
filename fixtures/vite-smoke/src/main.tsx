@@ -21,6 +21,8 @@ import {
   TooltipTrigger,
   type SelectOption,
 } from '@thewhileloop/whileui';
+import { CodeBlock } from '@thewhileloop/whileui/code';
+import { Markdown } from '@thewhileloop/whileui/markdown';
 
 function App() {
   const [selected, setSelected] = React.useState<SelectOption | undefined>();
@@ -68,6 +70,9 @@ function App() {
           <Text className="text-foreground">Hover card content</Text>
         </HoverCardContent>
       </HoverCard>
+
+      <Markdown>{'## Optional content\n\nRendered through the **Markdown** subpath.'}</Markdown>
+      <CodeBlock code="const target = 'web';" language="TypeScript" />
 
       <PortalHost />
     </div>

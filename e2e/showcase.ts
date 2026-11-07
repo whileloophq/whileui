@@ -9,6 +9,7 @@ export const CATEGORIES = [
   'Auth',
   'Navigation',
   'Layout',
+  'Chat',
   'Profile',
   'Lists',
   'Commerce',

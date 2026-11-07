@@ -415,6 +415,14 @@ Add to this file when you discover:
 - **Copy `ref.current` into a local at the top of an effect** if the cleanup reads it. By cleanup time the ref may point somewhere else.
 - **An async callback prop must say so in its type:** `onRefresh: () => void | Promise<void>`, not `() => void`. The narrow type accepts an async function and silently discards its rejection.
 
+### Composition grammar for generated screens
+
+Follow README > Composition grammar. Prefer semantic `Text` variants and the three
+`Surface` levels over one-off size, radius, shadow, and background classes. Keep chat
+payload UI application-owned around `ChatConversation`; use the optional Markdown/code
+subpaths only on screens that render that content. Do not invent a compound component
+for a composition that has not repeated.
+
 ### Blocks vs components
 
 - **Blocks** = copy-paste compositions. No themeability props needed — people edit the block code directly. Use semantic tokens; theme via `global.css`.

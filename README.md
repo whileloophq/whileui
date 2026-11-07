@@ -18,6 +18,8 @@ bun add @thewhileloop/whileui
 bun add react@^19.3.0 react-native@^0.88.0 uniwind@^1.12.2 tailwindcss@^4.0.0 react-native-reanimated react-native-safe-area-context react-native-screens
 # Only if you use Select, Popover, Tooltip, or HoverCard:
 bun add @rn-primitives/portal @rn-primitives/hooks @rn-primitives/slot @rn-primitives/select @rn-primitives/popover @rn-primitives/tooltip @rn-primitives/hover-card
+# Only if you import @thewhileloop/whileui/markdown:
+bun add markdown-it
 ```
 
 Use `npm install` instead of `bun add` if you prefer npm.
@@ -230,17 +232,33 @@ function MyScreen() {
   `@source './node_modules/@thewhileloop/whileui/dist';` or every component renders unstyled.
 - **Reference:** Block props in `packages/ui/src/blocks` (core) and `apps/showcase/templates/` (auth, profile); flow patterns in README "Flow Patterns" section.
 
+### Composition grammar
+
+- Start with one page canvas and flat sections. Add a `Surface` only when grouping or
+  elevation communicates something; do not wrap every section in a card.
+- Use `level="base"` for grouped content, `raised` for selectable or floating regions,
+  and `overlay` for content above the page. Avoid nesting more than one surfaced level.
+- Express hierarchy through `Text` variants before custom font-size classes. Keep one
+  primary action per region and constrain long-form content with `Container`.
+- Forms use `FormField`; its disabled and invalid state flows into `Input`, `Textarea`,
+  `NumericInput`, and `Select`. Pass a control prop only to override that inherited state.
+- Chat mechanics belong to `ChatConversation` + `SmartInput`. Message payloads, tools,
+  reasoning, approvals, sources, and action rows are application-owned compositions.
+- Import Markdown and code rendering from their optional subpaths. Do not make the root
+  package pay for content rendering when the screen does not use it.
+
 ## Components
 
 ### Primitives
 
-| Component     | Notes                            |
-| ------------- | -------------------------------- |
-| **Text**      | Themed text with variant support |
-| **View**      | Themed view wrapper              |
-| **Pressable** | Themed pressable wrapper         |
-| **Stack**     | Vertical flex layout with gap    |
-| **Row**       | Horizontal flex layout with gap  |
+| Component     | Notes                                            |
+| ------------- | ------------------------------------------------ |
+| **Text**      | Themed text with variant support                 |
+| **Surface**   | Token-backed base, raised, and overlay container |
+| **View**      | Themed view wrapper                              |
+| **Pressable** | Themed pressable wrapper                         |
+| **Stack**     | Vertical flex layout with gap                    |
+| **Row**       | Horizontal flex layout with gap                  |
 
 ### Root Providers
 
@@ -273,6 +291,7 @@ function MyScreen() {
 | Component       | Variants                                                | Notes                                                                           |
 | --------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | **Card**        | padding (none, sm, default, lg), unstyled               | Compound: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter |
+| **Surface**     | level (base, raised, overlay)                           | Shared radius, padding, border, shadow, and optional frosted treatment          |
 | **Badge**       | default, secondary, destructive, outline, success       | BadgeText sub-component                                                         |
 | **FAB**         | default, secondary, destructive, surface; sm/default/lg | Floating action button. `label` required; pass your own icon as children        |
 | **Alert**       | default, destructive, success, warning                  | AlertTitle & AlertDescription                                                   |
@@ -364,11 +383,12 @@ Copy from `apps/showcase/templates/auth/`:
 
 ### Chat
 
-| Block                 | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| **Chat**              | AI-style chat: messages, suggestions, SmartInput |
-| **ChatMessageBubble** | Message bubble (user/assistant, big/small text)  |
-| **ChatSuggestions**   | Suggestion chips when empty                      |
+| Block                 | Description                                                     |
+| --------------------- | --------------------------------------------------------------- |
+| **Chat**              | Opinionated messages, suggestions, and SmartInput composition   |
+| **ChatConversation**  | Constrained conversation viewport that follows streaming output |
+| **ChatMessageBubble** | Message bubble (user/assistant, big/small text)                 |
+| **ChatSuggestions**   | Suggestion chips when empty                                     |
 
 ### Profile & Settings (Copy from showcase templates)
 
@@ -446,6 +466,11 @@ The literal form asks for all 52 colours per scheme, including every active vari
 soft variant, overlay, surface, interaction state and shadow. Those are exactly what
 `deriveThemeColors` computes, so hand-writing them produces a second derivation that
 drifts from the library's. Override a derived value by assigning to the result.
+
+`WHILEUI_PRESET_SOFT` is the airy default. `WHILEUI_PRESET_ATELIER` is the stronger
+product preset: tighter geometry, opaque surfaces, firmer borders, real shadows, and no
+blur. Use it as the acceptance check that a screen still has enough visual weight when
+the soft treatment is removed.
 
 ### FAB
 
@@ -558,7 +583,7 @@ import { AppShell, Header, BottomNav, ScrollView } from '@thewhileloop/whileui';
 | Forms      | FormField + Input/NumericInput/LabeledField + DatePickerModal + FormModalScreen    |
 | Settings   | ProfileHeader + SettingsSection + SettingsItem (+ FormModalScreen for edits)       |
 | E-commerce | ProductCard list → CheckoutSummary + ActionBar                                     |
-| Chat       | Chat + ChatSuggestions + SmartInput (attach, send). Extensible for images/tags     |
+| Chat       | Chat, or ChatConversation + SmartInput for custom message/tool/source compositions |
 | App shell  | AppShell + Header + BottomNav + content                                            |
 | Loading    | AppShell (`loading`) + PageSkeleton/ScreenSkeleton (keep header mounted)           |
 
@@ -1000,6 +1025,17 @@ import { Button, ButtonText, ButtonIcon } from '@thewhileloop/whileui';
 | loading   | `boolean`                                                                     | `false`     | Show a spinner, expose busy state, and block input |
 | className | `string`                                                                      | —           | Additional Tailwind classes                        |
 
+## Text
+
+`Text` maps semantic roles to the active visual typography tokens; custom font-size
+classes are unnecessary for normal hierarchy. `heading` also sets
+`accessibilityRole="header"` unless the caller supplies another role.
+
+| Prop    | Type                                                                                          | Default     |
+| ------- | --------------------------------------------------------------------------------------------- | ----------- |
+| variant | `'default' \| 'heading' \| 'title' \| 'subtitle' \| 'body' \| 'caption' \| 'label' \| 'code'` | `'default'` |
+| size    | `'xs' \| 'sm' \| 'base' \| 'lg' \| 'xl' \| '2xl' \| '3xl'`                                    | by variant  |
+
 ## Input
 
 ```tsx
@@ -1007,6 +1043,9 @@ import { Input } from '@thewhileloop/whileui';
 
 <Input placeholder="Email" variant="default" value={value} onChangeText={setValue} />;
 ```
+
+On web, filled Input, Textarea, NumericInput, and SmartInput surfaces preserve their
+themed background, foreground, and caret when the browser autofills them.
 
 | Prop                 | Type                              | Default     | Description                                                           |
 | -------------------- | --------------------------------- | ----------- | --------------------------------------------------------------------- |
@@ -1087,6 +1126,30 @@ import {
   {error ? <FormMessage>{error}</FormMessage> : <FormHint>We'll never share your email.</FormHint>}
 </FormField>;
 ```
+
+`invalid` and `disabled` are inherited by `Input`, `Textarea`, `NumericInput`, and
+`Select`. An explicit control prop wins. `useFormFieldState()` exposes the same state for
+custom controls; labels, hints, messages, density, and required indicators remain part
+of the compound field rather than each input.
+
+## Surface
+
+```tsx
+import { Surface } from '@thewhileloop/whileui';
+
+<Surface level="raised" padding="default">
+  {/* grouped content */}
+</Surface>;
+```
+
+| Prop     | Type                                  | Default     | Description                         |
+| -------- | ------------------------------------- | ----------- | ----------------------------------- |
+| level    | `'base' \| 'raised' \| 'overlay'`     | `'base'`    | Semantic background and depth tier  |
+| padding  | `'none' \| 'sm' \| 'default' \| 'lg'` | `'default'` | Token-backed interior spacing       |
+| radius   | `'sm' \| 'md' \| 'lg' \| 'xl'`        | `'xl'`      | Token-backed corner radius          |
+| bordered | `boolean`                             | `true`      | Draw the theme hairline border      |
+| shadow   | `'none' \| 'sm' \| 'md' \| 'lg'`      | by level    | Override the level's depth          |
+| frosted  | `boolean`                             | `false`     | Enable the optional frosted overlay |
 
 ## LabeledField
 
@@ -1379,6 +1442,10 @@ import {
   </SelectContent>
 </Select>;
 ```
+
+Focused and pressed options use the subtle interaction-state tokens; the primary token
+marks the selected indicator without replacing the option's foreground colour. Long
+selected values stay on one line and truncate without displacing the trigger chevron.
 
 `SelectContent` supports optional frosted props:
 
@@ -1738,9 +1805,34 @@ import { SmartInput, Button, ButtonText } from '@thewhileloop/whileui';
 />;
 ```
 
-## Chat
+## ChatConversation / Chat
 
-AI-style chat: message list, suggestion chips when empty, SmartInput with attach/send slots. Uses semantic tokens; theme via `global.css`. Copy-paste block — edit directly. `renderMessage` for markdown/code, `loadingIndicator` for typing state.
+`ChatConversation` is the low-level viewport for custom conversation screens. Its content stays constrained on wide windows, follows new or streaming output while the reader is near the bottom, and stops following after the reader scrolls upward. Compose it with `SmartInput`; the application owns message data, streaming, tools, approvals, and sources.
+
+It is a `ScrollView` for a bounded active transcript. Paginate or window historical messages; use a virtualized list when the full history can grow without a bound.
+
+```tsx
+import { ChatConversation, SmartInput, View } from '@thewhileloop/whileui';
+
+<View className="flex-1">
+  <ChatConversation contentContainerClassName="gap-4 px-4 py-6">
+    {messages.map((message) => (
+      <ProductMessage key={message.id} message={message} />
+    ))}
+  </ChatConversation>
+  <SmartInput
+    value={value}
+    onChangeText={setValue}
+    onSubmitEditing={send}
+    submitBehavior="submit"
+    leftSlot={<AttachButton />}
+    centerSlot={<ModelSelect />}
+    rightSlot={<SendButton />}
+  />
+</View>;
+```
+
+`Chat` is the opinionated convenience composition: message bubbles, suggestion chips, and `SmartInput` with attach/send slots. It uses semantic tokens; theme via `global.css`. Use `renderMessage` for markdown, code, tool calls, reasoning, or sources, and `loadingIndicator` for streaming feedback.
 
 ```tsx
 import { Chat, type ChatMessage } from '@thewhileloop/whileui';
@@ -1776,6 +1868,26 @@ const [value, setValue] = useState('');
 | `loadingIndicator`       | `ReactNode`          | Shown when loading (typing dots)                  |
 | `inputSafeArea`          | `boolean`            | SmartInput safe-area (default `true`)             |
 | `keyboardVerticalOffset` | `number`             | For header offset when keyboard opens             |
+
+`ChatConversation` extends React Native `ScrollViewProps`, forwards its ref, and adds `contentContainerClassName` to style the constrained inner column. Caller `onScroll` and `onContentSizeChange` callbacks are preserved.
+
+### Optional Markdown and code
+
+These are explicit subpaths so the root package remains independent of a Markdown
+parser. Install `markdown-it` only in applications that render Markdown.
+
+```tsx
+import { Markdown } from '@thewhileloop/whileui/markdown';
+import { CodeBlock } from '@thewhileloop/whileui/code';
+
+<Markdown onLinkPress={openLink}>{assistantText}</Markdown>
+<CodeBlock code={source} language="TypeScript" actions={<CopyButton />} />
+```
+
+`Markdown` supports headings, paragraphs, emphasis, links, lists, quotes, rules, inline
+code, and fenced code. It never opens links or writes to the clipboard itself:
+`onLinkPress` and `codeActions` keep those capabilities in the application. `CodeBlock`
+is dependency-free and accepts an application-owned `actions` slot.
 
 ## DatePickerModal / DatePickerInline / DateRangePickerModal / TimePickerModal
 

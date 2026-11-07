@@ -1,15 +1,8 @@
-import React, { useRef, useEffect } from 'react';
-import {
-  View,
-  ScrollView,
-  Pressable,
-  KeyboardAvoidingView,
-  Platform,
-  useWindowDimensions,
-  type ScrollViewInstance,
-} from 'react-native';
+import React from 'react';
+import { View, Pressable, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native';
 import { Text } from '../../components/text';
 import { SmartInput } from '../layout/smart-input';
+import { ChatConversation } from './chat-conversation';
 import { cn } from '../../lib/cn';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -183,18 +176,11 @@ export function Chat({
   className,
   messagesClassName,
 }: ChatProps) {
-  const scrollRef = useRef<ScrollViewInstance>(null);
   const visual = useVisualTokens();
   const emptyTitleTypography = typographyStyle(visual, 'emphasis');
   const emptyDescriptionTypography = typographyStyle(visual, 'label');
   const isEmpty = messages.length === 0;
   const showSuggestions = isEmpty && suggestions.length > 0;
-
-  useEffect(() => {
-    if (!showSuggestions && messages.length > 0) {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [messages.length, showSuggestions]);
 
   const defaultRightSlot = rightSlot ?? (
     <ChatSendButton onPress={onSend} disabled={loading || !value.trim()} />
@@ -208,15 +194,12 @@ export function Chat({
       className={className}
     >
       {header}
-      <ScrollView
-        ref={scrollRef}
+      <ChatConversation
         className={cn('flex-1', messagesClassName)}
         contentContainerStyle={{
-          flexGrow: 1,
           paddingBottom: 8,
           justifyContent: showSuggestions ? 'center' : 'flex-end',
         }}
-        keyboardShouldPersistTaps="handled"
       >
         {showSuggestions ? (
           <View className="flex-1 justify-center">
@@ -259,7 +242,7 @@ export function Chat({
             {loading && loadingIndicator && <View className="px-4">{loadingIndicator}</View>}
           </View>
         )}
-      </ScrollView>
+      </ChatConversation>
       <SmartInput
         value={value}
         onChangeText={onChangeText}

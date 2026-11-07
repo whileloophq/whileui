@@ -49,8 +49,10 @@ export function SignInForm({
         <View className="gap-2">
           <Label nativeID="email">Email</Label>
           <Input
+            testID="autofill-email"
             placeholder="you@email.com"
             keyboardType="email-address"
+            autoComplete="email"
             value={email}
             onChangeText={setEmail}
           />
@@ -63,8 +65,10 @@ export function SignInForm({
             </Pressable>
           </View>
           <Input
+            testID="autofill-password"
             placeholder="••••••••"
             secureTextEntry
+            autoComplete="current-password"
             value={password}
             onChangeText={setPassword}
           />

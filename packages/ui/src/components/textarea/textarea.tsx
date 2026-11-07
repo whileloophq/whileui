@@ -13,6 +13,8 @@ import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle, type TypographyRole } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
+import { webAutofillField } from '../../lib/web-autofill';
+import { useFormFieldState } from '../form-field/form-field';
 
 const textareaVariants = tv({
   base: 'w-full border-border bg-muted text-foreground',
@@ -36,14 +38,27 @@ const TEXTAREA_TEXT_ROLE: Record<string, TypographyRole> = {
 
 export interface TextareaProps
   extends Omit<TextInputProps, 'style'>, VariantProps<typeof textareaVariants> {
+  'aria-invalid'?: boolean;
   className?: string;
 }
 
 const Textarea: ForwardRefComponent<TextInputInstance, TextareaProps> = React.forwardRef(
-  ({ className, size = 'default', placeholderTextColor, ...props }, ref) => {
+  (
+    {
+      className,
+      size = 'default',
+      placeholderTextColor,
+      editable,
+      'aria-invalid': ariaInvalid,
+      ...props
+    },
+    ref
+  ) => {
     const colors = useThemeColors();
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
+    const field = useFormFieldState();
+    const effectiveEditable = editable ?? !field.disabled;
 
     const minHeight =
       size === 'sm'
@@ -59,17 +74,25 @@ const Textarea: ForwardRefComponent<TextInputInstance, TextareaProps> = React.fo
       borderRadius: visual.radiusLg,
       paddingHorizontal: visual.controlPaddingXDefault,
       paddingVertical: visual.controlPaddingYDefault,
-      ...(props.editable === false ? { opacity: interaction.disabledOpacity } : null),
+      ...(!effectiveEditable ? { opacity: interaction.disabledOpacity } : null),
     };
 
     return (
       <TextInput
         ref={ref}
-        className={cn(textareaVariants({ size }), focusField, className)}
+        className={cn(
+          textareaVariants({ size }),
+          field.invalid && 'border-destructive',
+          focusField,
+          webAutofillField,
+          className
+        )}
         style={style}
         multiline
         textAlignVertical="top"
         placeholderTextColor={placeholderTextColor ?? colors.placeholder}
+        editable={effectiveEditable}
+        aria-invalid={ariaInvalid ?? field.invalid}
         {...props}
       />
     );

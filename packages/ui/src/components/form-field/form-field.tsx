@@ -47,19 +47,23 @@ const formControlVariants = tv({
 
 type FormFieldDensity = NonNullable<VariantProps<typeof formFieldVariants>['density']>;
 
-interface FormFieldContextValue {
+export interface FormFieldState {
   density: FormFieldDensity;
   invalid: boolean;
   disabled: boolean;
   required: boolean;
 }
 
-const FormFieldContext = createContext<FormFieldContextValue>({
+const FormFieldContext = createContext<FormFieldState>({
   density: 'default',
   invalid: false,
   disabled: false,
   required: false,
 });
+
+export function useFormFieldState(): FormFieldState {
+  return useContext(FormFieldContext);
+}
 
 export interface FormFieldProps extends ViewProps, VariantProps<typeof formFieldVariants> {
   invalid?: boolean;

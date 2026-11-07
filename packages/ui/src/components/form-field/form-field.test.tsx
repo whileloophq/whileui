@@ -1,6 +1,10 @@
 import { render, screen } from '../../test/render';
 import { INTERACTION_TOKENS } from '../../lib/interaction-tokens';
 import { FormControl, FormField, FormHint, FormLabel, FormMessage } from './form-field';
+import { Input } from '../input';
+import { NumericInput } from '../numeric-input';
+import { Textarea } from '../textarea';
+import { Select, SelectTrigger, SelectValue } from '../select';
 
 describe('FormField', () => {
   it('renders the label, hint, and message', async () => {
@@ -60,5 +64,48 @@ describe('FormField', () => {
       opacity: INTERACTION_TOKENS.disabledOpacitySoft,
     });
     expect(screen.getByText('Email').props.className).toContain('text-muted-foreground');
+  });
+
+  it('passes disabled state to its editable controls', async () => {
+    await render(
+      <FormField disabled>
+        <Input placeholder="Email" />
+        <Textarea placeholder="Notes" />
+        <NumericInput accessibilityLabel="Amount" />
+      </FormField>
+    );
+
+    expect(screen.getByPlaceholderText('Email')).toBeDisabled();
+    expect(screen.getByPlaceholderText('Notes')).toBeDisabled();
+    expect(screen.getByLabelText('Amount')).toBeDisabled();
+  });
+
+  it('passes invalid state to its controls while explicit props take precedence', async () => {
+    await render(
+      <FormField invalid disabled>
+        <Input placeholder="Inherited" />
+        <Input placeholder="Override" variant="plain" editable />
+      </FormField>
+    );
+
+    expect(screen.getByPlaceholderText('Inherited').props['aria-invalid']).toBe(true);
+    expect(screen.getByPlaceholderText('Override').props['aria-invalid']).toBe(true);
+    expect(screen.getByPlaceholderText('Override')).not.toBeDisabled();
+  });
+
+  it('passes disabled and invalid state through the select compound control', async () => {
+    await render(
+      <FormField invalid disabled>
+        <Select>
+          <SelectTrigger accessibilityLabel="Plan">
+            <SelectValue />
+          </SelectTrigger>
+        </Select>
+      </FormField>
+    );
+
+    const trigger = screen.getByLabelText('Plan');
+    expect(trigger).toBeDisabled();
+    expect(trigger.props['aria-invalid']).toBe(true);
   });
 });

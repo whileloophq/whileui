@@ -4,6 +4,7 @@ export {
   FormControl,
   FormHint,
   FormMessage,
+  useFormFieldState,
   formFieldVariants,
   formControlVariants,
   type FormFieldProps,
@@ -11,4 +12,5 @@ export {
   type FormControlProps,
   type FormHintProps,
   type FormMessageProps,
+  type FormFieldState,
 } from './form-field';

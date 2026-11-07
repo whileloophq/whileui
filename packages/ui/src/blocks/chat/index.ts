@@ -6,3 +6,4 @@ export {
   type ChatProps,
   type ChatSuggestionsProps,
 } from './chat';
+export { ChatConversation, type ChatConversationProps } from './chat-conversation';

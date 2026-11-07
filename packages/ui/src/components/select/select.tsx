@@ -18,6 +18,7 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { fieldRecipe, shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
+import { useFormFieldState } from '../form-field/form-field';
 
 // iOS needs FullWindowOverlay to render above everything
 const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
@@ -40,6 +41,7 @@ export interface SelectTriggerProps extends Omit<
   'style'
 > {
   className?: string;
+  'aria-invalid'?: boolean;
   /**
    * Object form only. On web this primitive is merged through a Slot that spreads
    * `style`, which cannot carry a state callback — a function silently becomes `{}` and
@@ -94,22 +96,31 @@ export interface SelectSeparatorProps extends React.ComponentPropsWithoutRef<
   className?: string;
 }
 
-const Select: typeof SelectPrimitive.Root = SelectPrimitive.Root;
+function Select({ disabled, ...props }: SelectProps) {
+  const field = useFormFieldState();
+  return <SelectPrimitive.Root disabled={disabled ?? field.disabled} {...props} />;
+}
 
 const SelectGroup: typeof SelectPrimitive.Group = SelectPrimitive.Group;
 
 const SelectTrigger: ForwardRefComponent<SelectTriggerRef, SelectTriggerProps> = React.forwardRef(
-  ({ className, children, style: styleProp, ...props }, ref) => {
+  (
+    { className, children, style: styleProp, disabled, 'aria-invalid': ariaInvalid, ...props },
+    ref
+  ) => {
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
+    const field = useFormFieldState();
+    const effectiveDisabled = disabled ?? field.disabled;
 
     return (
       <SelectPrimitive.Trigger
         ref={ref}
         className={cn(
           'border-border bg-muted flex w-full flex-row items-center justify-between gap-2 shadow-sm active:bg-state-pressed',
+          field.invalid && 'border-destructive',
           focusRing,
-          props.disabled && '',
+          effectiveDisabled && '',
           className
         )}
         // Flattened, not an array. On web this primitive is merged through a Slot that
@@ -119,12 +130,17 @@ const SelectTrigger: ForwardRefComponent<SelectTriggerRef, SelectTriggerProps> =
         style={StyleSheet.flatten([
           fieldRecipe(visual, 'default'),
           styleProp,
-          props.disabled ? { opacity: interaction.disabledOpacity } : null,
+          effectiveDisabled ? { opacity: interaction.disabledOpacity } : null,
         ])}
+        disabled={effectiveDisabled}
+        aria-invalid={ariaInvalid ?? field.invalid}
         {...props}
       >
         <>{children}</>
-        <View className="border-muted-foreground h-2 w-2 rotate-45 border-b-2 border-r-2" />
+        <View
+          testID="select-chevron"
+          className="border-muted-foreground h-2 w-2 shrink-0 rotate-45 border-b-2 border-r-2"
+        />
       </SelectPrimitive.Trigger>
     );
   }
@@ -141,9 +157,16 @@ function SelectValue({ className, placeholder = 'Select...' }: SelectValueProps)
   // user-agent default black — 1.2:1 on a dark surface. Rendering the label ourselves
   // instead would fix the colour and lose the value: Radix owns the selection on web,
   // and `useRootContext().value` is not populated there.
+  // Radix renders the selected ItemText as a nested RNW div, which resets white-space.
+  // The descendant utilities keep that generated node on the same truncated line.
   return (
     <Text
-      className={cn('text-foreground', !value && 'text-muted-foreground', className)}
+      testID="select-value"
+      className={cn(
+        'min-w-0 flex-1 text-foreground web:overflow-hidden web:text-ellipsis web:whitespace-nowrap web:[&_*]:max-w-full web:[&_*]:overflow-hidden web:[&_*]:text-ellipsis web:[&_*]:whitespace-nowrap',
+        !value && 'text-muted-foreground',
+        className
+      )}
       style={typographyStyle(visual, 'body')}
       numberOfLines={1}
     >
@@ -243,9 +266,9 @@ const SelectItem: ForwardRefComponent<SelectPrimitive.ItemRef, SelectItemProps> 
       <SelectPrimitive.Item
         ref={ref}
         className={cn(
-          'active:bg-accent group relative flex w-full flex-row items-center gap-2 pr-8',
+          'active:bg-state-pressed group relative flex w-full flex-row items-center gap-2 pr-8',
           Platform.select({
-            web: 'focus:bg-accent focus:text-accent-foreground cursor-default outline-none',
+            web: 'focus:bg-state-hover focus:text-foreground cursor-default outline-none',
           }),
           props.disabled && '',
           className
@@ -264,12 +287,12 @@ const SelectItem: ForwardRefComponent<SelectPrimitive.ItemRef, SelectItemProps> 
       >
         <View className="absolute right-3 flex h-4 w-4 items-center justify-center">
           <SelectPrimitive.ItemIndicator>
-            <View className="border-foreground h-2.5 w-1.5 rotate-45 border-b-2 border-r-2 -mt-0.5" />
+            <View className="border-primary h-2.5 w-1.5 rotate-45 border-b-2 border-r-2 -mt-0.5" />
           </SelectPrimitive.ItemIndicator>
         </View>
         {children}
         <SelectPrimitive.ItemText
-          className="text-foreground group-active:text-accent-foreground"
+          className="text-foreground"
           style={typographyStyle(visual, 'body')}
         />
       </SelectPrimitive.Item>

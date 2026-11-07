@@ -11,7 +11,7 @@ import { openCategory, openShowcase } from './showcase';
  * inside a clipping ancestor and looks only at content that escapes the page.
  */
 const WIDTHS = [320, 390];
-const CATEGORIES_UNDER_TEST = ['All Components', 'Controls', 'Layout', 'Lists'];
+const CATEGORIES_UNDER_TEST = ['All Components', 'Controls', 'Layout', 'Chat', 'Lists'];
 
 for (const width of WIDTHS) {
   test.describe(`${width}px`, () => {

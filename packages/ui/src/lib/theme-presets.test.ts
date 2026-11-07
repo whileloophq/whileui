@@ -1,6 +1,10 @@
 import { THEME_TOKEN_SPECS, type ThemeColors } from './theme-contract';
 import { THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './theme-derive';
-import { createThemePreset, themePresetToCssVariables } from './theme-presets';
+import {
+  WHILEUI_PRESET_ATELIER,
+  createThemePreset,
+  themePresetToCssVariables,
+} from './theme-presets';
 
 /** A palette stated only as base tokens — the shape an app actually has. */
 const base: ThemeBaseColors = Object.fromEntries(
@@ -70,5 +74,16 @@ describe('createThemePreset', () => {
     // Same input palette, different scheme: the derived overlay and state colours
     // cannot be identical, or `scheme` would be a parameter that does nothing.
     expect(preset.light.overlay).not.toBe(preset.dark.overlay);
+  });
+});
+
+describe('WHILEUI_PRESET_ATELIER', () => {
+  it('provides an opaque, tighter, higher-depth product treatment', () => {
+    const css = themePresetToCssVariables(WHILEUI_PRESET_ATELIER);
+
+    expect(css.visual['--ui-radius-xl']).toBe('14');
+    expect(css.visual['--ui-shadow-opacity-lg']).toBe('0.24');
+    expect(css.visual['--ui-blur-intensity-medium']).toBe('0');
+    expect(css.light['--color-surface-elevated']).toBe('#fffdf8');
   });
 });

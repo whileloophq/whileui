@@ -100,6 +100,7 @@ export {
 export { deriveThemeColors, THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './lib/theme-derive';
 
 export { Text, textVariants, type TextProps } from './components/text';
+export { Surface, type SurfaceLevel, type SurfaceProps } from './components/surface';
 export { View, type ViewProps } from './components/view';
 export { Pressable, type PressableProps } from './components/pressable';
 export { Stack, stackVariants, type StackProps } from './components/stack';
@@ -146,6 +147,7 @@ export {
   FormControl,
   FormHint,
   FormMessage,
+  useFormFieldState,
   formFieldVariants,
   formControlVariants,
   type FormFieldProps,
@@ -153,6 +155,7 @@ export {
   type FormControlProps,
   type FormHintProps,
   type FormMessageProps,
+  type FormFieldState,
 } from './components/form-field';
 export {
   LabeledField,

@@ -21,6 +21,7 @@ const ALLOWED: Record<string, number> = {
   Auth: 0,
   Navigation: 1, // color-contrast on destructive-foreground
   Layout: 0,
+  Chat: 0,
   Profile: 0,
   Lists: 0,
   Commerce: 1, // image-alt — demo product images

@@ -12,20 +12,21 @@ an export.
 
 | Measure                             | Count |
 | ----------------------------------- | ----- |
-| Component and block families        | 82    |
+| Component and block families        | 86    |
 | Shipped in a production application | 30    |
-| Showcase demo only, never shipped   | 52    |
+| Showcase demo only, never shipped   | 56    |
 | Neither shipped nor demonstrated    | 0     |
-| Covered by a contract test          | 17    |
+| Covered by a contract test          | 24    |
 | Qualifying as `stable`              | **0** |
-| Qualifying as `candidate`           | 15    |
+| Qualifying as `candidate`           | 17    |
 
-**Fifteen families are `candidate` as of 2026-10-18** — `Button`, `Input`, `OTPInput`,
+**Seventeen families are `candidate` as of 2026-11-06** — `Button`, `Input`, `OTPInput`,
 `AlertDialog`, `SmartInput`, `KeyboardAwareScreen`, `Pressable`, `PullToRefreshScrollView`,
 `DrawerMenu`, `Switch`, `Textarea`, `NumericInput`, `SegmentedControl`, `FormField` and
-`DatePickerModal` each have a contract suite and a production call site. `Sheet` and
-`MotionProvider` have suites but no production call site, so they stay `experimental`
-with the other 65. `candidate` requires passing contract tests;
+`DatePickerModal`, `FAB`, and `Text` each have a contract suite and a production call site.
+`Sheet`, `MotionProvider`, `ChatConversation`, `TimePickerModal`, `Surface`, `Markdown`,
+and `CodeBlock` have suites but no production call site, so they stay `experimental`
+with the other 69. `candidate` requires passing contract tests;
 `stable` requires the full definition of done, which no family meets until the
 accessibility matrix and E2E layers exist. The 30 shipped families are the ones on the shortest
 path — they already have the production call site that `stable` demands, and need the
@@ -71,13 +72,13 @@ Phase 1 exit list is drawn from this tier.
 | `SmartInput`              | layout     |
 | `DrawerMenu`              | navigation |
 
-## Tier 2 — showcase demo only (52)
+## Tier 2 — showcase demo only (56)
 
 Rendered in the showcase, never used in a shipping screen. A demo proves a component
 renders; only a consumer proves it is useful. These stay `experimental` until a
 product pulls them, and they should not receive hardening work ahead of Tier 1.
 
-`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Menubar`, `MotionProvider`, `Popover`, `RadioGroup`, `Select`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `TimePickerModal`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
+`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `CodeBlock`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Markdown`, `Menubar`, `MotionProvider`, `Popover`, `RadioGroup`, `Select`, `Surface`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatConversation`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `TimePickerModal`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
 
 ## Tier 3 — neither shipped nor demonstrated (0)
 
@@ -411,7 +412,7 @@ Phase 0 blockers.
 
 ## Method
 
-- **Families**, not symbols: the public exports collapse to 80 families once
+- **Families**, not symbols: the public exports collapse to 83 families once
   `*Props` types and compound parts are grouped with their parent.
 - **Shipped** = at least one export imported from `@thewhileloop/whileui` in a
   production application's source. The applications themselves are listed in

@@ -40,12 +40,13 @@ Current task: none in progress. P2-03 is blocked on hardware; P3-01 is unstarted
   its prerequisite is disputed — see the Phase 2 gate note in P2-03
 Status: blocked
 Branch: main
-Last verified commit: the Expo 58 migration commit (`git log -1`)
-Working tree at handoff: clean
-Last command run: nvm exec 24 bun run verify
-Last command result: passed — format, lint, typecheck, 60 unit tests, build, packed
-  tarball, iOS and Android exports, 86 Chromium/WebKit tests
-Next safe action: attach one lower-tier physical Android, install the release APK and
+Last verified commit: a66a6b7 (`Release 4.0.0`)
+Working tree at handoff: verified composition-foundation change, not committed
+Last command run: bun run verify
+Last command result: passed — format, lint, typecheck, 121 unit tests, build, packed
+  tarball, iOS and Android exports, 106 Chromium/WebKit tests
+Next safe action: review and commit the verified ChatConversation change, then attach
+  one lower-tier physical Android, install the release APK and
   run scroll-ownership.yaml and drawer-lifecycle.yaml against it, recording dumpsys
   gfxinfo in P2-03, which then closes. No iOS hardware is required — the simulator is
   this stack's representative iOS device. If no Android phone is reachable, decide
@@ -107,6 +108,35 @@ The commit and working-tree lines are historical hints, not authority. Always ru
 - Performance claims require release-build evidence. Unit tests cannot prove frame
   performance, OS keyboard behavior, portal order or accessibility-tree containment.
 - A showcase demonstrates behavior. A shipped consuming flow proves stability.
+
+## Product-pulled deliveries
+
+### [x] D-02 — Composition foundation without parallel APIs
+
+**Goal:** give generated and hand-built product screens stronger hierarchy without
+publishing application-owned chat payload components or a second styling system.
+
+**Evidence:** `Text` variants consume typography tokens while preserving class-based
+custom sizing; `Surface` is the single radius/padding/border/depth/frost primitive and
+`Card` consumes it. `FormField` state reaches Input, Textarea, NumericInput and Select
+with explicit props taking precedence. Markdown and code live behind explicit optional
+subpaths; their link/clipboard effects remain application-owned. README composition
+grammar, showcase, stability inventory, type/Vite fixtures and changeset are current.
+`bun run verify` passed on 2026-11-06: 121 unit tests, a 145 kB publishable tarball,
+iOS and Android exports, and 106 Chromium/WebKit tests.
+
+### [x] D-01 — Composable chat conversation viewport
+
+**Goal:** let a consuming application compose structured assistant content with the
+existing `SmartInput` without publishing speculative reasoning, tool or source APIs.
+
+**Evidence:** `ChatConversation` follows growing output only while the reader remains
+near the bottom, preserves caller callbacks and forwards its scroll ref. `Chat` uses it
+internally. The showcase composes assistant text, reasoning-shaped content, a tool card
+and sources through `renderMessage`. README, stability inventory, public type fixture
+and changeset are current. `bun run verify` passed on 2026-11-05: 108 unit tests,
+publishable tarball, iOS and Android exports, and 98 Chromium/WebKit tests including the
+Chat accessibility, runtime and 320/390 px responsive matrices.
 
 ## Required review cards
 
@@ -599,6 +629,20 @@ manual screen-reader, RTL and large-text checks; telemetry tied to the released 
 
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
+
+### 2026-11-06 — Composition foundation completed
+
+- Outcome: completed semantic typography, shared surfaces, agent composition guidance,
+  compound chat/form boundaries, and optional Markdown/code subpaths without adding
+  domain-specific message components.
+- Checks run and results: `bun run verify` passed format, zero-warning lint, all type
+  fixtures, 121 unit tests, package distribution checks, both native exports and 106
+  Chromium/WebKit tests.
+- Evidence added: focused consumer-observable contract tests, showcase demos, packed
+  subpath verification, Vite/RNW imports, README API guidance and a minor changeset.
+- Remaining blocker: unchanged P2-03 physical Android trace requirement.
+- Next safe action: review and commit this verified delivery, then resume the existing
+  P2-03 hardware step.
 
 ### 2026-10-18 — P2-03 blocked on hardware; Expo 58 migration committed
 

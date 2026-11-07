@@ -55,6 +55,7 @@ import {
   ButtonIcon,
   Input,
   NumericInput,
+  Surface,
   Card,
   CardHeader,
   CardTitle,
@@ -181,6 +182,7 @@ import {
   DockedInput,
   SmartInput,
   Chat,
+  ChatMessageBubble,
   type ChatMessage,
   ConfirmActionSheet,
   ContentSkeleton,
@@ -223,6 +225,8 @@ import {
   focusRing,
   useIconColors,
 } from '@thewhileloop/whileui';
+import { CodeBlock } from '@thewhileloop/whileui/code';
+import { Markdown } from '@thewhileloop/whileui/markdown';
 
 type CategoryKey =
   | 'primitives'
@@ -910,11 +914,9 @@ function PrimitivesTab({
 
   return (
     <View>
-      <Section title="Typography" subtitle="Text, badges, and type scale">
-        <Text className="text-4xl font-bold text-foreground tracking-tight">
-          Build faster,{'\n'}ship beautiful.
-        </Text>
-        <Text className="text-base text-muted-foreground leading-relaxed">
+      <Section title="Typography" subtitle="Semantic type roles driven by visual tokens">
+        <Text variant="heading">Build faster,{'\n'}ship beautiful.</Text>
+        <Text variant="body" className="text-muted-foreground leading-relaxed">
           WhileUI gives you production-ready components that look stunning out of the box. Every
           component uses <Text className="font-semibold text-foreground">design tokens</Text> for
           effortless theming.
@@ -1041,9 +1043,20 @@ function PrimitivesTab({
       </Section>
 
       <Section
-        title="Cards & Badges"
-        subtitle="Card padding ergonomics, unstyled shell, and badges"
+        title="Surfaces, Cards & Badges"
+        subtitle="Three elevation levels, compound cards, and badges"
       >
+        <View className="flex-row gap-3">
+          <Surface level="base" padding="sm" className="flex-1">
+            <Text variant="label">Base</Text>
+          </Surface>
+          <Surface level="raised" padding="sm" className="flex-1">
+            <Text variant="label">Raised</Text>
+          </Surface>
+          <Surface level="overlay" padding="sm" className="flex-1">
+            <Text variant="label">Overlay</Text>
+          </Surface>
+        </View>
         <Card>
           <CardHeader>
             <View className="flex-row items-center justify-between">
@@ -1203,6 +1216,11 @@ function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }) {
             <SelectItem label="SwiftUI" value="swift">
               <SelectItemIcon>
                 <Feather name="box" size={16} color={colors.foreground} />
+              </SelectItemIcon>
+            </SelectItem>
+            <SelectItem label="React Native for desktop and embedded devices" value="rn-extended">
+              <SelectItemIcon>
+                <Feather name="monitor" size={16} color={colors.foreground} />
               </SelectItemIcon>
             </SelectItem>
           </SelectContent>
@@ -2108,6 +2126,36 @@ function ChatBlocksTab({
   const [inputValue, setInputValue] = useState('');
   const { toast } = useToast();
 
+  const renderMessage = (message: ChatMessage) => {
+    if (message.role !== 'assistant') return <ChatMessageBubble message={message} />;
+
+    return (
+      <View className="w-full gap-3">
+        <View className="flex-row items-center gap-2">
+          <Badge variant="secondary">
+            <BadgeText>AI</BadgeText>
+          </Badge>
+          <Text className="font-semibold text-foreground">Assistant</Text>
+        </View>
+        <Markdown>{message.content}</Markdown>
+        <View className="gap-1 border-l-2 border-border pl-3">
+          <Text className="font-medium text-foreground">Reasoning trace</Text>
+          <Text className="text-sm text-muted-foreground">
+            Reviewed the available primitives and mapped the response into reusable sections.
+          </Text>
+        </View>
+        <CodeBlock
+          language="Tool call · searchDocs"
+          code={'{ "query": "conversation patterns" }'}
+        />
+        <View className="flex-row items-center gap-2 border-t border-border pt-3">
+          <Feather name="link" size={14} color={iconColors.muted} />
+          <Text className="text-sm text-muted-foreground">2 supporting sources</Text>
+        </View>
+      </View>
+    );
+  };
+
   const handleSend = () => {
     if (!inputValue.trim()) return;
     triggerHaptic('medium');
@@ -2140,6 +2188,7 @@ function ChatBlocksTab({
         emptyTitle="How can I help?"
         emptyDescription="Ask anything. Supports text, images & attachments."
         exampleMessage={EXAMPLE_CHAT_MESSAGE}
+        renderMessage={renderMessage}
         header={
           <View className="flex-row items-center gap-3 border-b border-border bg-background px-4 py-3">
             {onBack && (

@@ -26,9 +26,11 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  ChatConversation,
   Input,
   MotionProvider,
   PullToRefreshScrollView,
+  Surface,
   Tabs,
   TabsContent,
   TabsList,
@@ -42,6 +44,8 @@ import {
 import { Badge } from '@thewhileloop/whileui/components/badge';
 import { AppShell } from '@thewhileloop/whileui/blocks/layout';
 import { withWhileUIViteCompat } from '@thewhileloop/whileui/vite';
+import { CodeBlock } from '@thewhileloop/whileui/code';
+import { Markdown } from '@thewhileloop/whileui/markdown';
 
 // The renderer-free entry. `PLAN.md` > Tokens requires this to carry no React, React
 // Native or Uniwind import so it can run in a plain build script.
@@ -87,6 +91,10 @@ export function Smoke() {
             <Badge>New</Badge>
           </CardHeader>
           <CardContent>
+            <Surface level="raised" padding="sm">
+              <Markdown>{'**Semantic** content'}</Markdown>
+              <CodeBlock code="const ready = true;" language="TypeScript" />
+            </Surface>
             <Tabs defaultValue="a" className="w-full">
               <TabsList>
                 <TabsTrigger value="a" className="flex-1">
@@ -105,6 +113,10 @@ export function Smoke() {
             <PullToRefreshScrollView refreshing={false} onRefresh={onRefresh}>
               <CardTitle>Pull</CardTitle>
             </PullToRefreshScrollView>
+
+            <ChatConversation contentContainerClassName="gap-3 px-4">
+              <CardTitle>Conversation</CardTitle>
+            </ChatConversation>
 
             <AlertDialog>
               <AlertDialogContent>

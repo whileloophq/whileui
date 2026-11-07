@@ -12,6 +12,7 @@ import { focusRing } from '../../lib/focus-ring';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
+import { webAutofillField } from '../../lib/web-autofill';
 import { controlRecipe, shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 
@@ -272,6 +273,7 @@ export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps>
             'flex-1 text-foreground placeholder:text-muted-foreground',
             focusRing,
             variant === 'bar' && 'border-border bg-muted',
+            variant === 'bar' && webAutofillField,
             variant === 'card' && 'bg-transparent',
             inputClassName
           )}

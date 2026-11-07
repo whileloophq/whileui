@@ -16,6 +16,8 @@ import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/i
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
+import { webAutofillField } from '../../lib/web-autofill';
+import { useFormFieldState } from '../form-field/form-field';
 
 const numericInputVariants = tv({
   base: 'w-full flex-row items-center border-border bg-muted',
@@ -86,6 +88,7 @@ export interface NumericInputProps
   extends
     Omit<TextInputProps, 'value' | 'defaultValue' | 'onChangeText' | 'keyboardType'>,
     VariantProps<typeof numericInputVariants> {
+  'aria-invalid'?: boolean;
   className?: string;
   inputClassName?: string;
   prefix?: React.ReactNode;
@@ -321,9 +324,10 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
       step = 1,
       showSteppers = false,
       unstyled = false,
-      variant = 'default',
+      variant,
       size = 'default',
-      editable = true,
+      editable,
+      'aria-invalid': ariaInvalid,
       placeholderTextColor,
       onFocus,
       onBlur,
@@ -335,6 +339,9 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
     const colors = useThemeColors();
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
+    const field = useFormFieldState();
+    const effectiveEditable = editable ?? !field.disabled;
+    const effectiveVariant = variant ?? (field.invalid ? 'error' : 'default');
     // The border is on the wrapper and the focus on the field inside it.
     const [focused, setFocused] = useState(false);
     const model = useNumericInputModel({
@@ -343,7 +350,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
       min,
       max,
       step,
-      editable,
+      editable: effectiveEditable,
       onValueChange,
       onBlur,
     });
@@ -356,7 +363,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
     return (
       <View
         className={cn(
-          numericInputVariants({ variant, size }),
+          numericInputVariants({ variant: effectiveVariant, size }),
           unstyled && 'bg-transparent',
           focused && !unstyled && focusFieldWrapper,
           className
@@ -370,7 +377,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
             paddingLeft: !unstyled && prefix ? visual.controlPaddingXDefault : 0,
             paddingRight: unstyled ? 0 : showSteppers ? stepInset : 0,
           },
-          !editable ? { opacity: interaction.disabledOpacity } : undefined,
+          !effectiveEditable ? { opacity: interaction.disabledOpacity } : undefined,
         ]}
       >
         <NumericAffix side="prefix" visual={visual}>
@@ -385,6 +392,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
             className={cn(
               numericInputTextVariants({ size }),
               'w-full web:outline-none',
+              !unstyled && webAutofillField,
               inputClassName
             )}
             style={numericInputTextStyle(visual, size, unstyled, styleProp)}
@@ -399,7 +407,8 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
               model.handleBlur(event);
             }}
             keyboardType="decimal-pad"
-            editable={editable}
+            editable={effectiveEditable}
+            aria-invalid={ariaInvalid ?? field.invalid}
             placeholderTextColor={placeholderTextColor ?? colors.placeholder}
             {...props}
           />
