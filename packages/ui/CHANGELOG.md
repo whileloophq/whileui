@@ -1,5 +1,25 @@
 # @thewhileloop/whileui
 
+## 4.1.0
+
+### Minor Changes
+
+- 0a1061d: Add a clean composition foundation: semantic token-backed `Text`, the shared `Surface`
+  primitive, inherited compound form state, and `ChatConversation` for responsive streaming
+  content. `Card` now uses `Surface` internally. Optional `code` and `markdown` subpaths keep
+  rich assistant content out of the root bundle; applications using Markdown install the
+  optional `markdown-it` peer and continue to own links, clipboard actions, tools, sources,
+  and message state.
+
+### Patch Changes
+
+- 0a1061d: Keep filled text-entry controls on their themed background, foreground, and caret colours
+  when a web browser autofills them.
+- 0a1061d: Use subtle interaction-state tokens for focused and pressed Select options, keeping
+  strong accent colours from overwhelming an open menu while retaining a primary selected
+  indicator. Long selected values now truncate on one line without wrapping into or
+  displacing the trigger chevron.
+
 ## 4.0.0
 
 ### Major Changes
