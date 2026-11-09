@@ -1,5 +1,12 @@
 # @thewhileloop/whileui
 
+## 4.1.1
+
+### Patch Changes
+
+- ab026bb: Keep web Select popovers within the viewport by matching the trigger width, respecting the collision-available size, and wrapping long option labels inside the panel.
+- ab026bb: Make asynchronous UI phases explicit: theme persistence now reads a replacement adapter before writing and preserves user choices made during hydration, AvatarImage and SmartImage restore loading fallbacks when a source starts loading, and existing toast timers no longer restart when the stack changes.
+
 ## 4.1.0
 
 ### Minor Changes
