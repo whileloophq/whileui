@@ -11,6 +11,18 @@ production targets — iOS and Android set the interaction baseline. See
 [ROADMAP.md](./ROADMAP.md) for the product boundary and extraction rules, and
 [PLAN.md](./PLAN.md) for the supported stack and production contracts.
 
+## See it in action
+
+One React Native component contract across native and web, with semantic typography,
+token-driven light and dark themes, accessible controls, and application-owned chat
+composition. The same component tree can feel airy and atmospheric or compact and
+editorial by changing tokens alone.
+
+<p align="center">
+  <img src="./docs/assets/whileui-showcase.gif" width="300" alt="WhileUI Cosmic Aura mobile theme demonstrating light and dark modes, controls, Select, and composable chat" />
+  <img src="./docs/assets/whileui-showcase-atelier.gif" width="300" alt="WhileUI Atelier mobile theme demonstrating compact controls, authentication forms, Select, and composable chat" />
+</p>
+
 ## Installation
 
 ```bash
@@ -425,9 +437,9 @@ Copy from `apps/showcase/templates/profile/`:
 
 ### Media
 
-| Block          | Description                         |
-| -------------- | ----------------------------------- |
-| **SmartImage** | Image with aspect ratio and loading |
+| Block          | Description                                                        |
+| -------------- | ------------------------------------------------------------------ |
+| **SmartImage** | Image with explicit loading, loaded, fallback, and error lifecycle |
 
 ### Date Picker
 
@@ -925,6 +937,9 @@ const adapter: ThemeBridgeAdapter = {
 
 const { mode, resolvedTheme, setMode, cycleMode } = useThemeBridge({ adapter });
 ```
+
+The bridge loads a new adapter before saving into it. If a user changes the mode while
+storage is still loading, that explicit choice wins over the late persisted value.
 
 When another store already owns the mode, mount the controlled bridge once near the
 application root. Change `mode` in the owning event handler; the bridge applies and
@@ -1446,6 +1461,8 @@ import {
 Focused and pressed options use the subtle interaction-state tokens; the primary token
 marks the selected indicator without replacing the option's foreground colour. Long
 selected values stay on one line and truncate without displacing the trigger chevron.
+For popover presentation on web, the options panel matches the trigger width, caps
+itself to the collision-available viewport, and wraps long option labels inside it.
 
 `SelectContent` supports optional frosted props:
 
@@ -1507,7 +1524,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@thewhileloop/whileui';
 
 <Avatar size="default">
-  <AvatarImage src="https://..." />
+  <AvatarImage source={{ uri: 'https://...' }} />
   <AvatarFallback>JD</AvatarFallback>
 </Avatar>;
 ```
@@ -1515,6 +1532,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@thewhileloop/whileui';
 | Prop | Type                        | Default     |
 | ---- | --------------------------- | ----------- |
 | size | `'sm' \| 'default' \| 'lg'` | `'default'` |
+
+`AvatarImage` keeps `AvatarFallback` visible while loading or after an error. Its
+`onLoadingStatusChange` callback reports `'loading'`, `'loaded'`, and `'error'`, including
+when a changed source begins loading, while the standard image event callbacks still run.
 
 ## Progress
 
@@ -1551,6 +1572,9 @@ toast({ title: 'Success', description: 'Saved!', variant: 'success' });
 | description   | `string`                                  |
 | variant       | `'default' \| 'success' \| 'destructive'` |
 | duration      | `number` (ms)                             |
+
+Each toast owns its duration from the moment it appears; adding or dismissing another
+toast does not restart timers already in progress.
 
 ## Popover
 
@@ -1888,6 +1912,36 @@ import { CodeBlock } from '@thewhileloop/whileui/code';
 code, and fenced code. It never opens links or writes to the clipboard itself:
 `onLinkPress` and `codeActions` keep those capabilities in the application. `CodeBlock`
 is dependency-free and accepts an application-owned `actions` slot.
+
+## SmartImage
+
+```tsx
+import { SmartImage } from '@thewhileloop/whileui';
+
+<SmartImage
+  source={{ uri: imageUrl }}
+  fallbackSource={{ uri: fallbackUrl }}
+  alt="Product preview"
+  className="h-48 w-full"
+/>;
+```
+
+| Prop                | Type                                               | Default   |
+| ------------------- | -------------------------------------------------- | --------- |
+| `source`            | `ImageProps['source']`                             | required  |
+| `alt`               | `string`                                           | required  |
+| `fallbackSource`    | `ImageProps['source']`                             | —         |
+| `skeleton`          | `boolean`                                          | `true`    |
+| `skeletonClassName` | `string`                                           | —         |
+| `transition`        | `number`                                           | `200`     |
+| `radius`            | `'none' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'full'` | `'md'`    |
+| `objectFit`         | `'cover' \| 'contain' \| 'fill' \| 'scale-down'`   | `'cover'` |
+| `onLoad`            | `() => void`                                       | —         |
+| `onError`           | `() => void`                                       | —         |
+
+The skeleton returns whenever the primary image starts loading again. A failed primary
+source switches to `fallbackSource` when supplied without re-entering a primary/fallback
+loop.
 
 ## DatePickerModal / DatePickerInline / DateRangePickerModal / TimePickerModal
 
@@ -2410,7 +2464,7 @@ Tracked work items for future releases.
 ### Documentation Gaps
 
 - [ ] Add `## API` sections for: Textarea, Toggle, ToggleGroup, Label, Separator, Skeleton, AspectRatio, Collapsible, Text, View
-- [ ] Add `## API` sections for blocks: FloatingBottomNav, TabBar, FormModalScreen, ErrorState, LoadingScreen, ListItem, NotificationItem, MetricCard, SmartImage, TimelineFeed
+- [ ] Add `## API` sections for blocks: FloatingBottomNav, TabBar, FormModalScreen, ErrorState, LoadingScreen, ListItem, NotificationItem, MetricCard, TimelineFeed
 
 ### Infrastructure
 

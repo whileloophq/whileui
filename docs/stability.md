@@ -16,7 +16,7 @@ an export.
 | Shipped in a production application | 30    |
 | Showcase demo only, never shipped   | 56    |
 | Neither shipped nor demonstrated    | 0     |
-| Covered by a contract test          | 24    |
+| Covered by a contract test          | 27    |
 | Qualifying as `stable`              | **0** |
 | Qualifying as `candidate`           | 17    |
 
@@ -25,8 +25,8 @@ an export.
 `DrawerMenu`, `Switch`, `Textarea`, `NumericInput`, `SegmentedControl`, `FormField` and
 `DatePickerModal`, `FAB`, and `Text` each have a contract suite and a production call site.
 `Sheet`, `MotionProvider`, `ChatConversation`, `TimePickerModal`, `Surface`, `Markdown`,
-and `CodeBlock` have suites but no production call site, so they stay `experimental`
-with the other 69. `candidate` requires passing contract tests;
+`CodeBlock`, `Avatar`, `Toast`, and `SmartImage` have suites but no production call site,
+so they stay `experimental` with the other 69. `candidate` requires passing contract tests;
 `stable` requires the full definition of done, which no family meets until the
 accessibility matrix and E2E layers exist. The 30 shipped families are the ones on the shortest
 path — they already have the production call site that `stable` demands, and need the

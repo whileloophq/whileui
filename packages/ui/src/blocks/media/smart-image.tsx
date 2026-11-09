@@ -32,6 +32,7 @@ const smartImageVariants = tv({
 });
 
 type SmartImageRadius = NonNullable<VariantProps<typeof smartImageVariants>['radius']>;
+type SmartImagePhase = 'loading' | 'loaded' | 'fallback' | 'error';
 
 const FULL_RADIUS = 9999;
 
@@ -76,23 +77,23 @@ const SmartImage: ForwardRefComponent<ViewInstance, SmartImageProps> = React.for
     },
     ref
   ) => {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
+    const [phase, setPhase] = useState<SmartImagePhase>('loading');
     const visual = useVisualTokens();
     const borderRadius = resolveRadius(visual, radius ?? 'md');
 
     const handleLoad = () => {
-      setLoading(false);
+      setPhase((current) => (current === 'fallback' ? 'fallback' : 'loaded'));
       onLoad?.();
     };
 
     const handleError = () => {
-      setLoading(false);
-      setError(true);
+      setPhase((current) =>
+        current === 'fallback' ? 'fallback' : fallbackSource ? 'fallback' : 'error'
+      );
       onError?.();
     };
 
-    const imageSource = error && fallbackSource ? fallbackSource : source;
+    const imageSource = phase === 'fallback' ? fallbackSource : source;
 
     return (
       <View
@@ -101,7 +102,7 @@ const SmartImage: ForwardRefComponent<ViewInstance, SmartImageProps> = React.for
         style={[{ borderRadius }, style]}
         {...props}
       >
-        {skeleton && loading && (
+        {skeleton && phase === 'loading' && (
           // Corner radius is inherited from the clipping container (overflow-hidden).
           <Skeleton className={cn('absolute inset-0', skeletonClassName)} />
         )}
@@ -109,6 +110,7 @@ const SmartImage: ForwardRefComponent<ViewInstance, SmartImageProps> = React.for
           source={imageSource}
           alt={alt}
           transition={transition}
+          onLoadStart={() => setPhase((current) => (current === 'fallback' ? current : 'loading'))}
           onLoad={handleLoad}
           onError={handleError}
           className={cn(
@@ -118,7 +120,7 @@ const SmartImage: ForwardRefComponent<ViewInstance, SmartImageProps> = React.for
             objectFit === 'fill' && 'object-fill',
             objectFit === 'scale-down' && 'object-scale-down'
           )}
-          style={{ opacity: loading && !error ? 0 : 1 }}
+          style={{ opacity: phase === 'loading' ? 0 : 1 }}
         />
       </View>
     );

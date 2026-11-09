@@ -32,9 +32,11 @@ export interface AvatarProps extends ViewProps, VariantProps<typeof avatarVarian
   className?: string;
 }
 
+export type AvatarImageStatus = 'loading' | 'loaded' | 'error';
+
 export interface AvatarImageProps extends Omit<ImageProps, 'style'> {
   className?: string;
-  onLoadingStatusChange?: (status: 'loading' | 'loaded' | 'error') => void;
+  onLoadingStatusChange?: (status: AvatarImageStatus) => void;
 }
 
 export interface AvatarFallbackProps extends ViewProps {
@@ -42,17 +44,17 @@ export interface AvatarFallbackProps extends ViewProps {
 }
 
 const AvatarContext = React.createContext<{
-  imageLoaded: boolean;
-  setImageLoaded: (loaded: boolean) => void;
+  imageStatus: AvatarImageStatus;
+  setImageStatus: (status: AvatarImageStatus) => void;
 }>({
-  imageLoaded: false,
-  setImageLoaded: () => {},
+  imageStatus: 'loading',
+  setImageStatus: () => {},
 });
 
 const Avatar: ForwardRefComponent<ViewInstance, AvatarProps> = React.forwardRef(
   ({ className, size, ...props }, ref) => {
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const contextValue = useMemo(() => ({ imageLoaded, setImageLoaded }), [imageLoaded]);
+    const [imageStatus, setImageStatus] = useState<AvatarImageStatus>('loading');
+    const contextValue = useMemo(() => ({ imageStatus, setImageStatus }), [imageStatus]);
 
     return (
       <AvatarContext.Provider value={contextValue}>
@@ -64,21 +66,35 @@ const Avatar: ForwardRefComponent<ViewInstance, AvatarProps> = React.forwardRef(
 
 Avatar.displayName = 'Avatar';
 
-function AvatarImage({ className, onLoadingStatusChange, ...props }: AvatarImageProps) {
-  const { setImageLoaded } = React.useContext(AvatarContext);
+function AvatarImage({
+  className,
+  onLoadingStatusChange,
+  onLoadStart,
+  onLoad,
+  onError,
+  ...props
+}: AvatarImageProps) {
+  const { setImageStatus } = React.useContext(AvatarContext);
 
   return (
     <Image
-      className={cn('aspect-square h-full w-full rounded-full', className)}
-      onLoad={() => {
-        setImageLoaded(true);
-        onLoadingStatusChange?.('loaded');
-      }}
-      onError={() => {
-        setImageLoaded(false);
-        onLoadingStatusChange?.('error');
-      }}
       {...props}
+      className={cn('aspect-square h-full w-full rounded-full', className)}
+      onLoadStart={() => {
+        setImageStatus('loading');
+        onLoadingStatusChange?.('loading');
+        onLoadStart?.();
+      }}
+      onLoad={(event) => {
+        setImageStatus('loaded');
+        onLoadingStatusChange?.('loaded');
+        onLoad?.(event);
+      }}
+      onError={(event) => {
+        setImageStatus('error');
+        onLoadingStatusChange?.('error');
+        onError?.(event);
+      }}
     />
   );
 }
@@ -86,10 +102,10 @@ function AvatarImage({ className, onLoadingStatusChange, ...props }: AvatarImage
 AvatarImage.displayName = 'AvatarImage';
 
 function AvatarFallback({ className, children, ...props }: AvatarFallbackProps) {
-  const { imageLoaded } = React.useContext(AvatarContext);
+  const { imageStatus } = React.useContext(AvatarContext);
   const visual = useVisualTokens();
 
-  if (imageLoaded) return null;
+  if (imageStatus === 'loaded') return null;
 
   return (
     <View

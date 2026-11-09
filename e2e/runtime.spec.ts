@@ -159,6 +159,33 @@ test.describe('Select', () => {
 
     await expect(value).toHaveCSS('overflow', 'hidden');
   });
+
+  test('its panel and long options stay inside a mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+
+    const trigger = page.getByRole('button', { name: /Select a framework/ }).first();
+    const triggerBox = await trigger.boundingBox();
+    await trigger.click();
+
+    const panel = page.getByRole('listbox').first();
+    const longOption = page.getByRole('option', {
+      name: 'React Native for desktop and embedded devices',
+    });
+    await expect(longOption).toBeVisible();
+
+    const [panelBox, optionBox] = await Promise.all([
+      panel.boundingBox(),
+      longOption.boundingBox(),
+    ]);
+
+    expect(panelBox?.x ?? -1).toBeGreaterThanOrEqual(0);
+    expect((panelBox?.x ?? 0) + (panelBox?.width ?? 0)).toBeLessThanOrEqual(320);
+    expect(optionBox?.x ?? -1).toBeGreaterThanOrEqual(panelBox?.x ?? 0);
+    expect((optionBox?.x ?? 0) + (optionBox?.width ?? 0)).toBeLessThanOrEqual(
+      (panelBox?.x ?? 0) + (panelBox?.width ?? 0)
+    );
+    expect(panelBox?.width ?? 0).toBeCloseTo(triggerBox?.width ?? 0, 0);
+  });
 });
 
 /**

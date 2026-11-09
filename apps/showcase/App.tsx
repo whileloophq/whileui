@@ -491,6 +491,7 @@ function MotionPolicyDemo() {
 
 type ShowcaseIconColors = ReturnType<typeof useIconColors>;
 type ShowcaseCategory = (typeof categories)[number];
+type ShowcaseDemoScreen = 'keyboard' | 'fab' | null;
 
 function toDrawerItem(
   category: ShowcaseCategory,
@@ -636,8 +637,7 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<CategoryKey>('primitives');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [keyboardScreenOpen, setKeyboardScreenOpen] = useState(false);
-  const [fabScreenOpen, setFabScreenOpen] = useState(false);
+  const [demoScreen, setDemoScreen] = useState<ShowcaseDemoScreen>(null);
   const colors = useIconColors();
 
   if (showSplash) {
@@ -816,8 +816,8 @@ function AppContent() {
                   activeKey={activeTab}
                   themeMode={themeMode}
                   onThemeModeChange={setThemeMode}
-                  onOpenKeyboardScreen={() => setKeyboardScreenOpen(true)}
-                  onOpenFabScreen={() => setFabScreenOpen(true)}
+                  onOpenKeyboardScreen={() => setDemoScreen('keyboard')}
+                  onOpenFabScreen={() => setDemoScreen('fab')}
                 />
               </View>
             </ScrollView>
@@ -851,14 +851,14 @@ function AppContent() {
             </Text>
           }
         />
-        {keyboardScreenOpen ? (
+        {demoScreen === 'keyboard' ? (
           <View style={[StyleSheet.absoluteFill, { zIndex: 20 }]} className="bg-background">
-            <KeyboardDockScreen onClose={() => setKeyboardScreenOpen(false)} />
+            <KeyboardDockScreen onClose={() => setDemoScreen(null)} />
           </View>
         ) : null}
-        {fabScreenOpen ? (
+        {demoScreen === 'fab' ? (
           <View style={[StyleSheet.absoluteFill, { zIndex: 20 }]} className="bg-background">
-            <FabScreen onClose={() => setFabScreenOpen(false)} />
+            <FabScreen onClose={() => setDemoScreen(null)} />
           </View>
         ) : null}
       </View>

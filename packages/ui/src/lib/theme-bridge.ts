@@ -1,4 +1,4 @@
-import { createElement, useCallback, useEffect, useMemo, useState } from 'react';
+import { createElement, useCallback, useEffect, useMemo, useReducer } from 'react';
 import { Uniwind, useUniwind } from 'uniwind';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -29,6 +29,63 @@ export interface UseThemeBridgeResult {
 }
 
 const modeCycle: ThemeMode[] = ['light', 'dark', 'system'];
+
+type ThemeBridgeState = {
+  status: 'hydrating' | 'ready';
+  mode: ThemeMode;
+  adapter: ThemeBridgeAdapter | undefined;
+  initialMode: ThemeMode;
+};
+
+type ThemeBridgeAction =
+  | { type: 'hydrate'; adapter: ThemeBridgeAdapter | undefined; initialMode: ThemeMode }
+  | {
+      type: 'hydrated';
+      adapter: ThemeBridgeAdapter;
+      initialMode: ThemeMode;
+      mode: ThemeMode;
+    }
+  | { type: 'select'; mode: ThemeMode }
+  | { type: 'cycle' };
+
+function themeBridgeReducer(state: ThemeBridgeState, action: ThemeBridgeAction): ThemeBridgeState {
+  if (action.type === 'cycle') {
+    return {
+      ...state,
+      status: 'ready',
+      mode: modeCycle[(modeCycle.indexOf(state.mode) + 1) % modeCycle.length],
+    };
+  }
+
+  if (action.type === 'select') {
+    return { ...state, status: 'ready', mode: action.mode };
+  }
+
+  if (action.type === 'hydrate') {
+    if (
+      state.adapter === action.adapter &&
+      state.initialMode === action.initialMode &&
+      state.status === (action.adapter ? 'hydrating' : 'ready')
+    ) {
+      return state;
+    }
+    return {
+      status: action.adapter ? 'hydrating' : 'ready',
+      mode: state.mode,
+      adapter: action.adapter,
+      initialMode: action.initialMode,
+    };
+  }
+
+  if (
+    state.status !== 'hydrating' ||
+    state.adapter !== action.adapter ||
+    state.initialMode !== action.initialMode
+  ) {
+    return state;
+  }
+  return { ...state, status: 'ready', mode: action.mode };
+}
 
 export function applyThemeMode(mode: ThemeMode) {
   (Uniwind.setTheme as (theme: ThemeMode) => void)(mode);
@@ -63,11 +120,16 @@ export function useThemeBridge({
   adapter,
 }: UseThemeBridgeOptions = {}): UseThemeBridgeResult {
   const { theme } = useUniwind();
-  const [mode, setMode] = useState<ThemeMode>(initialMode);
-  const [hydrated, setHydrated] = useState(!adapter);
+  const [state, dispatch] = useReducer(themeBridgeReducer, {
+    status: adapter ? 'hydrating' : 'ready',
+    mode: initialMode,
+    adapter,
+    initialMode,
+  });
 
   useEffect(() => {
     let mounted = true;
+    dispatch({ type: 'hydrate', adapter, initialMode });
 
     if (!adapter) {
       return;
@@ -75,7 +137,7 @@ export function useThemeBridge({
 
     // `loadThemeMode` is the consumer's storage. If it rejects — a corrupt store, a
     // keychain prompt the user dismissed — the app must still render in the initial
-    // mode; leaving `hydrated` false would strand anything gated on it forever.
+    // mode rather than remaining in the hydrating phase forever.
     void (async () => {
       let next: ThemeMode;
       try {
@@ -86,8 +148,7 @@ export function useThemeBridge({
       if (!mounted) {
         return;
       }
-      setMode(next);
-      setHydrated(true);
+      dispatch({ type: 'hydrated', adapter, initialMode, mode: next });
     })();
 
     return () => {
@@ -96,32 +157,34 @@ export function useThemeBridge({
   }, [adapter, initialMode]);
 
   useEffect(() => {
-    if (!hydrated) {
+    if (
+      state.status !== 'ready' ||
+      state.adapter !== adapter ||
+      state.initialMode !== initialMode
+    ) {
       return;
     }
 
-    applyThemeMode(mode);
+    applyThemeMode(state.mode);
     if (adapter) {
-      void adapter.saveThemeMode(mode);
+      void adapter.saveThemeMode(state.mode);
     }
-  }, [adapter, hydrated, mode]);
+  }, [adapter, initialMode, state]);
 
-  const cycleMode = useCallback(() => {
-    setMode((currentMode) => {
-      const currentIndex = modeCycle.indexOf(currentMode);
-      const nextIndex = (currentIndex + 1) % modeCycle.length;
-      return modeCycle[nextIndex];
-    });
+  const setMode = useCallback((mode: ThemeMode) => {
+    dispatch({ type: 'select', mode });
   }, []);
+
+  const cycleMode = useCallback(() => dispatch({ type: 'cycle' }), []);
 
   return useMemo(
     () => ({
-      mode,
+      mode: state.mode,
       resolvedTheme: theme,
       setMode,
       cycleMode,
     }),
-    [cycleMode, mode, theme]
+    [cycleMode, setMode, state.mode, theme]
   );
 }
 

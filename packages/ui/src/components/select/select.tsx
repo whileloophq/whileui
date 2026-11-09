@@ -201,6 +201,19 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
       });
       const visual = useVisualTokens();
       const colors = useThemeColors();
+      // Radix applies its collision variables to the listbox wrapper, while
+      // @rn-primitives renders our visual surface one level inside it. Keep the sizing
+      // on that surface as inline web CSS: the Viewport's own `width: 100%` otherwise
+      // wins class merging and lets the longest option size the outer popper.
+      const webSizingStyle =
+        Platform.OS === 'web' && position === 'popper'
+          ? ({
+              boxSizing: 'border-box',
+              width: 'var(--radix-select-trigger-width)',
+              maxWidth: 'var(--radix-select-content-available-width)',
+              maxHeight: 'var(--radix-select-content-available-height)',
+            } satisfies React.CSSProperties)
+          : undefined;
 
       return (
         <SelectPrimitive.Portal hostName={portalHost}>
@@ -211,22 +224,25 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
                 position={position}
                 insets={insets}
                 style={
-                  StyleSheet.flatten([
-                    {
-                      borderRadius: surfaceRadius(visual, 'lg'),
-                      borderWidth: visual.borderWidthHairline,
-                    },
-                    shadowStyle(visual, colors, 'md'),
-                    frostedSurface.surfaceStyle,
-                    styleProp,
-                  ]) as NonNullable<SelectContentProps['style']>
+                  {
+                    ...webSizingStyle,
+                    ...StyleSheet.flatten([
+                      {
+                        borderRadius: surfaceRadius(visual, 'lg'),
+                        borderWidth: visual.borderWidthHairline,
+                      },
+                      shadowStyle(visual, colors, 'md'),
+                      frostedSurface.surfaceStyle,
+                      styleProp,
+                    ]),
+                  } as NonNullable<SelectContentProps['style']>
                 }
                 className={cn(
-                  'border-border relative z-50 min-w-32 overflow-hidden',
+                  'border-border relative z-50 overflow-hidden',
                   frosted ? 'bg-transparent' : 'bg-popover',
                   Platform.select({
                     web: cn(
-                      'max-h-96 overflow-y-auto overflow-x-hidden',
+                      'overflow-y-auto overflow-x-hidden',
                       props.side === 'bottom' && 'translate-y-1',
                       props.side === 'top' && '-translate-y-1'
                     ),
@@ -237,17 +253,7 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
                 {...props}
               >
                 {frostedSurface.overlay}
-                <SelectPrimitive.Viewport
-                  className={cn(
-                    'p-1',
-                    position === 'popper' &&
-                      Platform.select({
-                        web: 'h-(--radix-select-trigger-height) w-full min-w-(--radix-select-trigger-width)',
-                      })
-                  )}
-                >
-                  {children}
-                </SelectPrimitive.Viewport>
+                <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
               </SelectPrimitive.Content>
             </SelectPrimitive.Overlay>
           </FullWindowOverlay>
@@ -292,7 +298,7 @@ const SelectItem: ForwardRefComponent<SelectPrimitive.ItemRef, SelectItemProps> 
         </View>
         {children}
         <SelectPrimitive.ItemText
-          className="text-foreground"
+          className="min-w-0 flex-1 text-foreground web:whitespace-normal web:break-words"
           style={typographyStyle(visual, 'body')}
         />
       </SelectPrimitive.Item>

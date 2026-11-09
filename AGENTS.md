@@ -409,6 +409,7 @@ Add to this file when you discover:
 
 ### Patterns the lint rules enforce
 
+- **Model phases, not flags.** Keep a boolean for one independent yes/no fact. When two flags can describe impossible combinations, or three or more phases govern which events are legal, use one discriminated union or reducer. Keep animation progress, scroll-following and one-shot platform guards in refs/shared values so transitions do not add React renders. Do not add a state-machine dependency for local component state.
 - **`as any` on a style prop hides a real bug.** A `Pressable`-backed component's `style` may be `(state) => ...`. Dropping a caller's function into a style array makes React Native silently ignore it. Resolve it inside a state callback instead — see `select.tsx`.
 - **Never mirror a controlled prop into state via an effect.** `useEffect(() => setX(prop), [prop])` costs a frame where the UI shows the old value. Derive it: `const x = prop !== undefined ? prop : internalX`. `react-hooks/set-state-in-effect` catches this.
 - **To latch state on a prop change, adjust during render, not in an effect.** `if (prev !== next) { setPrev(next); ... }` commits in the same render; an effect commits one frame late, which an entrance animation notices.

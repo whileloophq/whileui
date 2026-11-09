@@ -201,6 +201,7 @@ export {
   avatarVariants,
   type AvatarProps,
   type AvatarImageProps,
+  type AvatarImageStatus,
   type AvatarFallbackProps,
 } from './components/avatar';
 

@@ -182,6 +182,21 @@ export interface ToastContainerProps extends ViewProps {
   position?: 'top' | 'bottom';
 }
 
+function ToastContainerItem({
+  toast,
+  dismiss,
+}: {
+  toast: ToastData;
+  dismiss: (id: string) => void;
+}) {
+  const handleDismiss = useCallback(() => dismiss(toast.id), [dismiss, toast.id]);
+  return (
+    <View className="mb-2">
+      <Toast toast={toast} onDismiss={handleDismiss} />
+    </View>
+  );
+}
+
 export function ToastContainer({
   position = 'top',
   className,
@@ -201,9 +216,7 @@ export function ToastContainer({
       {...props}
     >
       {toasts.map((toast) => (
-        <View key={toast.id} className="mb-2">
-          <Toast toast={toast} onDismiss={() => dismiss(toast.id)} />
-        </View>
+        <ToastContainerItem key={toast.id} toast={toast} dismiss={dismiss} />
       ))}
     </View>
   );

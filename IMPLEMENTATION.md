@@ -41,12 +41,14 @@ Current task: none in progress. P2-03 is blocked on hardware; P3-01 is unstarted
 Status: blocked
 Branch: main
 Last verified commit: a66a6b7 (`Release 4.0.0`)
-Working tree at handoff: verified composition-foundation change, not committed
+Working tree at handoff: verified Select overflow fix, refreshed showcase GIFs and
+  explicit asynchronous lifecycle fixes, not committed
 Last command run: bun run verify
-Last command result: passed — format, lint, typecheck, 121 unit tests, build, packed
-  tarball, iOS and Android exports, 106 Chromium/WebKit tests
-Next safe action: review and commit the verified ChatConversation change, then attach
-  one lower-tier physical Android, install the release APK and
+Last command result: passed — format, lint, typecheck, 126 unit tests, build, 147 kB
+  publishable tarball, iOS and Android exports, 108 Chromium/WebKit tests (107 passed,
+  one existing WebKit autofill skip)
+Next safe action: review and commit the verified Select, showcase and lifecycle change,
+  then attach one lower-tier physical Android, install the release APK and
   run scroll-ownership.yaml and drawer-lifecycle.yaml against it, recording dumpsys
   gfxinfo in P2-03, which then closes. No iOS hardware is required — the simulator is
   this stack's representative iOS device. If no Android phone is reachable, decide
@@ -629,6 +631,35 @@ manual screen-reader, RTL and large-text checks; telemetry tied to the released 
 
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
+
+### 2026-11-09 — Asynchronous UI lifecycles made explicit
+
+- Outcome: audited component and showcase state machines; made theme hydration, image
+  loading, toast timer ownership and mutually exclusive showcase routes explicit while
+  retaining simple controlled booleans, animation values and one-shot refs where those
+  are the correct model. No state-machine dependency or parallel API was added.
+- Checks run and results: `bun run verify` passed format, zero-warning lint, all type
+  fixtures, 126 unit tests, a 147 kB publishable tarball, both native exports and 108
+  Chromium/WebKit tests (107 passed, one existing WebKit autofill skip).
+- Evidence added: five focused regressions cover adapter replacement, user choice during
+  hydration, Avatar and SmartImage reload phases, and toast deadlines that survive stack
+  changes. README, stability evidence, the agent rule and a patch changeset are current.
+- Remaining blocker: unchanged P2-03 physical Android trace requirement.
+- Next safe action: review and commit this verified delivery, then resume the existing
+  P2-03 hardware step.
+
+### 2026-11-09 — Select popover constrained on narrow web viewports
+
+- Outcome: web popovers now match their trigger, respect Radix's collision-available
+  bounds, and wrap long option labels instead of expanding off-screen.
+- Checks run and results: `bun run verify` passed format, zero-warning lint, all type
+  fixtures, 121 unit tests, package distribution checks, both native exports and 108
+  Chromium/WebKit tests (107 passed, one existing WebKit autofill skip).
+- Evidence added: a 320 px browser regression that measures the trigger, listbox and
+  longest option; both README theme recordings were regenerated from the fixed export.
+- Remaining blocker: unchanged P2-03 physical Android trace requirement.
+- Next safe action: review and commit this verified delivery, then resume the existing
+  P2-03 hardware step.
 
 ### 2026-11-06 — Composition foundation completed
 
