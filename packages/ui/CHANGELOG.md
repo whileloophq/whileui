@@ -1,5 +1,13 @@
 # @thewhileloop/whileui
 
+## 4.2.1
+
+### Patch Changes
+
+- aa73036: On iOS and Android a `Select` whose options are taller than the screen now scrolls inside
+  the listbox, bounded by the safe-area insets, instead of rendering one column that runs
+  under the status bar with nothing to scroll. Web already capped the height.
+
 ## 4.2.0
 
 ### Minor Changes
