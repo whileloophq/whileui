@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -16,6 +15,7 @@ import { Text } from '../../components/text';
 import { Button, ButtonText } from '../../components/button';
 import { cn } from '../../lib/cn';
 import { focusRingInset } from '../../lib/focus-ring';
+import { OverlayHost } from '../../lib/overlay-host';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { fieldRecipe, surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
@@ -293,14 +293,7 @@ function TimePickerModalSession({
         </Pressable>
       ) : null}
 
-      <Modal
-        visible={open}
-        transparent
-        animationType="slide"
-        statusBarTranslucent
-        navigationBarTranslucent
-        onRequestClose={handleDismiss}
-      >
+      <OverlayHost open={open} animationType="slide" onRequestClose={handleDismiss}>
         {/* Containers only. Pressable defaults to `accessible: true`, which on iOS
             collapses the wheels and their controls into one accessibility element. */}
         <Pressable
@@ -379,7 +372,7 @@ function TimePickerModalSession({
             </View>
           </Pressable>
         </Pressable>
-      </Modal>
+      </OverlayHost>
     </>
   );
 }

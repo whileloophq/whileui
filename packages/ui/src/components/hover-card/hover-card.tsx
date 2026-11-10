@@ -3,6 +3,7 @@ import { Platform, StyleSheet, type ViewStyle } from 'react-native';
 import * as HoverCardPrimitive from '@rn-primitives/hover-card';
 import { cn } from '../../lib/cn';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import { useNestedOverlay, useOverlayPortalTarget } from '../../lib/overlay-host';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfacePadding, surfaceRadius } from '../../lib/recipes';
@@ -71,6 +72,9 @@ const HoverCardContent: ForwardRefComponent<HoverCardPrimitive.ContentRef, Hover
       });
       const visual = useVisualTokens();
       const colors = useThemeColors();
+      const { open, onOpenChange } = HoverCardPrimitive.useRootContext();
+      const portalTarget = useOverlayPortalTarget(portalHost);
+      useNestedOverlay(open, () => onOpenChange(false));
       const resolvedStyle = StyleSheet.flatten([
         Platform.OS === 'web' ? undefined : contentStyles,
         {
@@ -84,7 +88,7 @@ const HoverCardContent: ForwardRefComponent<HoverCardPrimitive.ContentRef, Hover
       ]) as ViewStyle;
 
       return (
-        <HoverCardPrimitive.Portal hostName={portalHost}>
+        <HoverCardPrimitive.Portal {...portalTarget}>
           <HoverCardPrimitive.Overlay
             style={Platform.OS !== 'web' ? StyleSheet.absoluteFill : undefined}
           >

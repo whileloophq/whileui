@@ -274,10 +274,12 @@ const ButtonContext = createContext({ variant: 'default', size: 'default' });
 ### React Native Limitations
 
 - SafeAreaView: use `react-native-safe-area-context` (RN's deprecated)
-- **Shadows:** use the shared shadow recipes/classes rather than ad-hoc platform props.
-  React Native 0.88 supports `boxShadow` on the New Architecture, but Android outset
-  shadows require Android 9+, so the recipe keeps the supported-platform fallback.
-  Use stacked Views for hard-edge 3D effects (NeoPOP style).
+- **Shadows:** use the shared shadow recipe, never ad-hoc `shadow*` props or `elevation`.
+  The recipe emits an outset `boxShadow`, which is clipped outside the border box;
+  `elevation` and the legacy `shadow*` props draw under the whole view, so a translucent
+  card went grey on Android with lighter patches behind its children. Android below 9
+  cannot draw an outset box shadow and keeps `elevation` as the fallback. Use stacked
+  Views for hard-edge 3D effects (NeoPOP style).
 - **Icon colors**: `@expo/vector-icons` requires hex values, not CSS classes. Use `useIconColors()` from the UI package (reads from global.css via `useCSSVariable`)
 - **Other RN primitives requiring hex**: Spinner defaults to `useThemeColors().foreground`. Input, Textarea, NumericInput, SmartInput default `placeholderTextColor` to `mutedForeground`. Add optional override props when needed.
 - **Custom fonts on Android**: Pass only `fontFamily` in style—never `fontWeight`. Passing both triggers `setTypeface(_, BOLD)` and synthetic bold, distorting B/D/P/R. Use `FontProvider` + `useResolveFontFamily` (Text, ButtonText, Label).
@@ -340,6 +342,12 @@ and input contract. What that contract means in this codebase:
 - Buttons: `active:bg-*/90` (slight darken)
 - Nav items: `active:opacity-70`
 - Floating elements: `active:scale-95`
+- Menu items, triggers and icon buttons: `active:bg-state-pressed`. Never `active:bg-accent`:
+  a brand accent is a theme decision, and a theme whose accent is teal painted every
+  pressed menu item teal.
+- An overlay with a dim backdrop animates the backdrop and the panel separately through
+  `useOverlayPresence`, with `animationType="none"` on the host. A `slide` Modal moves its
+  backdrop with the panel, so the dim layer visibly rises from the bottom.
 
 ## Self-Improvement
 
@@ -365,6 +373,7 @@ Add to this file when you discover:
 - **No role means no keyboard on web:** React Native Web renders a `Pressable` without `accessibilityRole` as `<div tabindex="0">` — Tab reaches it, but Enter and Space do nothing, because RNW only attaches key handling to real roles. A missing role is a keyboard-operability bug, not just an announcement one.
 - **React Native Web dropped `accessibilityState` → `aria-*` derivation:** `accessibilityState={{ checked }}` no longer emits `aria-checked`, so `role="checkbox"`, `"switch"` and `"radio"` fail ARIA validation. Set `aria-checked` as well; React Native maps the `aria-` form on native, so one prop serves both.
 - **`Escape` does nothing while a modal animates in:** RNW arms the handler from `onShow`, which fires when the entry animation ends. Tests must wait for animations to settle; users just press it again.
+- **A portal overlay opened inside a Modal lands outside it:** Symptom: a Select or Popover inside a Dialog or Sheet shows nothing on device; on web it shows but sits outside the `aria-modal` dialog and its focus trap, and one Escape closes both layers because Radix acts on `keydown` and RNW on `keyup`. Cause: the content portals to the app-root `PortalHost`, under the native Modal window. Fix: host overlays in `lib/overlay-host`'s `OverlayHost`, never a bare `Modal`; nested content reads `useOverlayPortalTarget()` and registers with `useNestedOverlay()` so back and Escape close it before the host. RNW's `zIndex: 9999` is not the web cause — its portal root is `z-index: 0`, so later siblings paint above it anyway.
 
 ### Tooling gotchas
 
@@ -402,6 +411,8 @@ Add to this file when you discover:
   `Container` only adds `flex-1` under its `fill` variant, so the box collapses to
   content height. Nothing errors. Fix: `<Container size="sm" fill>` whenever the child
   fills its parent.
+- **Release APK install fails with "Requested internal only, but not enough space":** the Pixel 8 AVD's 6 GB data partition sits near 95% from the system image alone, and Android refuses installs below its low-storage threshold even with 300 MB free. Uninstalling apps frees almost nothing. Fix on an emulator: `adb shell settings put global sys_storage_threshold_percentage 1` and `sys_storage_threshold_max_bytes 52428800`, then install. Raising `disk.dataPartition.size` in `config.ini` did not grow the existing image. Under heavy host load the same emulator throws launcher and System UI ANR dialogs that block Maestro; dismiss them with `adb shell input tap` and rerun one flow at a time.
+- **An Android release build keeps a stale JavaScript bundle when only `packages/ui` changed:** Gradle's `createBundleReleaseJsAndAssets` tracks the app directory, not the workspace package, so `expo run:android --variant release` after a library-only edit reports success and ships the previous bundle. Measured: a recipe fix was invisible on the emulator until an unrelated edit in `apps/showcase/App.tsx` forced the task to rerun. Touch an app file, or check the Gradle output for that task, before trusting a device run.
 - **Native projects are generated, not tracked:** `apps/*/ios` and `apps/*/android` come from `expo prebuild` and are gitignored. The showcase stays a managed Expo app; never hand-edit them.
 - **React 19 deprecated `React.MutableRefObject` and `React.ElementRef`:** Use `React.RefObject<T>` (its `current` is mutable now) and `React.ComponentRef<typeof X>`. `no-deprecated` catches both.
 - **`eslint-plugin-react` does not support ESLint 10** (peer caps at `^9.7`), and its rules are mostly DOM JSX anyway. `react-hooks` `recommended-latest` plus type-aware `typescript-eslint` covers what matters here.

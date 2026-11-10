@@ -19,7 +19,7 @@ const ToggleContext = createContext<ToggleContextValue>({
 });
 
 const toggleVariants = tv({
-  base: 'inline-flex items-center justify-center active:bg-accent',
+  base: 'inline-flex items-center justify-center active:bg-state-pressed',
   variants: {
     variant: {
       default: 'bg-transparent',

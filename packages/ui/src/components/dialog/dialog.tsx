@@ -1,7 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import {
   View,
-  Modal,
   Pressable,
   Text,
   type StyleProp,
@@ -14,6 +13,7 @@ import { cn } from '../../lib/cn';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import { OverlayHost } from '../../lib/overlay-host';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, typographyStyle } from '../../lib/recipes';
 
@@ -139,14 +139,7 @@ function DialogContent({
   const contentStyle: StyleProp<ViewStyle> = [frostedSurface.surfaceStyle, style];
 
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={() => setOpen(false)}
-    >
+    <OverlayHost open={open} animationType="fade" onRequestClose={() => setOpen(false)}>
       <Pressable
         // Tap-to-dismiss is a pointer affordance. Left accessible it would swallow the
         // whole panel into one element; screen reader users close from inside.
@@ -182,7 +175,7 @@ function DialogContent({
           {children}
         </Pressable>
       </Pressable>
-    </Modal>
+    </OverlayHost>
   );
 }
 
@@ -198,6 +191,7 @@ function DialogTitle({ className, style, ...props }: DialogTitleProps) {
   const visual = useVisualTokens();
   return (
     <Text
+      accessibilityRole="header"
       className={cn('font-semibold text-foreground', className)}
       style={[typographyStyle(visual, 'title'), style]}
       {...props}

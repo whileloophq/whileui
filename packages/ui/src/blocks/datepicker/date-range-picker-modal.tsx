@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Modal, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { OverlayHost } from '../../lib/overlay-host';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 import { Calendar, type DateData } from 'react-native-calendars';
@@ -213,14 +214,7 @@ function DateRangePickerModalSession({
         </Pressable>
       ) : null}
 
-      <Modal
-        visible={open}
-        transparent
-        animationType="slide"
-        statusBarTranslucent
-        navigationBarTranslucent
-        onRequestClose={handleBackdropPress}
-      >
+      <OverlayHost open={open} animationType="slide" onRequestClose={handleBackdropPress}>
         {/* Containers only. Pressable defaults to `accessible: true`, which on iOS
             collapses the calendar and its controls into one accessibility element. */}
         <Pressable
@@ -287,7 +281,7 @@ function DateRangePickerModalSession({
             </View>
           </Pressable>
         </Pressable>
-      </Modal>
+      </OverlayHost>
     </>
   );
 }

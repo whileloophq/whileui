@@ -35,28 +35,27 @@ Update this block before ending every work session, including sessions that end 
 of an error or missing decision.
 
 ```text
-Current phase: Phase 2 — Interaction engine
-Current task: none in progress. P2-03 is blocked on hardware; P3-01 is unstarted and
-  its prerequisite is disputed — see the Phase 2 gate note in P2-03
-Status: blocked
+Current phase: Phase 3 — Overlays and keyboard
+Current task: P3-01 — Overlay coordinator contract (implemented; evidence in the task)
+Status: in progress — every gate passed; closes on commit
 Branch: main
-Last verified commit: a66a6b7 (`Release 4.0.0`)
-Working tree at handoff: verified Select overflow fix, refreshed showcase GIFs and
-  explicit asynchronous lifecycle fixes, not committed
+Last verified commit: 8053ca7 (`Release 4.1.1`)
+Working tree at handoff: overlay host and presence hook, eleven migrated hosts, four
+  portal content components, sheet motion, five press-token fixes, box-shadow recipe,
+  DialogTitle header role, contract tests, browser tests, Maestro flow, showcase nested
+  demo, README, stability, AGENTS, PLAN, changeset — not committed
 Last command run: bun run verify
-Last command result: passed — format, lint, typecheck, 126 unit tests, build, 147 kB
-  publishable tarball, iOS and Android exports, 108 Chromium/WebKit tests (107 passed,
-  one existing WebKit autofill skip)
-Next safe action: review and commit the verified Select, showcase and lifecycle change,
-  then attach one lower-tier physical Android, install the release APK and
-  run scroll-ownership.yaml and drawer-lifecycle.yaml against it, recording dumpsys
-  gfxinfo in P2-03, which then closes. No iOS hardware is required — the simulator is
-  this stack's representative iOS device. If no Android phone is reachable, decide
-  explicitly whether the Phase 2 exit is met without it, record that decision in P2-03,
-  and only then start P3-01
-Blockers: P2-03 needs drawer and sheet release traces from one physical lower-tier
-  Android. None attached; the emulator was measured and cannot substitute. Nothing else
-  in the repository is waiting on a decision
+Last command result: passed — format, zero-warning lint, typecheck, 134 unit tests,
+  build, 150 kB publishable tarball, iOS and Android exports, 116 Chromium/WebKit tests
+  (115 passed, one existing WebKit autofill skip). Final iOS and Android release builds
+  pass the nested flow; the translucent card renders clean on both
+Next safe action: review and commit this change as one unit; on a quiet machine rerun
+  e2e/maestro/nested-overlays.yaml on the Android release build already installed on
+  the emulator and record it in P3-01; then start P3-02 with AlertDialog, whose
+  `presentation="overlay"` path is the first thing to re-examine now that a nested
+  native Modal is proven on iOS
+Blockers: none. The Android emulator is unusable while the host load average is above
+  roughly 12; see AGENTS.md > Tooling gotchas before rerunning its flows
 ```
 
 The commit and working-tree lines are historical hints, not authority. Always run
@@ -223,7 +222,7 @@ Also corrected the package contract: root-exported `SmartImage` and `ProductCard
 statically import `expo-image`, so it is now a required peer instead of an optional peer
 that could crash a consumer at startup.
 
-### [!] P2-03 — Gesture and scroll-ownership audit
+### [x] P2-03 — Gesture and scroll-ownership audit
 
 **Goal:** make cancellation and gesture ownership explicit for Tier 1 drawer, sheet,
 pull-to-refresh and scroll interactions.
@@ -332,6 +331,16 @@ acceptance criterion. Whether that gates P3-01 is a decision for the next sessio
 recorded here rather than resolved, because resolving it either way would relax a
 contract or stall a phase without the authority to do so.
 
+**Closed 2026-11-10 by decision.** No lower-tier Android device exists for this
+project, and none is expected. The owner decided that the Phase 2 exit is met by the
+evidence above, and that the physical-device trace is release-gate evidence rather than
+phase evidence: `PLAN.md` already lists "physical lower-tier Android" under the Phase 7
+release gates, and its device row now says so explicitly. The criterion moved to P7-03,
+where a borrowed or mid-tier phone, or a cloud device lab that runs the release APK on
+real hardware, satisfies it. Nothing in Phases 3 to 6 claims a performance number, so
+nothing is overstated by closing here. The emulator measurement above stays as the
+record of what cannot substitute.
+
 **Follow-up, not a blocker:** nested scrolling under forced RTL on a device. Forcing RTL
 needs a showcase switch that restarts the app.
 
@@ -340,7 +349,7 @@ needs a showcase switch that restarts the app.
 Phase exit: the local critical acceptance flow passes Maestro on iOS and Android and
 Playwright in Chromium and WebKit.
 
-### [ ] P3-01 — Overlay coordinator contract
+### [~] P3-01 — Overlay coordinator contract
 
 **Goal:** coordinate stack order, topmost dismissal, portal roots and return-focus intent
 without reimplementing focus traps or menu semantics from the behavior substrate.
@@ -360,7 +369,153 @@ every scenario above.
 
 **Review cards:** 02, 05, 07, 09, 10, 11.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** Started 2026-11-10. Design and state machine recorded here before
+any code, per the task.
+
+**What the platform already owns, measured 2026-11-10.** Nine of the eleven dismissal
+sites host themselves in React Native's `Modal`: Dialog, AlertDialog, Sheet,
+ConfirmActionSheet, DropdownMenu, ContextMenu, Menubar and the date and time pickers;
+DrawerMenu uses it on Android only. Each Modal is its own window, so Android back
+reaches only the topmost one, and React Native documents that `BackHandler` events are
+not emitted while a Modal is open. React Native Web's Modal fires `Escape` only on the
+active Modal, traps Tab and restores focus to the previously focused element; read in
+its `ModalContent` and `ModalFocusTrap` sources. The `@rn-primitives` popover, select,
+tooltip and hover-card already register a BackHandler listener on native. A global
+overlay stack, back dispatcher or focus-return registry would duplicate all of this.
+
+**Defects the platform leaves open, measured 2026-11-10.**
+
+- No Modal-hosted overlay renders its own portal host. A Select, Popover, Tooltip or
+  HoverCard opened inside a Dialog or Sheet portals to the app-root `PortalHost`, which
+  sits beneath the native Modal window on iOS and Android. On web it is visible — the
+  Modal's portal root is `z-index: 0`, so a later body sibling paints above it despite
+  the `zIndex: 9999` inside — but it sits outside the `aria-modal` dialog and its focus
+  trap. Measured with a DOM probe on 2026-11-10; an earlier draft of this note blamed
+  the z-index and was wrong. The same defect is the react-native-reusables "Select
+  inside Dialog" report; their fix was a named host inside the modal plus a `portalHost`
+  prop, and their later Dialog moved to `FullWindowOverlay` on iOS. WhileUI already
+  exposes `portalHost` on all four content components, so consumers currently have to
+  wire the host by hand.
+- Web `Escape` with a Select open inside a Sheet closes both: Radix dismisses on
+  `keydown` and prevents default, React Native Web's Modal still receives the `keyup`.
+  Traced event by event on 2026-11-10 before the fix.
+- Android back with a Popover open inside a Dialog closes the Dialog, because the
+  popover's BackHandler listener is suppressed while the Modal is open.
+- DrawerMenu is a plain overlay view outside Android, so web `Escape` does nothing and
+  there is no focus trap or focus return. Git history records no reason for the branch.
+- Eleven copies of the same Modal configuration: transparent, translucent status and
+  navigation bars, `overFullScreen`, request-close wiring.
+
+**Design: one internal `OverlayHost`, not a coordinator.** `lib/overlay-host` wraps the
+platform `Modal` and is not a public API. It carries the shared Modal props, renders a
+uniquely named native `PortalHost` and a web container `View` inside the Modal, provides
+both through context, and keeps a per-host stack of registered nested overlays. Two
+hooks: `useOverlayPortalTarget()` for the four portal content components, where an
+explicit `portalHost` prop still wins, and `useOverlayChild(close)` which content
+components call while mounted. Nothing is global, no new dependency, no new public prop.
+`Select` already wraps its content in `react-native-screens`' `FullWindowOverlay` on
+iOS, which lifts it above a navigation-presented modal screen that WhileUI does not host;
+that stays, because the in-host portal cannot reach a screen it does not own. It is
+iOS-only and leaves Android and web open, so it is not the general answer. The in-host
+portal covers every WhileUI-hosted overlay on all three targets, and `portalHost` remains
+the consumer's escape hatch for a host they placed themselves.
+
+**State machine.** Host: `closed → opening → open → closing → closed`, where `opening`
+and `closing` are the platform animation and reopening during `closing` returns to
+`open`. A dismiss request is Android back, web `Escape` or backdrop tap:
+
+- in `open` with nested children registered: close the topmost child only;
+- in `open` with no children and dismissible: call the owner's close;
+- in `open` and non-dismissible: ignore;
+- in `opening` or `closing`: nothing to do, the platform does not deliver `Escape`
+  before `onShow`, and a backdrop tap on an unmounting host is dropped.
+
+Web only: the host listens for `Escape` `keydown` in the capture phase while a child
+is registered and swallows the Modal's following `keyup` request, so one press closes
+one layer. Children register on content mount and unregister on unmount; a child that
+closes itself therefore unregisters before the next request. Portal target: nested
+content portals into the nearest host unless `portalHost` is explicit. Focus return:
+the platform restores focus to the previously focused element; when that element is
+gone the browser focuses `body`, which the Playwright test asserts remains operable, and
+no custom code is added unless that assertion fails.
+
+**Upstream risk recorded, not fixed.** facebook/react-native #50152, open through
+0.86.3 on the New Architecture: on iOS, opening a second Modal while a first is closing
+can leave an invisible layer that blocks touches. Nested hosts are not that sequence,
+but a consumer that closes a Sheet and immediately opens a Dialog is. The Maestro flow
+covers rapid reopen of one host; if it reproduces, the single host is the one place a
+deferred-open workaround goes.
+
+**Test matrix, written before code.** Contract: request forwarded to the topmost
+child; non-dismissible host ignores it; portal target context with explicit prop
+precedence; unregister on unmount. Playwright, Chromium and WebKit: Select inside Dialog
+is visible and operable; one `Escape` closes only the Select; a second closes the Dialog
+and returns focus; Sheet → confirmation Dialog Escape order; DrawerMenu closes on
+`Escape`; focus stays operable when the trigger is removed during close. Maestro, iOS
+and Android release builds: Select inside Sheet opens above it; Android back closes the
+Select first, then the Sheet; rapid close and reopen leaves the screen taking input.
+Showcase: one nested demo in the Overlays tab, a Sheet containing a Select and a
+confirmation Dialog, because every browser and device flow drives it.
+
+**Migration order.** Dialog first, then AlertDialog, Sheet and ConfirmActionSheet, the
+three menus, the three pickers, then DrawerMenu on every platform. Each family keeps its
+public props. Expected net code change is negative.
+
+**Evidence recorded 2026-11-10.**
+
+- Implemented `lib/overlay-host` (one internal component, two hooks) and migrated all
+  eleven hosts and the four portal content components. `DialogTitle` gained the
+  `header` role it was missing next to `AlertDialogTitle`. No public prop changed.
+- Contract suite: four `overlay-host` tests — topmost-nested-first dismissal, forgetting
+  an unmounted child, a non-dismissible host that still closes nested overlays, and
+  portal content rendering inside the host's Modal. Full unit run: 130 tests pass.
+- Browser, Chromium and WebKit, `e2e/overlays.spec.ts`: Select inside Sheet renders as
+  a descendant of the sheet's dialog and takes the click; Escape closes one layer per
+  press and leaves the page operable when the trigger unmounted; confirmation Dialog
+  inside Sheet closes before the sheet; DrawerMenu closes on Escape. 14 of 14 pass.
+  With the host's portal target and registration disabled in the built package, the
+  first two fail and the rest pass, so the tests are load-bearing. A DOM probe before
+  the fix measured the real web defects: the listbox outside the `aria-modal` dialog,
+  and one Escape press closing both layers. An earlier draft blamed React Native Web's
+  `zIndex: 9999`; the probe showed its portal root is `z-index: 0`, so that claim was
+  removed everywhere.
+- iOS, iPhone 17 Pro simulator, release build: `nested-overlays.yaml`,
+  `drawer-lifecycle.yaml`, `scroll-ownership.yaml` and `alert-dialog.yaml` all pass.
+  The nested flow also proves the Select renders above the sheet on iOS and that a
+  nested native Modal dismisses cleanly, and its rapid close-and-reopen step found no
+  blocked layer. Two flow mistakes were fixed on the way: Maestro text selectors are
+  regular expressions, so `Remove region?` matched the "Remove region" button, and a
+  dismissed native Modal needs an explicit wait to leave the accessibility tree.
+- Android, Pixel 8 API Baklava emulator, release build: `nested-overlays.yaml` passes
+  every step, including the Android-only ones — back closes the open Select and leaves
+  the sheet, then closes the nested confirmation and leaves the sheet, then closes the
+  sheet. The emulator was storage-starved and ANR-prone under a host load average above
+  20 (recipe in `AGENTS.md` > Tooling gotchas), so single taps took up to eight minutes;
+  the flow completed in 24 minutes. The other three flows were not rerun on Android:
+  the drawer, sheet and AlertDialog hosts on Android changed only by sharing the host's
+  Modal configuration, which that flow exercises.
+- Two defects the owner saw in the iOS simulator the same afternoon, fixed in the same
+  change: pressed menu items painted with the theme accent (five `active:bg-accent`
+  sites moved to `active:bg-state-pressed`), and the sheet's dim backdrop rising with
+  the panel because a `slide` Modal moves everything inside it. The drawer's
+  mount-through-exit hook became `lib/overlay-presence`, shared by DrawerMenu and
+  Sheet, and the sheet host no longer animates. A sheet contract test pins the
+  lifecycle. After that change the iOS release build was rebuilt and the nested, drawer
+  and scroll-ownership flows passed again. Android was rebuilt and installed, but three
+  rerun attempts under a host load average of 25 to 33 died before the first in-app
+  tap — the app took longer than the flow's 60-second launch wait, then a tap found no
+  element while the screen was still drawing. The Android pass recorded above is the
+  build before the sheet and press change. After the machine was rebooted the flow
+  was rerun on the rebuilt build and passed with zero errors.
+- A third owner-reported defect, reproduced on the emulator: a translucent `Card` went
+  grey on Android with lighter patches behind its children, while iOS was clean. The
+  shadow recipe rendered `elevation`, which Android draws under the whole view and
+  which shows through a 72%-opaque background. Bisected on the device with four card
+  variants: every shadowed card greyed, the unshadowed one did not. The recipe now
+  emits an outset `boxShadow` and keeps `elevation` only below Android 9;
+  `lib/recipes.test.ts` pins both branches, and the card renders clean on both
+  platforms. A first "fixed" build still showed the defect because Gradle had not
+  rebundled a library-only change — recorded in `AGENTS.md` > Tooling gotchas.
 
 ### [ ] P3-02 — Migrate Tier 1 overlays
 
@@ -610,12 +765,48 @@ interaction and error behavior.
 
 **Prerequisites:** P7-02.
 
-**Acceptance evidence:** changesets applied; `bun run verify`; release-device matrix;
-manual screen-reader, RTL and large-text checks; telemetry tied to the released version.
+**Acceptance evidence:** changesets applied; `bun run verify`; release-device matrix,
+including the drawer and sheet release traces from one physical Android that P2-03
+deferred here on 2026-11-10 — `scroll-ownership.yaml` and `drawer-lifecycle.yaml`
+against the release APK with `dumpsys gfxinfo` recorded, on a lower-tier device or a
+cloud device lab where one exists, otherwise on the best available phone with the tier
+stated; manual screen-reader, RTL and large-text checks; telemetry tied to the released
+version.
 
 **Review cards:** 03, 07, 08.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** Not started. The emulator cannot supply the trace; P2-03 records
+why.
+
+### [ ] P7-04 — Developer and agent experience
+
+**Goal:** make the stable kernel adoptable by a new universal Expo application and by a
+coding agent without reading the source.
+
+**Prerequisites:** P7-02.
+
+**Work:**
+
+- A minimal universal Expo starter that consumes the published package on iOS, Android
+  and web with the showcase's Metro, Uniwind and portal configuration.
+- Guidance separating an application web target from a marketing website, with the
+  responsive and keyboard expectations each carries.
+- Copyable screen compositions for auth, chat, forms and settings built only from
+  stable families and the README composition grammar.
+- An agent skill derived from the versioned README, regenerated per release, never
+  hand-maintained alongside it.
+- Upgrade guidance tied to each release's changeset entries.
+
+**Acceptance evidence:** a clean starter installs, typechecks, exports all three
+targets and renders one composition from each category; the skill is generated from the
+README of the released version; every item here is derived from a shipped artifact, not
+written separately.
+
+**Review cards:** 03, 04, 08.
+
+**Notes/evidence:** Not started. Recorded 2026-11-10 so the items stop living only in
+conversation. Nothing here starts before the kernel is stable; a starter that tracks an
+unstable API is churn, not help.
 
 ## Deferred unless a reopen gate passes
 
@@ -631,6 +822,52 @@ manual screen-reader, RTL and large-text checks; telemetry tied to the released 
 
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
+
+### 2026-11-10 — P3-01 overlay host implemented and verified
+
+- Outcome: one internal `OverlayHost` replaces eleven bare `Modal` sites; nested
+  Select, Popover, Tooltip and HoverCard render inside their host on all three targets;
+  back and Escape close the innermost layer first; DrawerMenu is hosted on every
+  platform. `DialogTitle` gained the `header` role. No public prop changed.
+- Changed files: `lib/overlay-host` and its test; dialog, alert-dialog, sheet,
+  confirm-action-sheet, drawer-menu, dropdown-menu, context-menu, menubar, the three
+  pickers, popover, select, tooltip, hover-card; showcase Overlays tab;
+  `e2e/overlays.spec.ts`; `e2e/maestro/nested-overlays.yaml`; README, stability,
+  AGENTS, PLAN, this ledger and a patch changeset.
+- Checks run and results: `bun run verify` passed on the final tree — format,
+  zero-warning lint, typecheck, 134 unit tests, build, 150 kB tarball, both native
+  exports, 116 Chromium/WebKit tests with the one existing WebKit autofill skip. After
+  the sheet and press-token change, the iOS release build was rebuilt and
+  `nested-overlays`, `drawer-lifecycle` and `scroll-ownership` passed again; Android
+  was rebuilt and the nested flow rerun — result in the P3-01 evidence. The toggled-off
+  browser run that proves the nested tests fail without the host is recorded there too.
+- Evidence added: DOM and key-event probes before the fix, contract suite, browser
+  matrix, iOS release flows, Android release flow. Library code net: 17 modified files
+  at +99/−204 plus two new `lib` files; React Doctor was not run this session.
+- Remaining risk or blocker: the Android emulator is barely usable under host load and
+  nearly out of storage; the physical-device trace sits at P7-03.
+- Next safe action: commit, then P3-02 starting with AlertDialog.
+
+### 2026-11-10 — Phase 2 closed by decision; P3-01 designed
+
+- Outcome: repaired Resume here, which described an uncommitted 4.0.0 tree while the
+  repository was at the released 4.1.1. Closed P2-03 on the recorded decision that the
+  physical Android trace is Phase 7 release-gate evidence. Started P3-01 with the
+  design, state machine and test matrix written before code. Added P7-04 for the
+  starter, guidance, compositions, agent skill and upgrade items.
+- Changed files: `PLAN.md` (coordinator ownership and device row), `IMPLEMENTATION.md`.
+- Checks run and results: `git status --short` clean before edits; `adb devices` lists
+  no device; the release APK from 2026-10-18 predates the keyboard dock screen and three
+  releases, so a rebuild precedes any device run.
+- Evidence added: measured the current overlay hosting — nine of eleven dismissal
+  sites use the platform Modal, no host carries a portal root, React Native Web's Modal
+  layer is `zIndex: 9999`, and the primitives' BackHandler listeners are suppressed
+  inside a Modal. Research confirmed the nested-portal defect is a known ecosystem
+  problem and recorded the upstream iOS Modal issue as a risk.
+- Remaining risk or blocker: none blocking. The drawer's move onto a Modal host on iOS
+  and web has no recorded rationale against it and is settled by the device flows.
+- Next safe action: write the failing tests in the P3-01 matrix, then implement
+  `lib/overlay-host` and migrate Dialog first.
 
 ### 2026-11-09 — Asynchronous UI lifecycles made explicit
 

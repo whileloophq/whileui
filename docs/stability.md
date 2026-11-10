@@ -245,8 +245,9 @@ first screen, so the chrome cannot regress.
 **Still not fixed — `Escape` is ignored while a modal animates in.** React Native Web arms the handler
 from `onShow`, which fires when the entry animation _ends_ (`ModalContent.js` listens on
 `keyup` gated by `active`). A user who hits Escape immediately gets nothing. The suite
-waits for animations to settle and says why; whether to work around it is a Phase 3
-overlay-coordinator decision.
+waits for animations to settle and says why. Decided 2026-11-10 with the overlay host:
+left as platform behaviour, because arming the key earlier means owning Escape ourselves
+on every host.
 
 **What this layer still cannot prove:** the iOS accessibility-tree flattening behind the
 containment fix above. React Native Web keeps descendants in the DOM regardless of
@@ -369,6 +370,70 @@ a full-screen dock instead.
 Large text, RTL, IME composition, autofill, and a VoiceOver/TalkBack pass are still
 open. Device results belong in this section once a build that contains the screen has
 been run. The browser result belongs here once `keyboard-dock.spec.ts` has been run.
+
+## Nested overlay layering — 2026-11-10
+
+Every Modal-hosted overlay now renders through one internal host, `lib/overlay-host`.
+The platform `Modal` keeps what it already does well — each one is its own window, so
+Android back reaches only the topmost, and React Native Web fires Escape only on the
+active Modal, traps Tab and restores focus. The host adds the two things a root-level
+portal cannot provide, and it replaced eleven copies of the same Modal configuration.
+
+**A Select, Popover, Tooltip or HoverCard opened inside a Dialog or Sheet rendered in
+the wrong place.** Their content portals to the app-root `PortalHost`. On iOS and Android
+that host sits under the native Modal window. On web it is the opposite of what the
+`zIndex: 9999` in React Native Web's `ModalAnimation` suggests: the Modal's portal root
+is `position: relative; z-index: 0`, so a later body sibling paints above it and the
+listbox is visible and clickable — but it sits outside the `aria-modal` dialog and its
+focus trap, which tells assistive technology to ignore it. Measured in Chromium with a
+DOM probe before the fix. The host now renders a named native portal host and a web
+container inside the Modal, and the four content components target the nearest host
+unless `portalHost` names another. The web regression is `e2e/overlays.spec.ts` > Nested
+overlays, which asserts the option is a descendant of the sheet's dialog; the native
+regression is `e2e/maestro/nested-overlays.yaml`.
+
+**One Escape closed two layers on web.** Radix dismisses a nested overlay on `keydown`
+and calls `preventDefault`; React Native Web's Modal listens on `keyup`, which the
+browser still dispatches, so the sheet closed with its listbox. Traced event by event
+before the fix. The host watches the keydown while a nested overlay is registered and
+drops the Modal's following request. The browser test only sees this after animations
+settle: a closing sheet is still visible for 300 ms, and the first version of the test
+passed against the defect for that reason.
+**Android back closed the Dialog instead of the Popover inside it**, because
+`BackHandler` events are not emitted while a Modal is open, so the primitive's own
+listener never fires. The host forwards the Modal's request to the topmost registered
+nested overlay first. Contract-tested in `lib/overlay-host.test.tsx`; the browser and
+device flows prove the key paths.
+
+**`DrawerMenu` was a Modal on Android only.** Outside Android it was a plain overlay view
+with no Escape, focus trap or focus return, and git history records no reason. It is now
+hosted on every platform; `e2e/overlays.spec.ts` > DrawerMenu asserts Escape, and the
+existing drawer flows cover the native lifecycle.
+
+**Found by looking at the running app, same day.** Two defects the owner saw in the iOS
+simulator that no gate caught. Pressing a `Menubar` item painted it teal: five sites used
+`active:bg-accent`, which is a brand colour, where `Select` already used the subtle
+`active:bg-state-pressed` token — menu items, `MenubarTrigger`, `Toggle`'s press state
+and `Header` actions now match. Opening a `Sheet` sent a dark layer rising from the bottom:
+a `slide` Modal moves its backdrop with its panel. The host now animates nothing, and
+`useOverlayPresence` — the drawer's mount-through-exit hook, generalised — fades the
+backdrop in place while the panel slides. A sheet test pins the mount-through-exit
+lifecycle. The pickers and the three menus still use the host's `slide`; they are
+P3-02's to migrate.
+
+**A translucent card went grey on Android.** The showcase theme's `--color-card` is
+white at 72% opacity and `Card` carries an `sm` shadow, which the recipe rendered as
+`elevation`. Android draws that shadow under the whole view, so it showed through the
+card as a grey wash with lighter patches wherever a child covered it. iOS rendered the
+same card clean. Reproduced on the emulator from the owner's screenshot. The recipe now
+emits an outset `boxShadow`, which the platforms clip outside the border box, and keeps
+`elevation` only on Android below 9. `lib/recipes.test.ts` pins both branches.
+
+Not changed: `AlertDialog`'s `presentation="overlay"` and `"native"` paths, which exist
+for a confirmation that must be a sibling of a fullscreen Modal rather than nested inside
+it. Recorded upstream risk: facebook/react-native#50152, an iOS invisible layer when a
+second Modal opens while a first is closing. Nested hosts are not that sequence; the
+nested flow's rapid close-and-reopen step is the check.
 
 ## Known gap — overlay edge padding on web
 

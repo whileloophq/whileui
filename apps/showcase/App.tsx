@@ -1289,6 +1289,8 @@ function OverlaysTab() {
   const { toast } = useToast();
   const [overlaySheetOpen, setOverlaySheetOpen] = useState(false);
   const [overlaySiblingDeleteOpen, setOverlaySiblingDeleteOpen] = useState(false);
+  const [nestedOpen, setNestedOpen] = useState(false);
+  const [nestedRegion, setNestedRegion] = useState<SelectOption | undefined>(undefined);
 
   return (
     <View>
@@ -1457,6 +1459,59 @@ function OverlaysTab() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* The trigger leaves while the sheet is open, so closing has no element to
+              return focus to — the case the overlay contract names. */}
+          {!nestedOpen && (
+            <Button variant="outline" onPress={() => setNestedOpen(true)}>
+              <ButtonText>Nested overlays</ButtonText>
+            </Button>
+          )}
+          <Sheet open={nestedOpen} onOpenChange={setNestedOpen} maxHeight="half">
+            <SheetHeader
+              title="Nested overlays"
+              description="A Select and a confirmation inside one sheet."
+            />
+            <SheetContent>
+              <Select value={nestedRegion} onValueChange={setNestedRegion}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a region" />
+                </SelectTrigger>
+                <SelectContent className="w-full">
+                  <SelectItem label="Europe" value="eu" />
+                  <SelectItem label="Asia Pacific" value="apac" />
+                  <SelectItem label="Americas" value="amer" />
+                </SelectContent>
+              </Select>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" className="mt-4 self-start">
+                    <ButtonText>Remove region</ButtonText>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Remove region?</DialogTitle>
+                    <DialogDescription>
+                      Deployments there stop at the end of the month.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">
+                        <ButtonText>Keep</ButtonText>
+                      </Button>
+                    </DialogClose>
+                    <DialogClose asChild>
+                      <Button variant="destructive">
+                        <ButtonText>Remove</ButtonText>
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </SheetContent>
+          </Sheet>
 
           <Popover>
             <PopoverTrigger asChild>

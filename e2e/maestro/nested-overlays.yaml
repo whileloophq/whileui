@@ -1,0 +1,78 @@
+appId: dev.whileloop.showcase
+name: Nested overlays render above their host and dismiss one layer at a time
+---
+# A Select inside a Sheet used to portal to the app root, beneath the Sheet's native
+# Modal window, so its options never appeared. The host now carries its own portal
+# target. On Android, back closes the Select, then the confirmation, then the Sheet —
+# one layer per press. iOS has no back key, so it closes each layer from inside.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: 'Typography'
+    timeout: 60000
+
+- tapOn:
+    text: '.*Overlays.*'
+- tapOn:
+    text: '.*Nested overlays.*'
+- assertVisible: 'A Select and a confirmation inside one sheet.'
+
+# The listbox renders above the sheet.
+- tapOn:
+    text: '.*Choose a region.*'
+- assertVisible: 'Asia Pacific'
+
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+      - extendedWaitUntil:
+          notVisible: 'Asia Pacific'
+          timeout: 5000
+      - assertVisible: 'A Select and a confirmation inside one sheet.'
+      - tapOn:
+          text: '.*Choose a region.*'
+
+- tapOn: 'Europe'
+- assertNotVisible: 'Asia Pacific'
+- assertVisible: 'Europe'
+
+# A confirmation dialog nested in the sheet closes before the sheet.
+- tapOn:
+    text: '.*Remove region.*'
+- assertVisible: 'Remove region\?'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: '.*Keep$'
+# A native Modal takes its dismiss animation to leave the accessibility tree.
+- extendedWaitUntil:
+    notVisible: 'Remove region\?'
+    timeout: 5000
+- assertVisible: 'A Select and a confirmation inside one sheet.'
+
+# Close and reopen at once: the host must come back taking input.
+- tapOn:
+    text: 'Close'
+- tapOn:
+    text: '.*Nested overlays.*'
+- assertVisible: 'A Select and a confirmation inside one sheet.'
+- tapOn: 'Europe'
+- assertVisible: 'Asia Pacific'
+- tapOn: 'Asia Pacific'
+- extendedWaitUntil:
+    notVisible: 'Americas'
+    timeout: 5000
+- tapOn:
+    text: 'Close'
+- extendedWaitUntil:
+    notVisible: 'A Select and a confirmation inside one sheet.'
+    timeout: 5000

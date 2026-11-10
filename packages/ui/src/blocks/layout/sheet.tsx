@@ -1,23 +1,25 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import {
-  Modal,
-  Platform,
   Pressable,
   ScrollView,
   type ScrollViewProps,
   type PressableProps,
   type StyleProp,
+  StyleSheet,
   useWindowDimensions,
   View,
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
+import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { OverlayHost } from '../../lib/overlay-host';
+import { useOverlayPresence } from '../../lib/overlay-presence';
 import { useTapOnly } from '../../lib/tap-only';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
@@ -73,6 +75,7 @@ export function Sheet({
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const visual = useVisualTokens();
+  const interaction = useInteractionTokens();
   const onClose = useCallback(() => onOpenChange(false), [onOpenChange]);
   const backdropPress = useTapOnly(onClose);
   const contextValue = useMemo(() => ({ onClose }), [onClose]);
@@ -92,6 +95,17 @@ export function Sheet({
     tintColor: colors.overlay,
   });
   const { height: screenHeight, width: windowWidth } = useWindowDimensions();
+  // The host Modal does not animate: the backdrop fades in place while the panel slides,
+  // so the dim layer never rises with the sheet.
+  const { mounted, progress } = useOverlayPresence({
+    visible: open,
+    openDuration: interaction.motionSlow,
+    closeDuration: interaction.motionNormal,
+  });
+  const backdropStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+  const panelStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: interpolate(progress.value, [0, 1], [screenHeight, 0]) }],
+  }));
 
   const maxWidth = maxWidthProp ?? visual.sheetMaxWidth;
 
@@ -134,20 +148,17 @@ export function Sheet({
   ];
 
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-      statusBarTranslucent={Platform.OS === 'android'}
-      navigationBarTranslucent={Platform.OS === 'android'}
-      presentationStyle="overFullScreen"
-    >
-      <View
-        className="flex-1 justify-end"
-        style={{ backgroundColor: frosted ? 'transparent' : colors.overlay }}
-      >
-        {frostedBackdrop}
+    <OverlayHost open={mounted} animationType="none" onRequestClose={onClose}>
+      <View className="flex-1 justify-end">
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: frosted ? 'transparent' : colors.overlay },
+            backdropStyle,
+          ]}
+        >
+          {frostedBackdrop}
+        </Animated.View>
         {/* Tap-to-dismiss only, and a tap only: a drag across it must not close the sheet.
             Not an accessibility element; screen reader users close from inside. */}
         <Pressable
@@ -156,18 +167,18 @@ export function Sheet({
           className="flex-1"
           {...backdropPress}
         />
-        <View
+        <Animated.View
           className={cn(
             'border-border overflow-hidden relative',
             frosted ? 'bg-transparent' : 'bg-background'
           )}
-          style={sheetStyle}
+          style={[sheetStyle, panelStyle]}
         >
           {frostedSurface.overlay}
           <SheetContext.Provider value={contextValue}>{children}</SheetContext.Provider>
-        </View>
+        </Animated.View>
       </View>
-    </Modal>
+    </OverlayHost>
   );
 }
 

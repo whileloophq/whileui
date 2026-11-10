@@ -144,6 +144,12 @@ export default function App() {
 
 > **Note:** If you use Select, Popover, Tooltip, or HoverCard, add `<PortalHost />` at the root of your app (as the last child).
 
+Inside a Dialog, AlertDialog, Sheet, ConfirmActionSheet, DrawerMenu, menu or picker, those
+four render into that overlay's own layer automatically, so a Select in a sheet opens above
+the sheet. Android back and Escape on web close the innermost open layer first. Pass
+`portalHost` on their content only to target a `PortalHost` you placed yourself, such as
+inside a navigation-presented modal screen that WhileUI does not host.
+
 ### Vite + React Native Web + WhileUI setup
 
 Use the WhileUI Vite compatibility helper when your app includes portal-based primitives.
@@ -237,6 +243,7 @@ function MyScreen() {
 - **Layout:** `Stack` (vertical), `Row` (horizontal) — both support `gap`, `align`, `justify`
 - **Auth callbacks:** Auth templates use objects: `onSubmit({ email, password })`, `onSubmit({ firstName, lastName, email, password })`, etc. Copy templates from `apps/showcase/templates/auth/`.
 - **PortalHost:** Add `<PortalHost />` at app root for Select, Popover, Tooltip, HoverCard.
+  Inside any WhileUI overlay they render into that overlay's layer without configuration.
 - **Motion:** Wrap the root in `<MotionProvider>`; use `useMotionPolicy()` for semantic
   durations, the responsive spring, and reduced-motion behavior.
 - **Uniwind:** `withUniwindConfig(config, options)` wraps metro config — config first, not
@@ -1394,9 +1401,12 @@ import {
 
 ### React Native: stacked modals
 
-If `AlertDialog` is a **sibling** of another fullscreen `Modal`, iOS often fails to show a second `Modal` on top. Prefer **`presentation="overlay"`** and render `<AlertDialog>` **inside** that `Modal` (themed UI, one native modal host). Alternatively use **`presentation="native"`** for a system `Alert.alert` when themed UI is not required.
-
-**Manual QA (iOS + Android):** Fullscreen sheet + `presentation="overlay"` nested in the sheet: themed confirm appears, **Cancel** / **Delete** behave correctly. Optionally repeat with `presentation="native"` for system alert stacking.
+Render a confirmation **inside** the overlay it belongs to. An `AlertDialog` or `Dialog`
+nested in a `Sheet` opens above it, and Android back or Escape closes the confirmation
+before the sheet. If `AlertDialog` must be a **sibling** of another fullscreen `Modal`, iOS
+often fails to show a second `Modal` on top; use **`presentation="overlay"`** inside that
+`Modal`, or **`presentation="native"`** for a system `Alert.alert` when themed UI is not
+required.
 
 ## Checkbox
 
@@ -2086,7 +2096,8 @@ keeps taps on inputs while the keyboard is open (`keyboardShouldPersistTaps="han
 Your `contentContainerStyle` is merged after the default padding. Tapping the backdrop
 closes the sheet; a drag across the backdrop does not, so a missed scroll never dismisses
 it. There is no drag-to-dismiss: close with the backdrop, Android back, Escape on web or
-`SheetClose`.
+`SheetClose`. A Select, Popover or confirmation Dialog placed inside the sheet opens above
+it, and back or Escape closes that inner layer before the sheet.
 
 ## Header
 
@@ -2437,6 +2448,9 @@ import { DrawerMenu } from '@thewhileloop/whileui';
 | `frosted`       | `boolean`                                                          | `false`                |
 | `blurIntensity` | `number`                                                           | medium preset          |
 | `blurTintToken` | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'surfaceTranslucent'` |
+
+Closes from the backdrop, an item, Android back or Escape on web. It is hosted in a modal
+on every platform, so keyboard focus stays inside it while it is open.
 
 ## Roadmap
 

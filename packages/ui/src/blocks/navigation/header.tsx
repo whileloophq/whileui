@@ -87,7 +87,7 @@ export function Header({
             key={action.key}
             accessibilityRole="button"
             onPress={action.onPress}
-            className="rounded-full p-2 active:bg-accent"
+            className="rounded-full p-2 active:bg-state-pressed"
             style={withInteractivePressableStyle(undefined, interaction, {
               pressedVariant: 'default',
             })}

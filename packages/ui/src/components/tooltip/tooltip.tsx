@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Platform, StyleSheet, Text, type ViewStyle } from 'react-native';
 import * as TooltipPrimitive from '@rn-primitives/tooltip';
 import { cn } from '../../lib/cn';
+import { useOverlayPortalTarget } from '../../lib/overlay-host';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
@@ -57,6 +58,7 @@ const TooltipContent: ForwardRefComponent<TooltipPrimitive.ContentRef, TooltipCo
   React.forwardRef(({ className, sideOffset = 4, portalHost, children, style, ...props }, ref) => {
     const visual = useVisualTokens();
     const colors = useThemeColors();
+    const portalTarget = useOverlayPortalTarget(portalHost);
     const resolvedStyle = StyleSheet.flatten([
       Platform.OS === 'web' ? undefined : contentStyles,
       {
@@ -71,7 +73,7 @@ const TooltipContent: ForwardRefComponent<TooltipPrimitive.ContentRef, TooltipCo
     ]) as ViewStyle;
 
     return (
-      <TooltipPrimitive.Portal hostName={portalHost}>
+      <TooltipPrimitive.Portal {...portalTarget}>
         <TooltipPrimitive.Overlay
           style={Platform.OS !== 'web' ? StyleSheet.absoluteFill : undefined}
         >

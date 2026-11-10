@@ -14,6 +14,7 @@ import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import { useNestedOverlay, useOverlayPortalTarget } from '../../lib/overlay-host';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { fieldRecipe, shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
@@ -201,6 +202,9 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
       });
       const visual = useVisualTokens();
       const colors = useThemeColors();
+      const { open, onOpenChange } = SelectPrimitive.useRootContext();
+      const portalTarget = useOverlayPortalTarget(portalHost);
+      useNestedOverlay(open, () => onOpenChange(false));
       // Radix applies its collision variables to the listbox wrapper, while
       // @rn-primitives renders our visual surface one level inside it. Keep the sizing
       // on that surface as inline web CSS: the Viewport's own `width: 100%` otherwise
@@ -216,7 +220,7 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
           : undefined;
 
       return (
-        <SelectPrimitive.Portal hostName={portalHost}>
+        <SelectPrimitive.Portal {...portalTarget}>
           <FullWindowOverlay>
             <SelectPrimitive.Overlay style={Platform.select({ native: StyleSheet.absoluteFill })}>
               <SelectPrimitive.Content

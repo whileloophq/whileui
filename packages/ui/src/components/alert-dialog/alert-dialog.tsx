@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import {
   View,
-  Modal,
   Pressable,
   Text,
   Alert,
@@ -27,6 +26,7 @@ import { composeEventHandlers, type AsChildElement } from '../../lib/compose-eve
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import { OverlayHost } from '../../lib/overlay-host';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, typographyStyle } from '../../lib/recipes';
 
@@ -416,17 +416,9 @@ function AlertDialogContent({
   }
 
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="fade"
-      presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
-      statusBarTranslucent={Platform.OS === 'android'}
-      navigationBarTranslucent={Platform.OS === 'android'}
-      onRequestClose={() => setOpen(false)}
-    >
+    <OverlayHost open={open} animationType="fade" onRequestClose={() => setOpen(false)}>
       {themedBody}
-    </Modal>
+    </OverlayHost>
   );
 }
 

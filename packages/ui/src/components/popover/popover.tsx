@@ -3,6 +3,7 @@ import { Platform, StyleSheet, type ViewStyle } from 'react-native';
 import * as PopoverPrimitive from '@rn-primitives/popover';
 import { cn } from '../../lib/cn';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import { useNestedOverlay, useOverlayPortalTarget } from '../../lib/overlay-host';
 import { useOverlayInsets, type OverlayInsets } from '../../lib/overlay-insets';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
@@ -71,6 +72,9 @@ const PopoverContent: ForwardRefComponent<PopoverPrimitive.ContentRef, PopoverCo
       });
       const visual = useVisualTokens();
       const colors = useThemeColors();
+      const { open, onOpenChange } = PopoverPrimitive.useRootContext();
+      const portalTarget = useOverlayPortalTarget(portalHost);
+      useNestedOverlay(open, () => onOpenChange(false));
       // Keeps the panel off the screen edge and out from under the notch.
       const defaultInsets = useOverlayInsets();
       const resolvedInsets = { ...defaultInsets, ...insets };
@@ -91,7 +95,7 @@ const PopoverContent: ForwardRefComponent<PopoverPrimitive.ContentRef, PopoverCo
       ]) as ViewStyle;
 
       return (
-        <PopoverPrimitive.Portal hostName={portalHost}>
+        <PopoverPrimitive.Portal {...portalTarget}>
           <PopoverPrimitive.Overlay
             style={Platform.OS !== 'web' ? StyleSheet.absoluteFill : undefined}
           >

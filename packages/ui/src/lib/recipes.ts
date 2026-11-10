@@ -1,4 +1,5 @@
-import type { TextStyle, ViewStyle } from 'react-native';
+import { Platform, type TextStyle, type ViewStyle } from 'react-native';
+import { formatRgb, parse } from 'culori';
 import { useThemeColors, type ThemeColors } from './theme-colors';
 import { useVisualTokens, type VisualTokens } from './visual-tokens';
 
@@ -129,13 +130,31 @@ export function shadowStyle(
 
   if (opacity <= 0) return {};
 
+  // Android below 9 cannot draw an outset box shadow and keeps the elevation fallback.
+  if (Platform.OS === 'android' && typeof Platform.Version === 'number' && Platform.Version < 28) {
+    return { elevation };
+  }
+
+  // A box shadow is clipped outside the border box, so it never shows through a
+  // translucent surface. Elevation and the legacy `shadow*` props draw under the whole
+  // view, which greyed every translucent card on Android. CSS blur is twice the
+  // Core Animation radius the tokens were tuned for.
   return {
-    shadowColor: colors.shadow,
-    shadowOpacity: opacity,
-    shadowRadius: radius,
-    shadowOffset: { width: 0, height: offsetY },
-    elevation,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY,
+        blurRadius: radius * 2,
+        color: shadowColorWithOpacity(colors.shadow, opacity),
+      },
+    ],
   };
+}
+
+function shadowColorWithOpacity(color: string, opacity: number): string {
+  const parsed = parse(color);
+  if (!parsed) return color;
+  return formatRgb({ ...parsed, alpha: opacity });
 }
 
 // Component-owned text sizes. Font family/weight stays on className

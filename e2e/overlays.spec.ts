@@ -46,3 +46,83 @@ test.describe('AlertDialog', () => {
     await expect(page.locator('[aria-hidden="true"]')).toHaveCount(0);
   });
 });
+
+/**
+ * Overlays nested inside a Sheet. A Select or Popover that portals to the app root lands
+ * outside the sheet's `aria-modal` dialog and its focus trap, and one Escape press closed
+ * both layers: Radix dismisses on `keydown`, React Native Web's Modal on `keyup`. The host
+ * gives nested content a portal target inside the dialog and routes a dismiss request to
+ * the topmost nested overlay first. Both tests fail with the host logic disabled.
+ */
+test.describe('Nested overlays', () => {
+  const sheetDescription = 'A Select and a confirmation inside one sheet.';
+
+  test.beforeEach(async ({ page }) => {
+    await openShowcase(page);
+    await openCategory(page, 'Overlays');
+    await page.getByRole('button', { name: 'Nested overlays', exact: true }).click();
+    await expect(page.getByText(sheetDescription)).toBeVisible();
+    await waitForAnimations(page);
+  });
+
+  test('a Select inside a Sheet renders inside the sheet dialog and takes the click', async ({
+    page,
+  }) => {
+    await page.getByRole('button', { name: 'Choose a region' }).click();
+    // React Native Web marks the Modal `aria-modal`, which tells assistive technology to
+    // ignore everything outside that dialog. A listbox portaled to the document root is
+    // outside it, so the option must be a descendant of the sheet's own dialog.
+    const sheet = page.getByRole('dialog').filter({ hasText: sheetDescription });
+    await sheet.getByRole('option', { name: 'Europe' }).click();
+    await expect(page.getByRole('button', { name: 'Europe' })).toBeVisible();
+  });
+
+  test('Escape closes one layer per press and leaves the page operable without the trigger', async ({
+    page,
+  }) => {
+    await page.getByRole('button', { name: 'Choose a region' }).click();
+    await expect(page.getByRole('listbox')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    // A closing sheet is still visible during its exit animation. Only after animations
+    // settle does "still visible" mean "still open".
+    await waitForAnimations(page);
+    await expect(page.getByRole('dialog').filter({ hasText: sheetDescription })).toHaveCount(1);
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByText(sheetDescription)).toHaveCount(0);
+
+    // The trigger unmounted while the sheet was open, so there is no element to return
+    // focus to. The next Tab must still land on something visible.
+    await page.keyboard.press('Tab');
+    await expect(page.locator(':focus')).toBeVisible();
+  });
+
+  test('a confirmation dialog inside the sheet closes before the sheet', async ({ page }) => {
+    await page.getByRole('button', { name: 'Remove region', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Remove region?' })).toBeVisible();
+    await waitForAnimations(page);
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('heading', { name: 'Remove region?' })).toHaveCount(0);
+    await waitForAnimations(page);
+    await expect(page.getByRole('dialog').filter({ hasText: sheetDescription })).toHaveCount(1);
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByText(sheetDescription)).toHaveCount(0);
+  });
+});
+
+test.describe('DrawerMenu', () => {
+  test('closes on Escape', async ({ page }) => {
+    await openShowcase(page);
+    await page.getByRole('button', { name: /Open menu/ }).click();
+    const footer = page.getByText('Built with ❤️ for React Native');
+    await expect(footer).toBeVisible();
+    await waitForAnimations(page);
+
+    await page.keyboard.press('Escape');
+    await expect(footer).toHaveCount(0);
+  });
+});

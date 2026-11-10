@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import { type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
-import { View, Modal, Pressable, Text, type ViewProps, type PressableProps } from 'react-native';
+import { View, Pressable, Text, type ViewProps, type PressableProps } from 'react-native';
+import { OverlayHost } from '../../lib/overlay-host';
 import { cn } from '../../lib/cn';
 import type { AsChildElement } from '../../lib/compose-event-handlers';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
@@ -111,14 +112,7 @@ function DropdownMenuContent({
   ];
 
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={() => setOpen(false)}
-    >
+    <OverlayHost open={open} animationType="slide" onRequestClose={() => setOpen(false)}>
       {/* Both of these are containers. Pressable defaults to `accessible: true`, which on
           iOS collapses every descendant into a single accessibility element — the menu
           items inside would be unreachable. */}
@@ -146,7 +140,7 @@ function DropdownMenuContent({
           {children}
         </Pressable>
       </Pressable>
-    </Modal>
+    </OverlayHost>
   );
 }
 
@@ -162,7 +156,7 @@ function DropdownMenuItem({ className, style, ...props }: DropdownMenuItemProps)
   return (
     <Pressable
       accessibilityRole="menuitem"
-      className={cn('flex flex-row items-center active:bg-accent', className)}
+      className={cn('flex flex-row items-center active:bg-state-pressed', className)}
       style={(state) => [tokenStyle, typeof style === 'function' ? style(state) : style]}
       onPress={(e) => {
         props.onPress?.(e);

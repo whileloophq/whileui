@@ -3,7 +3,6 @@ import {
   View,
   Pressable,
   Platform,
-  Modal,
   I18nManager,
   SectionList,
   useWindowDimensions,
@@ -11,13 +10,7 @@ import {
   type ViewStyle,
   type StyleProp,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-  interpolate,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
@@ -25,7 +18,8 @@ import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, surfaceRadius } from '../../lib/recipes';
-import { useMotionPolicy } from '../../lib/motion-policy';
+import { OverlayHost } from '../../lib/overlay-host';
+import { useOverlayPresence } from '../../lib/overlay-presence';
 import { useTapOnly } from '../../lib/tap-only';
 import {
   useFrostedSurface,
@@ -194,62 +188,14 @@ interface DrawerAnimationOptions {
   visible: boolean;
   drawerWidth: number;
   interaction: ReturnType<typeof useInteractionTokens>;
-  motion: ReturnType<typeof useMotionPolicy>;
 }
 
-function useDrawerAnimation({ visible, drawerWidth, interaction, motion }: DrawerAnimationOptions) {
-  const progress = useSharedValue(0);
-  const [mounted, setMounted] = React.useState(visible);
-  const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [prevVisible, setPrevVisible] = React.useState(visible);
-
-  // Open in the prop-change render so the first animation frame has a mounted panel;
-  // closing stays mounted on the timer until the exit animation finishes.
-  if (prevVisible !== visible) {
-    setPrevVisible(visible);
-    if (visible) setMounted(true);
-  }
-
-  React.useEffect(() => {
-    if (!mounted) return;
-
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-
-    const duration =
-      motion.reduceMotion || !motion.animationsEnabled
-        ? 0
-        : visible
-          ? interaction.drawerOpenDuration
-          : interaction.drawerCloseDuration;
-    progress.value = withTiming(visible ? 1 : 0, {
-      duration,
-      reduceMotion: motion.reanimatedReduceMotion,
-      easing: visible ? Easing.bezier(0.2, 0.8, 0.2, 1) : Easing.bezier(0.4, 0, 1, 1),
-    });
-
-    if (!visible) {
-      closeTimerRef.current = setTimeout(() => setMounted(false), duration);
-    }
-
-    return () => {
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = null;
-      }
-    };
-  }, [
-    mounted,
+function useDrawerAnimation({ visible, drawerWidth, interaction }: DrawerAnimationOptions) {
+  const { mounted, progress } = useOverlayPresence({
     visible,
-    progress,
-    interaction.drawerOpenDuration,
-    interaction.drawerCloseDuration,
-    motion.animationsEnabled,
-    motion.reduceMotion,
-    motion.reanimatedReduceMotion,
-  ]);
+    openDuration: interaction.drawerOpenDuration,
+    closeDuration: interaction.drawerCloseDuration,
+  });
 
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
@@ -317,7 +263,6 @@ export function DrawerMenu({
   const colors = useThemeColors();
   const interaction = useInteractionTokens();
   const visual = useVisualTokens();
-  const motion = useMotionPolicy();
   const backdropPress = useTapOnly(onClose);
   const frostedSurface = useFrostedSurface({
     frosted,
@@ -338,7 +283,6 @@ export function DrawerMenu({
     visible,
     drawerWidth: layout.width,
     interaction,
-    motion,
   });
 
   const handleItemPress = React.useCallback(
@@ -407,19 +351,9 @@ export function DrawerMenu({
     </Animated.View>
   );
 
-  if (Platform.OS !== 'android') return drawerTree;
-
   return (
-    <Modal
-      visible={mounted}
-      transparent
-      animationType="none"
-      onRequestClose={onClose}
-      statusBarTranslucent
-      navigationBarTranslucent
-      presentationStyle="overFullScreen"
-    >
+    <OverlayHost open={mounted} animationType="none" onRequestClose={onClose}>
       {drawerTree}
-    </Modal>
+    </OverlayHost>
   );
 }

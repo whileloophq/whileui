@@ -59,20 +59,20 @@ never from npm `latest`. For everything else — `uniwind`, `tailwindcss`, tooli
 latest stable, and treat a version left behind during an SDK bump as a suspect when
 Metro breaks.
 
-| Layer        | Pinned                                                                           |
-| ------------ | -------------------------------------------------------------------------------- |
-| Expo SDK     | 58 (`expo@58.0.x`)                                                               |
-| React Native | 0.88.0, New Architecture required                                                |
-| React        | 19.3.0                                                                           |
-| Web renderer | `react-native-web@^0.21.4`                                                       |
-| Motion       | `react-native-reanimated@4.7.1` + `react-native-worklets@0.13.0`                 |
-| Gesture      | `react-native-gesture-handler@~3.3.0`                                            |
-| Styling      | `uniwind@^1.12` + `tailwindcss@^4`                                               |
-| Behavior     | `@rn-primitives/*`, pinned exactly                                               |
-| Test runtime | `jest-expo@~58.0.x` + Jest 30 + React Native Testing Library                     |
-| Toolchain    | Node ≥22.13.0, `bun@1.3.9`, TypeScript 6.0.3                                     |
-| Browsers     | Chromium and WebKit gated per PR; Firefox on release                             |
-| Devices      | Current iOS simulator, current Android emulator, one physical lower-tier Android |
+| Layer        | Pinned                                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Expo SDK     | 58 (`expo@58.0.x`)                                                                                                             |
+| React Native | 0.88.0, New Architecture required                                                                                              |
+| React        | 19.3.0                                                                                                                         |
+| Web renderer | `react-native-web@^0.21.4`                                                                                                     |
+| Motion       | `react-native-reanimated@4.7.1` + `react-native-worklets@0.13.0`                                                               |
+| Gesture      | `react-native-gesture-handler@~3.3.0`                                                                                          |
+| Styling      | `uniwind@^1.12` + `tailwindcss@^4`                                                                                             |
+| Behavior     | `@rn-primitives/*`, pinned exactly                                                                                             |
+| Test runtime | `jest-expo@~58.0.x` + Jest 30 + React Native Testing Library                                                                   |
+| Toolchain    | Node ≥22.13.0, `bun@1.3.9`, TypeScript 6.0.3                                                                                   |
+| Browsers     | Chromium and WebKit gated per PR; Firefox on release                                                                           |
+| Devices      | Current iOS simulator, current Android emulator; one physical Android, lower-tier where available, at the Phase 7 release gate |
 
 Rules:
 
@@ -321,19 +321,28 @@ constraint applies.
 
 ## Overlays and keyboard
 
-The overlay coordinator is deliberately narrow. It owns:
+The overlay coordinator is deliberately narrow. The platform `Modal` is the overlay
+host and already owns most of the contract: each Modal is its own window, so Android
+back reaches only the topmost one; React Native Web fires `Escape` only on the active
+Modal, traps Tab inside it and restores focus to the previously focused element. WhileUI
+adds one internal host around that primitive, and the host owns only what the platform
+leaves open:
 
-- stacking order and which overlay is topmost;
-- dismissal policy — Android back priority, web `Escape` priority;
-- portal root coordination;
-- return-focus intent.
+- the shared Modal configuration every overlay otherwise repeats;
+- the portal root for overlays nested inside it — a named native portal host and a web
+  container inside the Modal, because a root-level portal renders beneath a native
+  Modal window and beneath React Native Web's Modal layer;
+- dismissal priority — a back or `Escape` request closes the topmost nested overlay
+  before the host, and a non-dismissible host ignores it;
+- return-focus intent when the original trigger is gone.
 
-It does **not** reimplement focus trapping, dismissable-layer mechanics or menu
-semantics that the RN Primitives / Radix substrate already provides correctly. We test
-the WhileUI contract _around_ that substrate: nested Dialog → Popover, Sheet →
-confirmation Dialog, interrupted exit animation, trigger unmounted during close,
-multiple portal roots, Android back on a non-dismissible overlay, `Escape` consumed by
-an inner overlay, and focus return when the original trigger is gone.
+It does **not** reimplement stacking, focus trapping, dismissable-layer mechanics or
+menu semantics that the platform Modal and the RN Primitives / Radix substrate already
+provide correctly, and it adds no global overlay registry. We test the WhileUI contract
+_around_ that substrate: nested Dialog → Popover, Sheet → confirmation Dialog,
+interrupted exit animation, trigger unmounted during close, multiple portal roots,
+Android back on a non-dismissible overlay, `Escape` consumed by an inner overlay, and
+focus return when the original trigger is gone.
 
 Keyboard behavior is a platform seam by design, because the native keyboard APIs are
 mocked on web. Native verifies overlap, safe area, orientation, accessory views and

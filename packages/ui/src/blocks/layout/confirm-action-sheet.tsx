@@ -1,15 +1,9 @@
 import { useMemo } from 'react';
-import {
-  Modal,
-  Pressable,
-  View,
-  type StyleProp,
-  type ViewProps,
-  type ViewStyle,
-} from 'react-native';
+import { Pressable, View, type StyleProp, type ViewProps, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
+import { OverlayHost } from '../../lib/overlay-host';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -101,14 +95,7 @@ export function ConfirmActionSheet({
   };
 
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={handleClose}
-    >
+    <OverlayHost open={open} animationType="fade" onRequestClose={handleClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: colors.overlay }}>
         {/* Backdrop: tap-to-dismiss only, not a control. */}
         <Pressable
@@ -194,6 +181,6 @@ export function ConfirmActionSheet({
           </View>
         </View>
       </View>
-    </Modal>
+    </OverlayHost>
   );
 }
