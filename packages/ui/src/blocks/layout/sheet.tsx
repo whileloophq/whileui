@@ -148,7 +148,7 @@ export function Sheet({
   ];
 
   return (
-    <OverlayHost open={mounted} animationType="none" onRequestClose={onClose}>
+    <OverlayHost open={mounted} animationType="none" onRequestClose={open ? onClose : undefined}>
       <View className="flex-1 justify-end">
         <Animated.View
           style={[

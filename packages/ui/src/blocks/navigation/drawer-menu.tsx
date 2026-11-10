@@ -352,7 +352,7 @@ export function DrawerMenu({
   );
 
   return (
-    <OverlayHost open={mounted} animationType="none" onRequestClose={onClose}>
+    <OverlayHost open={mounted} animationType="none" onRequestClose={visible ? onClose : undefined}>
       {drawerTree}
     </OverlayHost>
   );

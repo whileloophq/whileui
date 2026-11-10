@@ -876,6 +876,23 @@ unstable API is churn, not help.
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
 
+### 2026-11-10 — Self-review findings fixed
+
+- Outcome: ran the generic branch-review checklist over the day's commits. Fixed what it
+  found: `withWhileUIMetro` now matches Windows paths and names `cssEntryFile` when
+  called without options; `Sheet` and `DrawerMenu` ignore a dismiss request that arrives
+  during their exit so the owner is not told to close twice; the showcase Header demo
+  names its icon actions; the state demos use `Surface` instead of literal radius classes.
+- Changed files: `metro.cjs` and test, sheet and drawer with tests, showcase, a patch
+  changeset.
+- Checks run and results: `bun run verify` passed — 147 unit tests, 153 kB tarball,
+  both native exports, 116 browser tests with the one existing skip.
+- Evidence added: a Windows-path and a missing-options case in the Metro test; exit-window
+  dismiss tests for Sheet and DrawerMenu.
+- Remaining risk or blocker: 4.2.2 and the pending 4.2.3 both await a publish the
+  permission layer blocks in this session.
+- Next safe action: publish, bump the proving product, then D-03 shapes.
+
 ### 2026-11-10 — Token hooks derived once per theme
 
 - Outcome: measured, then removed, the one render-time cost the library imposed on

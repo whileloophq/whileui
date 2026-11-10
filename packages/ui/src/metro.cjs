@@ -12,6 +12,11 @@ const { withUniwindConfig } = require('uniwind/metro');
 const NEEDS_REAL_REACT_NATIVE = ['expo-asset', 'expo-font', '@expo/vector-icons'];
 
 function withWhileUIMetro(config, options) {
+  if (!options || typeof options.cssEntryFile !== 'string') {
+    throw new Error(
+      "withWhileUIMetro(config, options): pass Uniwind's options, at least { cssEntryFile: './global.css' }"
+    );
+  }
   const { exemptFromUniwindRewrite = [], ...uniwindOptions } = options;
   const wrapped = withUniwindConfig(config, uniwindOptions);
   const exempt = [...NEEDS_REAL_REACT_NATIVE, ...exemptFromUniwindRewrite];
@@ -19,7 +24,8 @@ function withWhileUIMetro(config, options) {
 
   wrapped.resolver.resolveRequest = (context, moduleName, platform) => {
     if (moduleName === 'react-native') {
-      const origin = context.originModulePath ?? '';
+      // Metro reports Windows paths with backslashes; match either separator.
+      const origin = (context.originModulePath ?? '').replace(/\\/g, '/');
       if (exempt.some((pkg) => origin.includes(`node_modules/${pkg}/`))) {
         return context.resolveRequest(context, moduleName, platform);
       }

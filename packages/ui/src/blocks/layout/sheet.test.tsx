@@ -55,6 +55,28 @@ describe('Sheet', () => {
     );
   });
 
+  it('does not report a second close while its exit animation is still mounted', async () => {
+    jest.useFakeTimers();
+    const onOpenChange = jest.fn();
+    const result = await render(
+      <Sheet open onOpenChange={onOpenChange}>
+        <SheetContent>
+          <Text>Body</Text>
+        </SheetContent>
+      </Sheet>
+    );
+    await result.rerender(
+      <Sheet open={false} onOpenChange={onOpenChange}>
+        <SheetContent>
+          <Text>Body</Text>
+        </SheetContent>
+      </Sheet>
+    );
+    const [modal] = result.root!.queryAll((instance) => instance.type === 'Modal');
+    modal!.props.onRequestClose();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
   it('closes from the platform dismiss request — Android back, web Escape', async () => {
     const onOpenChange = jest.fn();
     const result = await render(

@@ -38,6 +38,13 @@ describe('withWhileUIMetro', () => {
     });
   });
 
+  it('matches Windows paths and explains a missing options object', () => {
+    expect(resolveFrom('C:\\app\\node_modules\\expo-font\\build\\index.js')).toMatchObject({
+      filePath: 'real-react-native',
+    });
+    expect(() => withWhileUIMetro({ resolver: {} }, undefined as never)).toThrow(/cssEntryFile/);
+  });
+
   it('lets an app exempt more packages', () => {
     const config = withWhileUIMetro(
       { resolver: {} },

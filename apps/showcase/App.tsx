@@ -2152,11 +2152,13 @@ function NavigationBlocksTab() {
             rightActions={[
               {
                 key: 'search',
+                accessibilityLabel: 'Search',
                 icon: <Feather name="search" size={20} color={colors.foreground} />,
                 onPress: () => {},
               },
               {
                 key: 'more',
+                accessibilityLabel: 'More',
                 icon: <Feather name="more-horizontal" size={20} color={colors.foreground} />,
                 onPress: () => {},
               },
@@ -2498,31 +2500,31 @@ function LayoutBlocksTab({ onOpenKeyboardScreen }: { onOpenKeyboardScreen: () =>
 
       <SectionGroup label="Placeholders & Loading" />
       <Section title="Empty State" subtitle="When there's no content to show">
-        <View className="h-64 rounded-xl border border-border overflow-hidden">
+        <Surface padding="none" className="h-64 overflow-hidden">
           <EmptyState
             icon={<Feather name="inbox" size={48} color={colors.muted} />}
             title="No messages yet"
             description="When you receive messages, they'll appear here."
             action={{ label: 'Compose', onPress: () => {} }}
           />
-        </View>
+        </Surface>
       </Section>
 
       <Section title="Error State" subtitle="Something went wrong">
-        <View className="h-64 rounded-xl border border-border overflow-hidden">
+        <Surface padding="none" className="h-64 overflow-hidden">
           <ErrorState
             icon={<Feather name="alert-triangle" size={48} color={colors.destructive} />}
             title="Connection lost"
             description="Check your internet connection and try again."
             onRetry={() => {}}
           />
-        </View>
+        </Surface>
       </Section>
 
       <Section title="Loading State" subtitle="A section still fetching, in flow">
-        <View className="rounded-xl border border-border overflow-hidden">
+        <Surface padding="none" className="overflow-hidden">
           <LoadingState label="Loading activity" />
-        </View>
+        </Surface>
       </Section>
 
       <LayoutSkeletonDemos />

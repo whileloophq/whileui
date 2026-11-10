@@ -73,6 +73,16 @@ describe('DrawerMenu', () => {
     expect(() => jest.runAllTimers()).not.toThrow();
   });
 
+  it('ignores a dismiss request that arrives during its exit', async () => {
+    jest.useFakeTimers();
+    const onClose = jest.fn();
+    const result = await render(<DrawerMenu visible onClose={onClose} sections={sections} />);
+    await result.rerender(<DrawerMenu visible={false} onClose={onClose} sections={sections} />);
+    const [modal] = result.root!.queryAll((instance) => instance.type === 'Modal');
+    modal!.props.onRequestClose();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('reports the selection and unmounts once the owner closes it to navigate', async () => {
     jest.useFakeTimers();
     const onSelect = jest.fn();
