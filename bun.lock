@@ -63,7 +63,7 @@
     },
     "packages/ui": {
       "name": "@thewhileloop/whileui",
-      "version": "4.2.1",
+      "version": "4.2.2",
       "dependencies": {
         "clsx": "^2.1.0",
         "culori": "^4.0.2",
