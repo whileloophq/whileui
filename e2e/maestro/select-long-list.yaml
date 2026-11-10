@@ -1,0 +1,33 @@
+appId: dev.whileloop.showcase
+name: A long Select list stays on screen and scrolls to its last option
+---
+# Native has no available-height cap for a listbox. Forty options used to render as one
+# column taller than the screen, pushed up under the status bar, with nothing to scroll.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: 'Typography'
+    timeout: 60000
+
+- tapOn:
+    text: '.*Controls.*'
+- scrollUntilVisible:
+    element:
+      text: 'Select a region (long list)'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    text: 'Select a region (long list)'
+- assertVisible: 'Region 1'
+
+# The last option is reachable by scrolling the list itself.
+- scrollUntilVisible:
+    element:
+      text: 'Region 40'
+    direction: DOWN
+    timeout: 30000
+- tapOn: 'Region 40'
+- extendedWaitUntil:
+    notVisible: 'Region 39'
+    timeout: 5000
+- assertVisible: 'Region 40'

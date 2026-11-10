@@ -3,6 +3,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
   type StyleProp,
   type ViewStyle,
@@ -210,6 +211,11 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
       // without every caller reading the safe area itself.
       const defaultInsets = useOverlayInsets();
       const resolvedInsets = { ...defaultInsets, ...insets };
+      // Web caps the listbox with the primitive's available-height variable. Native has
+      // no equivalent: a list longer than the screen ran under the status bar with
+      // nothing to scroll, so the options get a scroll owner bounded by the insets.
+      const { height: windowHeight } = useWindowDimensions();
+      const nativeMaxHeight = windowHeight - resolvedInsets.top - resolvedInsets.bottom;
       // Radix applies its collision variables to the listbox wrapper, while
       // @rn-primitives renders our visual surface one level inside it. Keep the sizing
       // on that surface as inline web CSS: the Viewport's own `width: 100%` otherwise
@@ -262,7 +268,19 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
                 {...props}
               >
                 {frostedSurface.overlay}
-                <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
+                <SelectPrimitive.Viewport className="p-1">
+                  {Platform.OS === 'web' ? (
+                    children
+                  ) : (
+                    <ScrollView
+                      style={{ maxHeight: nativeMaxHeight }}
+                      bounces={false}
+                      keyboardShouldPersistTaps="handled"
+                    >
+                      {children}
+                    </ScrollView>
+                  )}
+                </SelectPrimitive.Viewport>
               </SelectPrimitive.Content>
             </SelectPrimitive.Overlay>
           </FullWindowOverlay>

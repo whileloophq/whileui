@@ -867,6 +867,25 @@ unstable API is churn, not help.
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
 
+### 2026-11-10 — Ran the proving product on 4.2.0; native Select overflow fixed
+
+- Outcome: built the proving product's iOS release against its local backend and ran
+  its Maestro journey: sign-in, quick add to the ledger, expense detail and edit, settle
+  up, new group and sign-out all pass; its sign-up step stalled on the runner's own
+  log-reading, not the UI. Screens show the icon glyphs, the eyebrow labels and the
+  library FAB. Opening a twenty-option `Select` on its quick-add modal screen answered
+  the audit's open question — the list renders above the presented screen on iOS — and
+  exposed that a native list taller than the screen had no scroll owner. Fixed in
+  `SelectContent`; a forty-option showcase demo and `select-long-list.yaml` prove it.
+- Changed files: `select.tsx`, showcase Controls demo, the new flow, README,
+  stability, a patch changeset.
+- Checks run and results: typecheck, zero-warning lint, 142 unit tests; the new flow
+  passes on the iOS simulator release build; Android result below once its build ends.
+- Evidence added: the device flow for a long list; the proving product's own journey on
+  the released package.
+- Remaining risk or blocker: none; 4.2.1 to publish and the product to bump.
+- Next safe action: publish 4.2.1, bump the product, re-check its picker.
+
 ### 2026-11-10 — Consumer audit; small fixes shipped, pulled components logged
 
 - Outcome: audited the proving product against 4.1.2 (two read-only passes over all 39

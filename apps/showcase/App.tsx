@@ -1130,11 +1130,14 @@ function PrimitivesTab({
   );
 }
 
+const LONG_REGIONS = Array.from({ length: 40 }, (_, index) => `Region ${index + 1}`);
+
 function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }) {
   const [radioVal, setRadioVal] = useState('option-1');
   const [massUnit, setMassUnit] = useState('kg');
   const [heightUnit, setHeightUnit] = useState('cm');
   const [selectVal, setSelectVal] = useState<SelectOption | undefined>(undefined);
+  const [regionVal, setRegionVal] = useState<SelectOption | undefined>(undefined);
   const colors = useIconColors();
   const insets = useSafeAreaInsets();
   const contentInsets = {
@@ -1225,6 +1228,16 @@ function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }) {
                 <Feather name="monitor" size={16} color={colors.foreground} />
               </SelectItemIcon>
             </SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={regionVal} onValueChange={(opt) => setRegionVal(opt)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a region (long list)" />
+          </SelectTrigger>
+          <SelectContent className="w-full">
+            {LONG_REGIONS.map((region) => (
+              <SelectItem key={region} label={region} value={region} />
+            ))}
           </SelectContent>
         </Select>
         <View className="flex-row flex-wrap gap-4">

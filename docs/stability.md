@@ -429,6 +429,15 @@ same card clean. Reproduced on the emulator from the owner's screenshot. The rec
 emits an outset `boxShadow`, which the platforms clip outside the border box, and keeps
 `elevation` only on Android below 9. `lib/recipes.test.ts` pins both branches.
 
+**Found by running the proving product on 4.2.0, same day.** A `Select` with twenty
+options on a navigator-presented modal screen rendered above the screen on iOS, which
+answered the audit's open question, but as one column taller than the display, pushed
+under the status bar with nothing to scroll. The native primitive's viewport is a
+fragment and its positioner only clamps the top edge, so a tall list simply overflows;
+web caps it with the available-height variable. `SelectContent` now gives native options
+a scroll owner bounded by the overlay insets. `e2e/maestro/select-long-list.yaml` opens
+a forty-option list in the showcase and scrolls to the last entry.
+
 Not changed: `AlertDialog`'s `presentation="overlay"` and `"native"` paths, which exist
 for a confirmation that must be a sibling of a fullscreen Modal rather than nested inside
 it. Recorded upstream risk: facebook/react-native#50152, an iOS invisible layer when a

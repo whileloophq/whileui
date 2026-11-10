@@ -1490,7 +1490,8 @@ itself to the collision-available viewport, and wraps long option labels inside 
 | blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'popover'`   |
 
 `SelectContent` keeps its listbox inside the safe area by default; pass `insets` only to
-change that margin. Inside a Dialog, Sheet or other WhileUI overlay it renders in that
+change that margin. A list taller than the screen scrolls inside the listbox on every
+platform. Inside a Dialog, Sheet or other WhileUI overlay it renders in that
 overlay's layer automatically. Option values must be non-empty strings: the web
 primitive rejects `""`, so model "none" as an explicit value such as `'none'`.
 
