@@ -1,5 +1,14 @@
 # @thewhileloop/whileui
 
+## 4.2.3
+
+### Patch Changes
+
+- 7d46dfa: `withWhileUIMetro` matches Windows paths, so the icon-font exemption also applies on
+  Windows machines, and throws a message naming `cssEntryFile` when called without options.
+  `Sheet` and `DrawerMenu` no longer report a second close when back or Escape arrives during
+  their exit animation.
+
 ## 4.2.2
 
 ### Patch Changes
