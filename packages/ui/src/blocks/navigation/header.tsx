@@ -10,6 +10,8 @@ export interface HeaderAction {
   key: string;
   icon: React.ReactNode;
   onPress: () => void;
+  /** Required in practice: an icon-only button has no other accessible name. */
+  accessibilityLabel?: string;
 }
 
 export interface HeaderProps extends ViewProps {
@@ -86,6 +88,7 @@ export function Header({
           <Pressable
             key={action.key}
             accessibilityRole="button"
+            accessibilityLabel={action.accessibilityLabel}
             onPress={action.onPress}
             className="rounded-full p-2 active:bg-state-pressed"
             style={withInteractivePressableStyle(undefined, interaction, {

@@ -21,7 +21,9 @@ test.describe('AlertDialog', () => {
     // 2026-09-12: the title was plain text and the controls carried no role at all.
     await expect(page.getByRole('heading')).toHaveCount(1);
     await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
-    await expect(page.locator('[role="alert"]')).toHaveCount(1);
+    // The panel itself is the alert region. `Alert` components elsewhere on the tab
+    // carry the same role, so scope to the dialog's own text.
+    await expect(page.locator('[role="alert"]', { hasText: 'Delete workspace?' })).toHaveCount(1);
   });
 
   test('closes on Escape and returns focus to its trigger', async ({ page }) => {

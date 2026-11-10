@@ -15,6 +15,7 @@ import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useNestedOverlay, useOverlayPortalTarget } from '../../lib/overlay-host';
+import { useOverlayInsets } from '../../lib/overlay-insets';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
 import { fieldRecipe, shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
@@ -205,6 +206,10 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
       const { open, onOpenChange } = SelectPrimitive.useRootContext();
       const portalTarget = useOverlayPortalTarget(portalHost);
       useNestedOverlay(open, () => onOpenChange(false));
+      // Keeps the listbox off the screen edge and clear of the notch and home indicator
+      // without every caller reading the safe area itself.
+      const defaultInsets = useOverlayInsets();
+      const resolvedInsets = { ...defaultInsets, ...insets };
       // Radix applies its collision variables to the listbox wrapper, while
       // @rn-primitives renders our visual surface one level inside it. Keep the sizing
       // on that surface as inline web CSS: the Viewport's own `width: 100%` otherwise
@@ -226,7 +231,7 @@ const SelectContent: ForwardRefComponent<SelectPrimitive.ContentRef, SelectConte
               <SelectPrimitive.Content
                 ref={ref}
                 position={position}
-                insets={insets}
+                insets={resolvedInsets}
                 style={
                   {
                     ...webSizingStyle,

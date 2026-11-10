@@ -17,6 +17,7 @@ const textVariants = tv({
       body: 'font-normal',
       caption: 'text-muted-foreground font-normal',
       label: 'font-medium leading-tight',
+      eyebrow: 'text-muted-foreground font-medium',
       code: 'font-mono bg-muted rounded px-1 py-0.5',
     },
     size: {
@@ -44,6 +45,7 @@ const VARIANT_ROLES: Record<NonNullable<TextProps['variant']>, TypographyRole> =
   body: 'body',
   caption: 'caption',
   label: 'label',
+  eyebrow: 'label',
   code: 'label',
 };
 

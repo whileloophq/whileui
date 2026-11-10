@@ -181,7 +181,8 @@ never imported; that is the failure this rule exists to prevent.
 ## Uniwind Configuration
 
 - `global.css` at **app root** (not `src/`) — Tailwind scans from its location
-- `withUniwindConfig` must be **outermost** wrapper in `metro.config.js`
+- `withWhileUIMetro(config, options)` from `@thewhileloop/whileui/metro` is the **outermost**
+  wrapper in `metro.config.js`; it calls `withUniwindConfig` and adds the resolver exemption below
 - Import `global.css` in `App.tsx` (not `index.ts`) for HMR
 - `cssEntryFile` must be **relative path string** (`'./global.css'`)
 - Monorepos: use `@source '../../packages/ui/src';` in CSS
@@ -401,8 +402,8 @@ Add to this file when you discover:
   such export, so `Asset.fromModule` throws and `Font.loadAsync` never resolves. Web
   escapes it because Uniwind branches to a different resolver there. Fix: wrap
   `resolveRequest` after `withUniwindConfig` and send `expo-asset`, `expo-font` and
-  `@expo/vector-icons` to Metro's own resolver — `apps/showcase/metro.config.js` is the
-  reference. Diagnosed by probing the app: `Object.keys(require('react-native'))` contained
+  `@expo/vector-icons` to Metro's own resolver. `withWhileUIMetro` from
+  `@thewhileloop/whileui/metro` does exactly that; `apps/showcase/metro.config.js` uses it. Diagnosed by probing the app: `Object.keys(require('react-native'))` contained
   nothing matching "asset", which is how you tell a rewrite from a missing export. This
   generalises — **any** package importing a non-component export from `react-native` hits it.
 - **`Container` swallows a `flex-1` child unless you pass `fill`:** Symptom: a screen

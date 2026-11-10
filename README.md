@@ -38,23 +38,26 @@ Use `npm install` instead of `bun add` if you prefer npm.
 
 ### Setup Uniwind (required)
 
-1. **metro.config.js** (wrap with withUniwindConfig):
+1. **metro.config.js** (wrap with `withWhileUIMetro`):
 
 ```js
 const { getDefaultConfig } = require('expo/metro-config');
-const { withUniwindConfig } = require('uniwind/metro');
+const { withWhileUIMetro } = require('@thewhileloop/whileui/metro');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
-module.exports = withUniwindConfig(config, {
+module.exports = withWhileUIMetro(config, {
   cssEntryFile: './global.css',
 });
 ```
 
-> `withUniwindConfig(config, options)` takes the config first and returns the wrapped
-> config — it is not curried. It must wrap the outermost config object, and
-> `cssEntryFile` must be a relative path string.
+> `withWhileUIMetro` calls Uniwind's `withUniwindConfig(config, options)` for you — same
+> options, config first, `cssEntryFile` a relative path — and keeps `expo-asset`,
+> `expo-font` and `@expo/vector-icons` on the real `react-native`. Without that, Uniwind's
+> import rewrite leaves every icon glyph silently missing on iOS and Android while web
+> renders fine. Pass `exemptFromUniwindRewrite: ['pkg']` for any other package that
+> imports a non-component export from `react-native`. It must be the outermost wrapper.
 
 2. **global.css** at app root:
 
@@ -246,9 +249,12 @@ function MyScreen() {
   Inside any WhileUI overlay they render into that overlay's layer without configuration.
 - **Motion:** Wrap the root in `<MotionProvider>`; use `useMotionPolicy()` for semantic
   durations, the responsive spring, and reduced-motion behavior.
-- **Uniwind:** `withUniwindConfig(config, options)` wraps metro config — config first, not
-  curried. `global.css` at app root, imported in `App.tsx`. Installing from npm also needs
+- **Metro:** `withWhileUIMetro(config, { cssEntryFile: './global.css' })` from
+  `@thewhileloop/whileui/metro` — wraps Uniwind and keeps icon fonts loading on device.
+  `global.css` at app root, imported in `App.tsx`. Installing from npm also needs
   `@source './node_modules/@thewhileloop/whileui/dist';` or every component renders unstyled.
+- **States:** `LoadingState`, `EmptyState` and `ErrorState` share one shape; `ErrorState`
+  takes `onRetry`. `Text variant="eyebrow"` is the muted section label above a title.
 - **Reference:** Block props in `packages/ui/src/blocks` (core) and `apps/showcase/templates/` (auth, profile); flow patterns in README "Flow Patterns" section.
 
 ### Composition grammar
@@ -391,6 +397,7 @@ Copy from `apps/showcase/templates/auth/`:
 | **ErrorBoundary**           | React ErrorBoundary that renders ErrorState by default                |
 | **EmptyState**              | Empty content placeholder                                             |
 | **ErrorState**              | Error display with retry                                              |
+| **LoadingState**            | In-flow loading placeholder for a section still fetching              |
 | **LoadingScreen**           | Full-screen loading indicator                                         |
 | **PullToRefreshScrollView** | Themed ScrollView with RefreshControl (useThemeTokens for colors)     |
 | **KeyboardAwareScreen**     | One screen-level keyboard policy for bottom-docked controls           |
@@ -1053,10 +1060,10 @@ import { Button, ButtonText, ButtonIcon } from '@thewhileloop/whileui';
 classes are unnecessary for normal hierarchy. `heading` also sets
 `accessibilityRole="header"` unless the caller supplies another role.
 
-| Prop    | Type                                                                                          | Default     |
-| ------- | --------------------------------------------------------------------------------------------- | ----------- |
-| variant | `'default' \| 'heading' \| 'title' \| 'subtitle' \| 'body' \| 'caption' \| 'label' \| 'code'` | `'default'` |
-| size    | `'xs' \| 'sm' \| 'base' \| 'lg' \| 'xl' \| '2xl' \| '3xl'`                                    | by variant  |
+| Prop    | Type                                                                                                       | Default     |
+| ------- | ---------------------------------------------------------------------------------------------------------- | ----------- |
+| variant | `'default' \| 'heading' \| 'title' \| 'subtitle' \| 'body' \| 'caption' \| 'label' \| 'eyebrow' \| 'code'` | `'default'` |
+| size    | `'xs' \| 'sm' \| 'base' \| 'lg' \| 'xl' \| '2xl' \| '3xl'`                                                 | by variant  |
 
 ## Input
 
@@ -1481,6 +1488,11 @@ itself to the collision-available viewport, and wraps long option labels inside 
 | frosted       | `boolean`                                                          | `false`       |
 | blurIntensity | `number`                                                           | subtle preset |
 | blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'popover'`   |
+
+`SelectContent` keeps its listbox inside the safe area by default; pass `insets` only to
+change that margin. Inside a Dialog, Sheet or other WhileUI overlay it renders in that
+overlay's layer automatically. Option values must be non-empty strings: the web
+primitive rejects `""`, so model "none" as an explicit value such as `'none'`.
 
 ## Tabs
 
@@ -2108,7 +2120,9 @@ import { Header, HeaderBackButton } from '@thewhileloop/whileui';
   title="Settings"
   subtitle="Manage preferences"
   leftAction={<HeaderBackButton onPress={() => {}} />}
-  rightActions={[{ key: 'search', icon: <Icon />, onPress: () => {} }]}
+  rightActions={[
+    { key: 'search', icon: <Icon />, onPress: () => {}, accessibilityLabel: 'Search' },
+  ]}
 />;
 ```
 
@@ -2249,6 +2263,22 @@ import { EmptyState } from '@thewhileloop/whileui';
   action={{ label: 'Add Item', onPress: () => {} }}
 />;
 ```
+
+## LoadingState
+
+```tsx
+import { LoadingState } from '@thewhileloop/whileui';
+
+<LoadingState label="Loading activity" />;
+```
+
+The in-flow counterpart of `EmptyState` and `ErrorState` for a section that is still
+fetching. The spinner is named for assistive technology by `label` (default "Loading").
+
+| Prop  | Type                        | Default     |
+| ----- | --------------------------- | ----------- |
+| label | `string`                    | `'Loading'` |
+| size  | `'sm' \| 'default' \| 'lg'` | `'default'` |
 
 ## ProfileHeader
 

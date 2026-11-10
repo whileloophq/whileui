@@ -112,6 +112,50 @@ The commit and working-tree lines are historical hints, not authority. Always ru
 
 ## Product-pulled deliveries
 
+### [~] D-03 — Consumer audit: fixes and pulled components
+
+**Goal:** close the generic gaps the first consuming application exposed, without
+publishing product-shaped components or letting the app hide library defects behind
+wrappers.
+
+**Source:** a 2026-11-10 audit of the proving product's 39 source files against 4.1.2,
+plus its own dated WhileUI backlog. Product specifics stay in the local `CONSUMERS.md`.
+
+**Shipped 2026-11-10 (minor changeset pending):** `withWhileUIMetro` at the `./metro`
+subpath, so no app copies the icon-font resolver exemption; `Alert` is an `alert` live
+region by default (the app wrapped it in 15 places only to add that); `HeaderAction`
+takes `accessibilityLabel`; `SelectContent` defaults its insets to the safe area (every
+picker in the app passed them by hand); `Text variant="eyebrow"` (the app wrote that
+class string 35 times); `LoadingState` beside `EmptyState` and `ErrorState` (16 inline
+spinners). README documents the `Select` empty-value constraint of the web primitive.
+Contract tests cover each; the showcase demonstrates the new block and variant and uses
+the Metro helper itself.
+
+**Pulled, in order of how many screens asked for them — awaiting the owner's call on
+shape before any is built:**
+
+1. Labelled `Select` (9 screens) — `SelectField` block, or an `options` prop on `Select`.
+2. `PageHeader` block (11 screens) — kicker, title, leading mark, trailing actions.
+3. `SearchField` + `useDebouncedSearch` (6 screens + 5 hook sites).
+4. Labelled `Checkbox`/`Switch` (5 sites, each a nested-interactive defect today) —
+   `label`/`description` props or a `CheckboxField`.
+5. `SectionedList` with `groupBy` and header roles (3 screens); `Pagination` (3).
+6. `SegmentedControl overflow="scroll"` with an edge fade (2 screens hand-wrap it).
+7. Pressable `DataRow`/`ListItem` with avatar and value slots (19 sites).
+8. In-place destructive confirm pattern (6 sites) — likely a showcase recipe, not a
+   component.
+9. Navigator-presented modal screens: a Select on an Expo Router `presentation: "modal"`
+   screen portals to the app root, which may sit beneath the presented view on iOS.
+   Needs a device check; the fix shape is `FormModalScreen` carrying its own portal
+   target, not a new prop.
+
+**Acceptance evidence for the shipped part:** `bun run verify`; the new contract
+suites; showcase demos; README rows and API sections.
+
+**Review cards:** 03, 04, 05, 07, 08, 09.
+
+**Notes/evidence:** see the handoff entry dated 2026-11-10 — consumer audit.
+
 ### [x] D-02 — Composition foundation without parallel APIs
 
 **Goal:** give generated and hand-built product screens stronger hierarchy without
@@ -822,6 +866,29 @@ unstable API is churn, not help.
 
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
+
+### 2026-11-10 — Consumer audit; small fixes shipped, pulled components logged
+
+- Outcome: audited the proving product against 4.1.2 (two read-only passes over all 39
+  source files plus its WhileUI backlog). Setup, providers, theme preset and Metro
+  config were correct. Shipped the six small generic fixes listed in D-03; logged nine
+  pulled components for a shape decision. Release 4.1.2 is committed and pushed but not
+  published: npm rejected the token (`E404` on publish, `401` on `whoami`).
+- Changed files: `metro.cjs`/`metro.d.cts` and test, alert, header, select, text,
+  loading-state and tests, layout index, package exports and build script, showcase
+  Metro config and demos, README, stability counts, AGENTS, a minor changeset.
+- Checks run and results: `bun run verify` passed format, zero-warning lint, typecheck,
+  142 unit tests, build, a 152 kB tarball with the new `./metro` entry present and
+  `publint`/`attw` clean, both native exports and the browser suite, except two
+  assertions that counted alert regions on a tab that now also shows an `Alert`
+  component; scoped to the dialog's text, the overlay spec reran 14 of 14 in Chromium
+  and WebKit.
+- Evidence added: contract tests for the Metro exemption routing, Alert role, Header
+  action name, eyebrow variant and LoadingState.
+- Remaining risk or blocker: publish needs a fresh npm token; D-03's pulled list needs
+  the owner's shape decisions before building public API.
+- Next safe action: refresh the npm token and run `nvm exec 24 bunx changeset publish`;
+  then decide D-03 item shapes, starting with the labelled Select.
 
 ### 2026-11-10 — P3-01 overlay host implemented and verified
 

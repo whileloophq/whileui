@@ -196,6 +196,7 @@ import {
   EmptyState,
   ErrorBoundary,
   ErrorState,
+  LoadingState,
   LoadingScreen,
   PullToRefreshScrollView,
   SplashScreen,
@@ -915,6 +916,7 @@ function PrimitivesTab({
   return (
     <View>
       <Section title="Typography" subtitle="Semantic type roles driven by visual tokens">
+        <Text variant="eyebrow">Semantic roles</Text>
         <Text variant="heading">Build faster,{'\n'}ship beautiful.</Text>
         <Text variant="body" className="text-muted-foreground leading-relaxed">
           WhileUI gives you production-ready components that look stunning out of the box. Every
@@ -2501,6 +2503,12 @@ function LayoutBlocksTab({ onOpenKeyboardScreen }: { onOpenKeyboardScreen: () =>
             description="Check your internet connection and try again."
             onRetry={() => {}}
           />
+        </View>
+      </Section>
+
+      <Section title="Loading State" subtitle="A section still fetching, in flow">
+        <View className="rounded-xl border border-border overflow-hidden">
+          <LoadingState label="Loading activity" />
         </View>
       </Section>
 

@@ -36,6 +36,10 @@
       "types": "./dist/vite.d.ts",
       "import": "./dist/vite.js"
     },
+    "./metro": {
+      "types": "./dist/metro.d.cts",
+      "default": "./dist/metro.cjs"
+    },
     "./tokens": {
       "types": "./dist/tokens.d.ts",
       "import": "./dist/tokens.js"
@@ -59,7 +63,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && cp src/metro.cjs src/metro.d.cts dist/",
     "prepack": "cp ../../README.md README.md",
     "postpack": "rm -f README.md",
     "prepare": "bun run build",

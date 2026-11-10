@@ -37,6 +37,10 @@ const Alert: ForwardRefComponent<ViewInstance, AlertProps> = React.forwardRef(
     return (
       <View
         ref={ref}
+        // A status message that appears is announced without focus moving to it. Set
+        // before the spread so a decorative note can opt out.
+        accessibilityRole="alert"
+        accessibilityLiveRegion="polite"
         className={cn(alertVariants({ variant }), className)}
         style={[
           {

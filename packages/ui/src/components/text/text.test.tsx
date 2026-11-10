@@ -2,6 +2,14 @@ import { render, screen } from '../../test/render';
 import { Text } from './text';
 
 describe('Text', () => {
+  it('renders an eyebrow at the label scale in the muted colour', async () => {
+    await render(<Text variant="eyebrow">Members</Text>);
+
+    const eyebrow = screen.getByText('Members');
+    expect(eyebrow.props.className).toContain('text-muted-foreground');
+    expect(eyebrow).toHaveStyle({ fontSize: 13 });
+  });
+
   it('gives headings semantic navigation and the headline token scale', async () => {
     await render(<Text variant="heading">Overview</Text>);
 
