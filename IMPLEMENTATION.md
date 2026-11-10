@@ -142,10 +142,13 @@ shape before any is built:**
 7. Pressable `DataRow`/`ListItem` with avatar and value slots (19 sites).
 8. In-place destructive confirm pattern (6 sites) — likely a showcase recipe, not a
    component.
-9. Navigator-presented modal screens: a Select on an Expo Router `presentation: "modal"`
-   screen portals to the app root, which may sit beneath the presented view on iOS.
-   Needs a device check; the fix shape is `FormModalScreen` carrying its own portal
-   target, not a new prop.
+9. `FormModalScreen` with text actions: its 48 px slots fit an icon, not "Cancel" and
+   "Save", and it owns a scroll view, so a form that uses `KeyboardAwareScreen` cannot
+   adopt it. The product's three modal screens hand-roll the bar instead.
+10. Navigator-presented modal screens: a Select on an Expo Router `presentation: "modal"`
+    screen portals to the app root, which may sit beneath the presented view on iOS.
+    Needs a device check; the fix shape is `FormModalScreen` carrying its own portal
+    target, not a new prop.
 
 **Acceptance evidence for the shipped part:** `bun run verify`; the new contract
 suites; showcase demos; README rows and API sections.
@@ -879,12 +882,18 @@ that has been incorporated into a completed task's Evidence section.
   `SelectContent`; a forty-option showcase demo and `select-long-list.yaml` prove it.
 - Changed files: `select.tsx`, showcase Controls demo, the new flow, README,
   stability, a patch changeset.
-- Checks run and results: typecheck, zero-warning lint, 142 unit tests; the new flow
-  passes on the iOS simulator release build; Android result below once its build ends.
+- Checks run and results: `bun run verify` passed — 142 unit tests, 153 kB tarball,
+  both native exports, 116 browser tests with the one existing skip; the new flow
+  passes on both the iOS simulator and the Android emulator release builds. Published
+  as 4.2.1 and pushed.
 - Evidence added: the device flow for a long list; the proving product's own journey on
   the released package.
-- Remaining risk or blocker: none; 4.2.1 to publish and the product to bump.
-- Next safe action: publish 4.2.1, bump the product, re-check its picker.
+- Also seen on the product, app-side: its modal screens' hand-rolled action bar used
+  `px-2`, so the Save button sat inside the page sheet's corner curve. `FormModalScreen`
+  is not a drop-in for that bar because its action slots are 48 px wide, sized for
+  icons, and it owns its own scroll view — added to D-03's list.
+- Remaining risk or blocker: none.
+- Next safe action: bump the product to 4.2.1 and re-check its picker; then D-03 shapes.
 
 ### 2026-11-10 — Consumer audit; small fixes shipped, pulled components logged
 
