@@ -658,7 +658,13 @@ tests.
 
 **Review cards:** 01, 04, 07, 09, 10.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** First measured slice landed early, 2026-11-10, because the proving
+product made the cost visible: the token hooks re-derived the whole theme on every
+component render (about 0.16 ms per render in Node, 67 component files calling them).
+They now resolve once per CSS snapshot with a stable result; a contract test pins it.
+Numbers and the bundle breakdown are in `docs/stability.md` > Token hooks derived once.
+The rest of this task — render-count baselines and release re-measurement — waits for
+Phase 4 as planned.
 
 ### [ ] P4-03 — Package and runtime budgets
 
@@ -869,6 +875,21 @@ unstable API is churn, not help.
 
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.
+
+### 2026-11-10 — Token hooks derived once per theme
+
+- Outcome: measured, then removed, the one render-time cost the library imposed on
+  every themed component: `useThemeColors` and `useVisualTokens` re-parsed and
+  re-derived on every render. Both now cache per CSS snapshot and return stable objects;
+  `useIconColors` follows. Bundle attribution of the proving product recorded for P4-03.
+- Changed files: `theme-colors.ts`, `visual-tokens.ts`, `token-hooks.test.tsx`,
+  stability notes, this ledger, a patch changeset.
+- Checks run and results: `bun run verify` passed — 144 unit tests, 153 kB tarball,
+  both native exports, 116 browser tests with the one existing skip.
+- Evidence added: Node benchmark before and after (160 µs → 2 µs per render); contract
+  tests for referential stability and re-derivation.
+- Remaining risk or blocker: none; frame-time proof stays a Phase 7 device trace.
+- Next safe action: release, bump the proving product, then back to D-03 shapes.
 
 ### 2026-11-10 — Ran the proving product on 4.2.0; native Select overflow fixed
 

@@ -444,6 +444,23 @@ it. Recorded upstream risk: facebook/react-native#50152, an iOS invisible layer 
 second Modal opens while a first is closing. Nested hosts are not that sequence; the
 nested flow's rapid close-and-reopen step is the check.
 
+## Token hooks derived once — 2026-11-10
+
+Measured before touching anything, as `PLAN.md` requires for hot paths. `useThemeColors`
+parsed 104 colour strings and re-derived the palette on every render of every themed
+component, and `useVisualTokens` re-parsed 83 values; neither was memoised, and 67
+component files call one or both. In Node that is about 0.16 ms per component render,
+0.13 ms of it colour parsing; Hermes on a phone is several times slower, so a list
+screen re-rendering sixty library components spent tens of milliseconds re-deriving an
+unchanged theme. Both hooks now resolve once per distinct CSS snapshot and hand back the
+same object until a variable changes; the per-render cost is a 2 µs key join.
+`lib/token-hooks.test.tsx` pins the referential stability and the re-derivation. The
+device trace that turns this into a frame-time claim still belongs to the Phase 7 gate.
+
+For scale, the proving product's iOS bundle attributed 269 kB of 3.98 MB to this
+library plus 108 kB of culori, with all 165 modules shipped regardless of use. That is
+startup weight for the Phase 4 budget task, not a snappiness lever.
+
 ## Known gap — overlay edge padding on web
 
 `PopoverContent` now defaults its `insets` to safe area plus a margin, so a panel never

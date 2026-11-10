@@ -53,10 +53,34 @@ function resolveThemeToken(
   return parseThemeColor(cssValue) ?? parseThemeColor(appValue);
 }
 
+// Every themed component calls this hook on every render, and parsing 104 colour
+// strings plus deriving the palette cost about 0.16 ms per call in Node, several times
+// that under Hermes. The inputs only change with the theme, so the result is derived
+// once per distinct snapshot and shared: the same object comes back until the CSS
+// variables change, which also keeps it stable for downstream memoisation.
+const resolvedThemeColors = new Map<string, ThemeColors>();
+const RESOLVED_THEME_LIMIT = 8;
+
 export function useThemeColors(): ThemeColors {
   const { theme } = useUniwind();
   const values = useCSSVariable(THEME_TOKEN_VARIABLES);
   const scheme = theme === 'dark' ? 'dark' : 'light';
+  const key = `${scheme}\u0001${values.join('\u0001')}`;
+  const cached = resolvedThemeColors.get(key);
+  if (cached) return cached;
+
+  const resolved = resolveThemeColors(values, scheme);
+  if (resolvedThemeColors.size >= RESOLVED_THEME_LIMIT) {
+    resolvedThemeColors.delete(resolvedThemeColors.keys().next().value as string);
+  }
+  resolvedThemeColors.set(key, resolved);
+  return resolved;
+}
+
+function resolveThemeColors(
+  values: ReadonlyArray<string | number | undefined>,
+  scheme: 'light' | 'dark'
+): ThemeColors {
   const fallbackPalette =
     scheme === 'dark' ? WHILEUI_DARK_THEME_COLORS : WHILEUI_LIGHT_THEME_COLORS;
 
@@ -76,10 +100,26 @@ export function useThemeColors(): ThemeColors {
   return { ...derived, ...defined, placeholder: derived.placeholder } as ThemeColors;
 }
 
+export interface IconColors {
+  foreground: string;
+  muted: string;
+  primary: string;
+  primaryForeground: string;
+  accent: string;
+  warning: string;
+  success: string;
+  info: string;
+  destructive: string;
+}
+
+const iconColorsByTheme = new WeakMap<ThemeColors, IconColors>();
+
 /** Icon colors derived from theme. For @expo/vector-icons which need hex values. */
-export function useIconColors() {
+export function useIconColors(): IconColors {
   const c = useThemeColors();
-  return {
+  const cached = iconColorsByTheme.get(c);
+  if (cached) return cached;
+  const icons: IconColors = {
     foreground: c.foreground,
     muted: c.mutedForeground,
     primary: c.primary,
@@ -90,6 +130,8 @@ export function useIconColors() {
     info: c.info,
     destructive: c.destructive,
   };
+  iconColorsByTheme.set(c, icons);
+  return icons;
 }
 
 /** Alias for useThemeColors. Returns RN-safe color strings (hex/rgb/rgba) for RefreshControl, LinearGradient, charts. */

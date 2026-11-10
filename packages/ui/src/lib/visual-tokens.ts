@@ -50,16 +50,28 @@ function resolveVisualToken(
   return parseRatio(value, spec.fallback, spec.min ?? 0, spec.max ?? 1);
 }
 
+// Resolved once per distinct CSS snapshot and shared, for the same reason as
+// `useThemeColors`: 83 parses per component per render add up on a list screen, and a
+// stable object lets callers memoise on it.
+const resolvedVisualTokens = new Map<string, VisualTokens>();
+const RESOLVED_VISUAL_LIMIT = 8;
+
 export function useVisualTokens(): VisualTokens {
   const values = useCSSVariable(VISUAL_TOKEN_VARIABLES);
-  const resolved: Partial<VisualTokens> = {};
+  const key = values.join('\u0001');
+  const cached = resolvedVisualTokens.get(key);
+  if (cached) return cached;
 
+  const resolved: Partial<VisualTokens> = {};
   VISUAL_TOKEN_SPECS.forEach((spec, index) => {
     (resolved as Record<string, number | boolean>)[spec.key] = resolveVisualToken(
       spec,
       values[index]
     );
   });
-
+  if (resolvedVisualTokens.size >= RESOLVED_VISUAL_LIMIT) {
+    resolvedVisualTokens.delete(resolvedVisualTokens.keys().next().value as string);
+  }
+  resolvedVisualTokens.set(key, resolved as VisualTokens);
   return resolved as VisualTokens;
 }
