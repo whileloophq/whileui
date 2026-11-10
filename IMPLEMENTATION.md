@@ -39,7 +39,7 @@ Current phase: Phase 3 — Overlays and keyboard
 Current task: P3-01 — Overlay coordinator contract (implemented; evidence in the task)
 Status: in progress — every gate passed; closes on commit
 Branch: main
-Last verified commit: 8053ca7 (`Release 4.1.1`)
+Last verified commit: 0ff1089 (`Release 4.2.0`, published)
 Working tree at handoff: overlay host and presence hook, eleven migrated hosts, four
   portal content components, sheet motion, five press-token fixes, box-shadow recipe,
   DialogTitle header role, contract tests, browser tests, Maestro flow, showcase nested
@@ -49,11 +49,9 @@ Last command result: passed — format, zero-warning lint, typecheck, 134 unit t
   build, 150 kB publishable tarball, iOS and Android exports, 116 Chromium/WebKit tests
   (115 passed, one existing WebKit autofill skip). Final iOS and Android release builds
   pass the nested flow; the translucent card renders clean on both
-Next safe action: review and commit this change as one unit; on a quiet machine rerun
-  e2e/maestro/nested-overlays.yaml on the Android release build already installed on
-  the emulator and record it in P3-01; then start P3-02 with AlertDialog, whose
-  `presentation="overlay"` path is the first thing to re-examine now that a nested
-  native Modal is proven on iOS
+Next safe action: decide the shapes of the D-03 pulled components, starting with the
+  labelled Select; then P3-02 with AlertDialog, whose `presentation="overlay"` path is
+  the first thing to re-examine now that a nested native Modal is proven on iOS
 Blockers: none. The Android emulator is unusable while the host load average is above
   roughly 12; see AGENTS.md > Tooling gotchas before rerunning its flows
 ```
@@ -154,7 +152,9 @@ suites; showcase demos; README rows and API sections.
 
 **Review cards:** 03, 04, 05, 07, 08, 09.
 
-**Notes/evidence:** see the handoff entry dated 2026-11-10 — consumer audit.
+**Notes/evidence:** see the handoff entry dated 2026-11-10 — consumer audit. Released
+as 4.2.0 the same day; the proving product moved to it and dropped its local copies of
+each fix, passing typecheck, lint and both exports.
 
 ### [x] D-02 — Composition foundation without parallel APIs
 
