@@ -32,6 +32,7 @@ Bun workspace (`bun@1.3.9`). Never run `yarn` here.
 | `packages/ui/src/tokens.ts`                | Renderer-free entry → `@thewhileloop/whileui/tokens`           |
 | `packages/ui/scripts/build-agent-docs.mjs` | Builds `dist/agent` (llms.txt files, catalog.json) from README |
 | `packages/mcp/`                            | `@thewhileloop/whileui-mcp`: serves that catalog to agents     |
+| `skills/whileui/`                          | Agent skill for consumers; the build checks every name it uses |
 | `apps/showcase/catalog/`                   | Expo component catalog, port 8082                              |
 | `apps/showcase/clayhouse/`                 | Independent made-up app built on WhileUI, port 8084            |
 | `fixtures/`                                | Consumer smoke fixtures — type-smoke, vite-smoke (RNW)         |
@@ -51,7 +52,9 @@ bun run typecheck             # all workspaces via turbo; includes test files
 bun run lint                  # one root pass, type-aware, --max-warnings 0
 bun run test                  # jest-expo + RNTL contract suites
 bun run test:web              # Playwright + axe on the exported bundle (Chromium, WebKit)
-bun run verify                # every gate, in order, ~80s — run before pushing
+bun run verify                # every gate, in order, ~6 min (browser suite ~4) — before pushing
+bun run check:public          # fails on local paths, secrets, your email or a consumer's name
+bun run snap -- --url http://localhost:8082 --click Controls --theme dark   # PNG + accessibility tree
 bun run verify:package        # pack a tarball and check what a consumer would install
 bun run test:native           # Maestro flows against a built app (see e2e/maestro)
 bun run build                 # package build; excludes tests from dist
@@ -66,7 +69,7 @@ A consumer on a local link resolves `packages/ui/dist/` — rebuild after edits.
 
 - **Match the pinned stack** in `PLAN.md` > Supported stack. For anything the Expo SDK bundles, use the SDK's pinned version, not npm `latest`. For everything else, latest stable. Ask if unsure.
 - Run `bun run format && bun run lint && bun run typecheck` after changes. Fix errors before completing.
-- **Run `bun run verify` before pushing.** There is no CI — no server runs these gates for you, so a skipped run means the gate did not happen. It chains format, lint, typecheck, unit tests, build, the iOS and Android exports and the browser suite in about 70 seconds.
+- **Run `bun run verify` before pushing.** There is no CI — no server runs these gates for you, so a skipped run means the gate did not happen. It chains format, the public check, lint, typecheck, unit tests, build, the package check, the iOS and Android exports and the browser suite in about six minutes; the browser suite is two-thirds of it.
 - **`--max-warnings 0` is deliberate** — there is no warning backlog and there should never be one. A rule that fires on something legitimate gets either a config option that describes the legitimate case, or an `eslint-disable-next-line` with a `--` reason explaining why the rule is wrong _here_. Never a bare disable, never a file-wide one, and never a rule switched off globally to clear a single site.
 - **Docs are mandatory** — README is the source of truth. Incomplete doc updates = task incomplete. Never leave docs stale.
 - **Avoid deprecated APIs** — Check for deprecation warnings, use recommended replacements. If a package marks an API deprecated, find the new import path or alternative.
@@ -79,6 +82,13 @@ model. What it means in practice: `jest-expo` + RNTL cannot prove OS keyboards, 
 back, portal layering, gesture arbitration or real focus, so a change touching any of
 those owes evidence from Maestro, Playwright or a named showcase step. Every fixed
 defect owes a regression test at the layer that found it.
+
+- **What each catalog screen announces is baselined** in `e2e/accessibility-tree.spec.ts`
+  (Chromium, fixed clock). A deliberate change: `bun run test:web -- --update-snapshots`
+  and review the `.aria.yml` diff as the accessibility review. Never update a baseline to
+  make a failure go away without reading what changed.
+- **Check a screen before calling it done:** `bun run snap` renders it headlessly and
+  prints its accessibility tree and console errors.
 
 ### Public repo hygiene
 
@@ -94,6 +104,8 @@ This repo is public. Tracked files describe the **library**, never our products.
   belongs in `CONSUMERS.md`.
 - The same applies to commit messages, PR bodies and issue comments. Everything
   here is public and permanent.
+- `bun run check:public` (part of `verify`) enforces this: it reads the product names from
+  your local `CONSUMERS.md`, so the names never have to appear in the repo.
 
 ### Attribution
 
@@ -323,10 +335,6 @@ it behind — which is the one thing the token system exists to prevent.
 - Controls (Button, Input, Select): `controlRecipe(visual, size)`
 - Cards: `surfaceRadius(visual, 'xl')` with `surfacePadding`
 
-Measured 2026-10-18: `rounded-lg` appears in no component, `h-10` only as an `Avatar`
-size, and `Button` derives its height from `controlRecipe`. The old wording described a
-state the package left behind.
-
 ### Touch Targets
 
 Per-platform minimums and the drag-alternative rule live in `PLAN.md` > Accessibility
@@ -362,6 +370,10 @@ Add to this file when you discover:
 - Configuration gotchas (one-liner under relevant section)
 - Reusable patterns (with minimal code example)
 - Root causes of bugs (symptom → cause → fix)
+
+The bar for a new entry: non-obvious, actually hit, and specific enough to act on. Write
+traps to avoid, not a map of the code — an agent can read the code. A dated measurement
+goes stale; state the rule and how to check it instead.
 
 **Keep entries concise. Consolidate similar issues. Delete outdated rules.**
 
@@ -467,7 +479,8 @@ step by step in README > Theming, along with frosted/translucent surfaces. The r
 token list is `theme-contract.ts`. Two rules that are easy to miss:
 
 - A custom theme must define **every** token in the contract, or components fall back to
-  unstyled values at runtime with no build error.
+  unstyled values at runtime with no build error. `themeFromSeeds` builds a complete one
+  from three colours; run `checkThemeContrast` on any palette before shipping it.
 - **Android translucent surfaces** usually need denser tint than iOS or web. Tune
   `--ui-frosted-android-tint-alpha-scale` (default `1.18`) before reaching for an
   Android-only component override.

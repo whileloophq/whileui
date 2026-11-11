@@ -21,12 +21,14 @@
     "clean": "turbo clean && rm -rf node_modules",
     "test:web": "turbo build && playwright test -c e2e/playwright.config.ts",
     "bundle:native": "bun run --cwd apps/showcase/catalog build:native",
-    "verify": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build && bun run verify:package && bun run bundle:native && bun run test:web",
+    "verify": "bun run format:check && bun run check:public && bun run lint && bun run typecheck && bun run test && bun run build && bun run verify:package && bun run bundle:native && bun run test:web",
     "verify:package": "node scripts/verify-package.mjs",
     "changeset": "changeset",
     "release:version": "changeset version && bun install",
     "release": "bun run verify && changeset publish",
-    "test:native": "maestro --platform ios test e2e/maestro && maestro --platform android test e2e/maestro"
+    "test:native": "maestro --platform ios test e2e/maestro && maestro --platform android test e2e/maestro",
+    "snap": "node scripts/snap.mjs",
+    "check:public": "node scripts/check-public.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

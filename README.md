@@ -261,8 +261,15 @@ the version you have installed, not whatever a website currently shows:
   claude mcp add whileui -- npx -y @thewhileloop/whileui-mcp
   ```
 
-Both are generated from this README at build time, and the build fails if a component
-named here is not exported.
+- A [skill](skills/whileui/SKILL.md) for Claude Code, Cursor, Codex and other agents
+  that load skills: setup traps, how to compose and theme, and how to check a screen. It
+  points at the installed docs rather than copying them, and the build fails if it names
+  an API, MCP tool or file that no longer exists. Install it with
+  `npx skills add whileloophq/whileui`, or copy `skills/whileui` into your agent's skills
+  folder (for Claude Code, `.claude/skills/`).
+
+The docs and catalog are generated from this README at build time, and the build fails if
+a component named here is not exported.
 
 ## Quick Reference (AI / Code Generation)
 
@@ -728,6 +735,33 @@ Themes are defined in `global.css` using CSS variables with OKLCH colors:
 }
 ```
 
+### Theme from seed colours
+
+`themeFromSeeds` builds a complete light and dark theme from three colours and checks
+nothing it derives is hard to read. Seeds are kept as given; muted text, the text on each
+filled colour and the status colours are tuned to WCAG AA.
+
+```ts
+import { checkThemeContrast, themeFromSeeds, themePresetToCss } from '@thewhileloop/whileui/tokens';
+
+const theme = themeFromSeeds({
+  name: 'studio',
+  description: 'Bone paper and burnt amber',
+  light: { background: '#f0ede9', foreground: '#13161c', primary: '#b65400' },
+  // optional: `dark` seeds (otherwise a dark page with the brand lifted to read on it),
+  // `overrides` for any base colour, `visual` for radius and density tokens
+});
+
+checkThemeContrast(theme.light).filter((c) => !c.pass);
+// [{ pair: 'primary on background', ratio: 4.23, min: 4.5, pass: false }, …]
+const css = themePresetToCss(theme); // paste into global.css
+```
+
+`checkThemeContrast` works on any palette, including a hand-written one: it checks every
+text pairing the components render at 4.5:1 and the focus ring at 3:1, with translucent
+colours blended onto the page first. A failing seed is reported, never changed — a brand
+colour is a brand decision.
+
 ### Strict Theme Token Contract
 
 The WhileUI token contract is strict for cross-app reuse. Define these in **every** theme variant (`@variant light`, `@variant dark`, and custom variants):
@@ -1190,6 +1224,10 @@ import {
 `Select`. An explicit control prop wins. `useFormFieldState()` exposes the same state for
 custom controls; labels, hints, messages, density, and required indicators remain part
 of the compound field rather than each input.
+
+`FormLabel` names the `Input`, `Textarea` or `NumericInput` beside it for assistive
+technology (`aria-labelledby` on web and Android; `useFormFieldState().labelId` gives a
+custom control the same id). A label passed to the control itself wins.
 
 ## Surface
 

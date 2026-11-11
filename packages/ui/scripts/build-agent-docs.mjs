@@ -109,6 +109,34 @@ if (phantom.length > 0) {
   );
 }
 
+// The skill (skills/whileui/SKILL.md) is hand-written and installed into consumers'
+// agents; every API, MCP tool, subpath and agent file it names must still exist.
+const SKILL = join(ROOT, 'skills/whileui/SKILL.md');
+const mcpServer = readFileSync(join(ROOT, 'packages/mcp/src/server.ts'), 'utf8');
+const subpaths = Object.keys(JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8')).exports);
+const agentFiles = ['llms.txt', 'llms-components.txt', 'llms-full.txt', 'catalog.json'];
+const publicApi = [
+  packageExports,
+  exportedSource(join(PKG, 'src/tokens.ts')),
+  readFileSync(join(PKG, 'src/metro.cjs'), 'utf8'),
+].join('\n');
+const stale = [...readFileSync(SKILL, 'utf8').matchAll(/`([^`\n]+)`/g)]
+  .map(([, token]) => token)
+  .filter((token) => {
+    if (/^[a-z]+(?:_[a-z]+)+$/.test(token)) return !mcpServer.includes(`'${token}'`);
+    if (/^[A-Za-z]+$/.test(token) && /[A-Z]/.test(token)) {
+      return !new RegExp(`\\b${token}\\b`).test(publicApi);
+    }
+    if (token.startsWith('@thewhileloop/whileui/')) {
+      return !subpaths.includes(`./${token.slice('@thewhileloop/whileui/'.length)}`);
+    }
+    const file = /dist\/agent\/([\w.-]+)$/.exec(token)?.[1];
+    return file !== undefined && !agentFiles.includes(file);
+  });
+if (stale.length > 0) {
+  throw new Error(`skills/whileui/SKILL.md names things that no longer exist: ${stale.join(', ')}`);
+}
+
 const catalog = {
   package: '@thewhileloop/whileui',
   version,
