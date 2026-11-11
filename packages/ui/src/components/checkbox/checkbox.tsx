@@ -30,7 +30,7 @@ function Checkbox({
     pressedVariant: 'default',
   });
   const size = Math.max(18, Math.round(visual.controlHeightSm * 0.55));
-  const checkSize = Math.max(8, Math.round(size * 0.5));
+  const tickStroke = Math.max(2, Math.round(size * 0.12));
 
   const handleToggle = () => {
     if (disabled) return;
@@ -67,13 +67,19 @@ function Checkbox({
         }}
         {...props}
       >
+        {/* A tick, drawn as the bottom and right edges of a rotated box: the package
+            carries no icon set. A filled inner square, which this used to draw, reads
+            as a radio or as unchecked. */}
         {isChecked && (
           <View
-            className="bg-primary-foreground"
+            testID="checkbox-tick"
+            className="border-primary-foreground"
             style={{
-              width: checkSize,
-              height: checkSize,
-              borderRadius: Math.max(3, Math.round(visual.radiusSm * 0.35)),
+              width: Math.round(size * 0.3),
+              height: Math.round(size * 0.55),
+              borderRightWidth: tickStroke,
+              borderBottomWidth: tickStroke,
+              transform: [{ translateY: -Math.round(size * 0.06) }, { rotate: '45deg' }],
             }}
           />
         )}
