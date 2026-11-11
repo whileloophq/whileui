@@ -93,12 +93,15 @@ export interface NumericInputProps
   inputClassName?: string;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
+  /** Controlled numeric value. */
   value?: number | null;
   defaultValue?: number;
+  /** Numeric value change callback. */
   onValueChange?: (value: number | null) => void;
   min?: number;
   max?: number;
   step?: number;
+  /** Show decrement/increment controls. */
   showSteppers?: boolean;
   /** Drop the field shell (border, background, radius, padding) for embedding inside another field shell like LabeledField. */
   unstyled?: boolean;

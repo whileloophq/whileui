@@ -13,10 +13,15 @@ import type { ForwardRefComponent } from '../../lib/ref-types';
 export type SurfaceLevel = 'base' | 'raised' | 'overlay';
 
 export interface SurfaceProps extends ViewProps, FrostedSurfaceProps {
+  /** Semantic background and depth tier. */
   level?: SurfaceLevel;
+  /** Token-backed interior spacing. */
   padding?: SurfacePaddingSize;
+  /** Token-backed corner radius. */
   radius?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Draw the theme hairline border. */
   bordered?: boolean;
+  /** Override the level's depth. */
   shadow?: ShadowTier;
 }
 

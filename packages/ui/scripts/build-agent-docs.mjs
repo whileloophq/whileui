@@ -26,6 +26,7 @@ import {
   findStaleSkillNames,
   findUnnamedIconButtons,
 } from './agent-docs-guards.mjs';
+import { syncApiTables } from './api-docs.mjs';
 
 const PKG = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = join(PKG, '../..');
@@ -107,6 +108,11 @@ const templateExports = ['auth', 'profile']
 const phantom = findPhantomComponents(components, { packageExports, templateExports });
 if (phantom.length > 0) {
   throw new Error(`README lists components that are not exported: ${phantom.join(', ')}`);
+}
+
+// API tables are generated from the props types; a table that differs is stale.
+if ((await syncApiTables(readme)) !== readme) {
+  throw new Error('README API tables differ from the props types. Run: bun run docs:api');
 }
 
 // Agents copy the examples exactly, so an example must not teach an unnamed control.

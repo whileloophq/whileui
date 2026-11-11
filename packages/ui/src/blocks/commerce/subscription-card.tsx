@@ -9,12 +9,19 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
 export interface SubscriptionCardProps extends ViewProps {
+  /** Current plan label. */
   planName: string;
+  /** Plan price. */
   price: string;
+  /** Billing period label. */
   period?: string;
+  /** Renewal/expiry date text. */
   expiresAt?: string;
+  /** Active/inactive badge state. */
   isActive?: boolean;
+  /** Manage action. */
   onManage?: () => void;
+  /** Upgrade action. */
   onUpgrade?: () => void;
   manageLabel?: string;
   upgradeLabel?: string;

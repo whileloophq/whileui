@@ -30,7 +30,8 @@
     "snap": "node scripts/snap.mjs",
     "check:public": "node scripts/check-public.mjs",
     "test:scripts": "node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs",
-    "bundle:clayhouse-web": "bun run --cwd apps/showcase/clayhouse build:web"
+    "bundle:clayhouse-web": "bun run --cwd apps/showcase/clayhouse build:web",
+    "docs:api": "node packages/ui/scripts/api-docs.mjs --write"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

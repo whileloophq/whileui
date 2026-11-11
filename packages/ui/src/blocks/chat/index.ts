@@ -3,6 +3,7 @@ export {
   ChatMessageBubble,
   ChatSuggestions,
   type ChatMessage,
+  type ChatMessageBubbleProps,
   type ChatProps,
   type ChatSuggestionsProps,
 } from './chat';

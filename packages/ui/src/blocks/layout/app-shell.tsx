@@ -4,9 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { cn } from '../../lib/cn';
 
 export interface AppShellProps extends ViewProps {
+  /** Header slot. */
   header?: React.ReactNode;
+  /** Footer slot. */
   footer?: React.ReactNode;
+  /** Bottom navigation slot. */
   bottomNav?: React.ReactNode;
+  /** Wrap in SafeAreaView. */
   safeArea?: boolean;
   /** Keep shell mounted while swapping content with skeleton. */
   loading?: boolean;

@@ -173,7 +173,9 @@ Notes:
 1. Export from its own `index.ts` — `packages/ui/src/components/<name>/` or
    `packages/ui/src/blocks/<category>/` — and re-export from `packages/ui/src/index.ts`
 2. Add it to the README components or blocks table
-3. Document its props — README API Reference for a component, Blocks API for a block
+3. Document its props: a doc comment on each prop, then a README section holding an empty
+   `<!-- api:Name -->` / `<!-- /api:Name -->` pair and `bun run docs:api` fills the table from
+   the types. Never hand-write a props table — the build fails when one differs from the types
 4. Add a demo to `apps/showcase/catalog`
 5. Declare its maturity level (`PLAN.md` > Maturity and lifecycle). Anything new starts
    `experimental`; a showcase demo alone never makes it `stable`
@@ -191,7 +193,8 @@ never imported; that is the failure this rule exists to prevent.
 
 ### When Changing Props or Removing
 
-- **Props:** Update README API section, Blocks API, and demo code
+- **Props:** Update the prop's doc comment (and `@default` if the code cannot show it), run
+  `bun run docs:api`, and update the demo code
 - **Removing:** Remove from README (all sections) and the showcase. No orphan references
 
 ## Uniwind Configuration

@@ -27,11 +27,16 @@ export interface ChatSuggestionsProps {
 }
 
 export interface ChatProps {
+  /** Messages to show, each `{ id, role, content, secondary?, contentSize? }`. */
   messages: ChatMessage[];
+  /** Input value. */
   value: string;
+  /** Input change. */
   onChangeText: (text: string) => void;
+  /** Send handler. */
   onSend: () => void;
   placeholder?: string;
+  /** Chips when empty. */
   suggestions?: string[];
   onSuggestionPress?: (text: string) => void;
   leftSlot?: React.ReactNode;
@@ -72,13 +77,14 @@ const chatMessageBubbleVariants = tv({
   defaultVariants: { role: 'assistant' },
 });
 
-export function ChatMessageBubble({
-  message,
-  contentClassName,
-}: {
+export interface ChatMessageBubbleProps {
+  /** The message to render; its `role` decides alignment and colour. */
   message: ChatMessage;
+  /** Classes for the bubble's content wrapper. */
   contentClassName?: string;
-}) {
+}
+
+export function ChatMessageBubble({ message, contentClassName }: ChatMessageBubbleProps) {
   const role = message.role === 'system' ? 'system' : message.role;
   const isUser = message.role === 'user';
   const contentRole = CONTENT_SIZE_ROLE[message.contentSize ?? 'default'];

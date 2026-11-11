@@ -12,6 +12,7 @@ export type PageSkeletonPadding = 'none' | 'sm' | 'default' | 'lg';
 export type PageSkeletonHeaderPlaceholder = 'compact' | 'default';
 
 export interface PageSkeletonProps extends ViewProps {
+  /** Layout preset. */
   variant: PageSkeletonVariant;
   /** Rows/items for list (default 3) or settings (default 4) variant. */
   count?: number;

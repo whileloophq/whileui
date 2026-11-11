@@ -5,6 +5,7 @@ import { cn } from '../../lib/cn';
 const REFRESH_ACTION = 'refresh';
 
 export interface PullToRefreshScrollViewProps extends Omit<ScrollViewProps, 'refreshControl'> {
+  /** Whether refresh is in progress. */
   refreshing: boolean;
   /**
    * Refreshing is almost always async, so the signature says so. Nothing here awaits it —

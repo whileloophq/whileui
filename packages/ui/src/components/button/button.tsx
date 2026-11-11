@@ -97,7 +97,9 @@ export interface ButtonProps
     Omit<PressableProps, 'children' | 'feedback' | 'loading'>,
     VariantProps<typeof buttonVariants> {
   children?: React.ReactNode;
+  /** Additional Tailwind classes. */
   className?: string;
+  /** Disable the button. */
   disabled?: boolean;
   /** Shows a centered spinner, exposes busy state, and prevents interaction. */
   loading?: boolean;

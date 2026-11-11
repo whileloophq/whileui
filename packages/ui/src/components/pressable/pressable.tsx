@@ -17,6 +17,7 @@ import { useMotionPolicy } from '../../lib/motion-policy';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 
 export interface PressableProps extends RNPressableProps {
+  /** Additional Tailwind classes. */
   className?: string;
   /** Semantic press feedback. `none` preserves a plain React Native Pressable. */
   feedback?: PressedVariant;

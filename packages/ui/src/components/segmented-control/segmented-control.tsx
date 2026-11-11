@@ -154,6 +154,7 @@ export interface SegmentedControlProps extends ViewProps {
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
+  /** Pill = rounded-full items. */
   variant?: 'default' | 'pill';
   wrap?: boolean | 'auto';
   size?: 'default' | 'compact';

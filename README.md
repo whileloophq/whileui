@@ -577,11 +577,17 @@ import { Stack, Row } from '@thewhileloop/whileui';
 </Stack>;
 ```
 
-| Prop    | Stack/Row                                                           | Values                   |
-| ------- | ------------------------------------------------------------------- | ------------------------ |
-| gap     | `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| '2xl'`           | Spacing between children |
-| align   | `'start' \| 'center' \| 'end' \| 'stretch' \| 'baseline'`           | Cross-axis alignment     |
-| justify | `'start' \| 'center' \| 'end' \| 'between' \| 'around' \| 'evenly'` | Main-axis alignment      |
+<!-- api:Row -->
+
+| Prop      | Type                                                                | Default    | Description |
+| --------- | ------------------------------------------------------------------- | ---------- | ----------- |
+| className | `string`                                                            | —          |             |
+| gap       | `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| '2xl'`           | `'md'`     |             |
+| align     | `'start' \| 'center' \| 'end' \| 'stretch' \| 'baseline'`           | `'center'` |             |
+| justify   | `'start' \| 'center' \| 'end' \| 'between' \| 'around' \| 'evenly'` | `'start'`  |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Row -->
 
 ### Container
 
@@ -593,11 +599,16 @@ controls drift apart.
 <Container size="lg">{children}</Container>
 ```
 
-| Prop        | Type                                   | Default | Notes                       |
-| ----------- | -------------------------------------- | ------- | --------------------------- |
-| `size`      | `sm` \| `md` \| `lg` \| `xl` \| `full` | `md`    | `sm` forms, `lg` dashboards |
-| `fill`      | `boolean`                              | `false` | `flex-1`, for a screen root |
-| `className` | `string`                               | —       | Merged after the variant    |
+<!-- api:Container -->
+
+| Prop      | Type                                     | Default | Description |
+| --------- | ---------------------------------------- | ------- | ----------- |
+| className | `string`                                 | —       |             |
+| size      | `'sm' \| 'md' \| 'lg' \| 'xl' \| 'full'` | `'md'`  |             |
+| fill      | `boolean`                                | `false` |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Container -->
 
 No platform branch, and none is needed: every size is wider than any phone, so on iOS
 and Android the cap never engages and it renders as a plain full-width `View`. The same
@@ -1086,12 +1097,17 @@ import { Pressable, Text } from '@thewhileloop/whileui';
 `style` contracts. Feedback changes opacity without changing layout. Native press state
 comes directly from React Native; web adds a motion-policy-aware opacity transition.
 
-| Prop             | Type                                        | Default     | Description                                |
-| ---------------- | ------------------------------------------- | ----------- | ------------------------------------------ |
-| feedback         | `'none' \| 'default' \| 'strong'`           | `'none'`    | Semantic pressed opacity                   |
-| disabledFeedback | `'none' \| 'default' \| 'soft' \| 'subtle'` | `'default'` | Semantic unavailable opacity               |
-| loading          | `boolean`                                   | `false`     | Expose busy/disabled state and block input |
-| className        | `string`                                    | —           | Additional Tailwind classes                |
+<!-- api:Pressable -->
+
+| Prop             | Type              | Default     | Description                                                                 |
+| ---------------- | ----------------- | ----------- | --------------------------------------------------------------------------- |
+| className        | `string`          | —           | Additional Tailwind classes.                                                |
+| feedback         | `PressedVariant`  | `'none'`    | Semantic press feedback. `none` preserves a plain React Native Pressable.   |
+| disabledFeedback | `DisabledVariant` | `'default'` | Opacity used while the control is unavailable.                              |
+| loading          | `boolean`         | `false`     | Loading controls are busy and non-interactive, just like disabled controls. |
+
+Also accepts the props of React Native's `PressableProps`.
+<!-- /api:Pressable -->
 
 ## Button
 
@@ -1110,13 +1126,20 @@ import { Button, ButtonText, ButtonIcon } from '@thewhileloop/whileui';
 </Button>;
 ```
 
-| Prop      | Type                                                                          | Default     | Description                                        |
-| --------- | ----------------------------------------------------------------------------- | ----------- | -------------------------------------------------- |
-| variant   | `'default' \| 'destructive' \| 'outline' \| 'secondary' \| 'ghost' \| 'link'` | `'default'` | Button style variant                               |
-| size      | `'default' \| 'sm' \| 'lg' \| 'icon'`                                         | `'default'` | Button size                                        |
-| disabled  | `boolean`                                                                     | `false`     | Disable the button                                 |
-| loading   | `boolean`                                                                     | `false`     | Show a spinner, expose busy state, and block input |
-| className | `string`                                                                      | —           | Additional Tailwind classes                        |
+<!-- api:Button -->
+
+| Prop             | Type                                                                          | Default     | Description                                                             |
+| ---------------- | ----------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------- |
+| children         | `React.ReactNode`                                                             | —           |                                                                         |
+| className        | `string`                                                                      | —           | Additional Tailwind classes.                                            |
+| disabled         | `boolean`                                                                     | `false`     | Disable the button.                                                     |
+| loading          | `boolean`                                                                     | `false`     | Shows a centered spinner, exposes busy state, and prevents interaction. |
+| disabledFeedback | `DisabledVariant`                                                             | —           | Opacity used while the control is unavailable.                          |
+| size             | `'sm' \| 'lg' \| 'default' \| 'icon'`                                         | `'default'` |                                                                         |
+| variant          | `'default' \| 'destructive' \| 'outline' \| 'secondary' \| 'ghost' \| 'link'` | `'default'` |                                                                         |
+
+Also accepts the props of `PressableProps`.
+<!-- /api:Button -->
 
 ## Text
 
@@ -1124,10 +1147,16 @@ import { Button, ButtonText, ButtonIcon } from '@thewhileloop/whileui';
 classes are unnecessary for normal hierarchy. `heading` also sets
 `accessibilityRole="header"` unless the caller supplies another role.
 
-| Prop    | Type                                                                                                       | Default     |
-| ------- | ---------------------------------------------------------------------------------------------------------- | ----------- |
-| variant | `'default' \| 'heading' \| 'title' \| 'subtitle' \| 'body' \| 'caption' \| 'label' \| 'eyebrow' \| 'code'` | `'default'` |
-| size    | `'xs' \| 'sm' \| 'base' \| 'lg' \| 'xl' \| '2xl' \| '3xl'`                                                 | by variant  |
+<!-- api:Text -->
+
+| Prop      | Type                                                                                                       | Default     | Description |
+| --------- | ---------------------------------------------------------------------------------------------------------- | ----------- | ----------- |
+| className | `string`                                                                                                   | —           |             |
+| size      | `'base' \| 'xs' \| 'sm' \| 'lg' \| 'xl' \| '2xl' \| '3xl'`                                                 | —           |             |
+| variant   | `'default' \| 'heading' \| 'title' \| 'subtitle' \| 'body' \| 'caption' \| 'label' \| 'eyebrow' \| 'code'` | `'default'` |             |
+
+Also accepts the props of React Native's `TextProps`.
+<!-- /api:Text -->
 
 ## Input
 
@@ -1140,12 +1169,19 @@ import { Input } from '@thewhileloop/whileui';
 On web, filled Input, Textarea, NumericInput, and SmartInput surfaces preserve their
 themed background, foreground, and caret when the browser autofills them.
 
-| Prop                 | Type                              | Default     | Description                                                           |
-| -------------------- | --------------------------------- | ----------- | --------------------------------------------------------------------- |
-| variant              | `'default' \| 'error' \| 'plain'` | `'default'` | Input style; `plain` drops border and fill for a large display figure |
-| placeholder          | `string`                          | —           | Placeholder text                                                      |
-| placeholderTextColor | `string`                          | —           | Hex for placeholder; defaults to theme `mutedForeground`              |
-| editable             | `boolean`                         | `true`      | Whether input is editable                                             |
+<!-- api:Input -->
+
+| Prop           | Type                              | Default     | Description |
+| -------------- | --------------------------------- | ----------- | ----------- |
+| aria-invalid   | `boolean`                         | —           |             |
+| className      | `string`                          | —           |             |
+| prefix         | `React.ReactNode`                 | —           |             |
+| suffix         | `React.ReactNode`                 | —           |             |
+| inputClassName | `string`                          | —           |             |
+| variant        | `'default' \| 'error' \| 'plain'` | `'default'` |             |
+
+Also accepts the props of `TextInputProps`.
+<!-- /api:Input -->
 
 ## NumericInput
 
@@ -1164,15 +1200,28 @@ import { NumericInput } from '@thewhileloop/whileui';
 />;
 ```
 
-| Prop                 | Type                              | Default     | Description                       |
-| -------------------- | --------------------------------- | ----------- | --------------------------------- |
-| variant              | `'default' \| 'error'`            | `'default'` | Input style                       |
-| size                 | `'default' \| 'compact'`          | `'default'` | Density size                      |
-| value                | `number \| null`                  | —           | Controlled numeric value          |
-| onValueChange        | `(value: number \| null) => void` | —           | Numeric value change callback     |
-| placeholderTextColor | `string`                          | —           | Hex for placeholder               |
-| prefix / suffix      | `ReactNode`                       | —           | Left/right slots                  |
-| showSteppers         | `boolean`                         | `false`     | Show decrement/increment controls |
+<!-- api:NumericInput -->
+
+| Prop           | Type                              | Default     | Description                                                                                                            |
+| -------------- | --------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| aria-invalid   | `boolean`                         | —           |                                                                                                                        |
+| className      | `string`                          | —           |                                                                                                                        |
+| inputClassName | `string`                          | —           |                                                                                                                        |
+| prefix         | `React.ReactNode`                 | —           |                                                                                                                        |
+| suffix         | `React.ReactNode`                 | —           |                                                                                                                        |
+| value          | `number \| null`                  | —           | Controlled numeric value.                                                                                              |
+| defaultValue   | `number`                          | —           |                                                                                                                        |
+| onValueChange  | `(value: number \| null) => void` | —           | Numeric value change callback.                                                                                         |
+| min            | `number`                          | —           |                                                                                                                        |
+| max            | `number`                          | —           |                                                                                                                        |
+| step           | `number`                          | `1`         |                                                                                                                        |
+| showSteppers   | `boolean`                         | `false`     | Show decrement/increment controls.                                                                                     |
+| unstyled       | `boolean`                         | `false`     | Drop the field shell (border, background, radius, padding) for embedding inside another field shell like LabeledField. |
+| size           | `'default' \| 'compact'`          | `'default'` |                                                                                                                        |
+| variant        | `'default' \| 'error'`            | `'default'` |                                                                                                                        |
+
+Also accepts the props of `TextInputProps`.
+<!-- /api:NumericInput -->
 
 ## OTPInput
 
@@ -1188,16 +1237,23 @@ import { OTPInput } from '@thewhileloop/whileui';
 />;
 ```
 
-| Prop          | Type                      | Default     | Description                       |
-| ------------- | ------------------------- | ----------- | --------------------------------- |
-| length        | `number`                  | `6`         | Number of digit cells             |
-| value         | `string`                  | —           | Controlled value                  |
-| onValueChange | `(value: string) => void` | —           | Called on each digit change       |
-| onComplete    | `(code: string) => void`  | —           | Called when all digits are filled |
-| variant       | `'default' \| 'error'`    | `'default'` | Error variant triggers shake      |
-| size          | `'default' \| 'compact'`  | `'default'` | Cell size                         |
-| secure        | `boolean`                 | `false`     | Mask digits with dots             |
-| autoFocus     | `boolean`                 | `false`     | Focus first cell on mount         |
+<!-- api:OTPInput -->
+
+| Prop          | Type                      | Default     | Description                        |
+| ------------- | ------------------------- | ----------- | ---------------------------------- |
+| length        | `number`                  | `6`         | Number of digit cells.             |
+| value         | `string`                  | —           | Controlled value.                  |
+| onValueChange | `(value: string) => void` | —           | Called on each digit change.       |
+| onComplete    | `(code: string) => void`  | —           | Called when all digits are filled. |
+| variant       | `'default' \| 'error'`    | `'default'` | Error variant triggers shake.      |
+| size          | `'default' \| 'compact'`  | `'default'` | Cell size.                         |
+| secure        | `boolean`                 | `false`     | Mask digits with dots.             |
+| disabled      | `boolean`                 | `false`     |                                    |
+| autoFocus     | `boolean`                 | `false`     | Focus first cell on mount.         |
+| className     | `string`                  | —           |                                    |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:OTPInput -->
 
 ## FormField
 
@@ -1239,14 +1295,22 @@ import { Surface } from '@thewhileloop/whileui';
 </Surface>;
 ```
 
-| Prop     | Type                                  | Default     | Description                         |
-| -------- | ------------------------------------- | ----------- | ----------------------------------- |
-| level    | `'base' \| 'raised' \| 'overlay'`     | `'base'`    | Semantic background and depth tier  |
-| padding  | `'none' \| 'sm' \| 'default' \| 'lg'` | `'default'` | Token-backed interior spacing       |
-| radius   | `'sm' \| 'md' \| 'lg' \| 'xl'`        | `'xl'`      | Token-backed corner radius          |
-| bordered | `boolean`                             | `true`      | Draw the theme hairline border      |
-| shadow   | `'none' \| 'sm' \| 'md' \| 'lg'`      | by level    | Override the level's depth          |
-| frosted  | `boolean`                             | `false`     | Enable the optional frosted overlay |
+<!-- api:Surface -->
+
+| Prop          | Type                           | Default             | Description                          |
+| ------------- | ------------------------------ | ------------------- | ------------------------------------ |
+| level         | `SurfaceLevel`                 | `'base'`            | Semantic background and depth tier.  |
+| padding       | `SurfacePaddingSize`           | `'default'`         | Token-backed interior spacing.       |
+| radius        | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'xl'`              | Token-backed corner radius.          |
+| bordered      | `boolean`                      | `true`              | Draw the theme hairline border.      |
+| shadow        | `ShadowTier`                   | —                   | Override the level's depth.          |
+| className     | `string`                       | —                   |                                      |
+| frosted       | `boolean`                      | `false`             | Enable the optional frosted overlay. |
+| blurIntensity | `number`                       | subtle preset       | Override blur amount directly.       |
+| blurTintToken | `FrostedTintToken`             | `LEVEL_TINT[level]` | Tint token used for frosted mode.    |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Surface -->
 
 ## LabeledField
 
@@ -1288,9 +1352,21 @@ import {
 </SegmentedControl>;
 ```
 
-| Prop    | Type                  | Default     | Description               |
-| ------- | --------------------- | ----------- | ------------------------- |
-| variant | `'default' \| 'pill'` | `'default'` | Pill = rounded-full items |
+<!-- api:SegmentedControl -->
+
+| Prop          | Type                      | Default     | Description                |
+| ------------- | ------------------------- | ----------- | -------------------------- |
+| value         | `string`                  | —           |                            |
+| defaultValue  | `string`                  | `''`        |                            |
+| onValueChange | `(value: string) => void` | —           |                            |
+| variant       | `'default' \| 'pill'`     | `'default'` | Pill = rounded-full items. |
+| wrap          | `boolean \| 'auto'`       | `true`      |                            |
+| size          | `'default' \| 'compact'`  | `'default'` |                            |
+| disabled      | `boolean`                 | `false`     |                            |
+| className     | `string`                  | —           |                            |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:SegmentedControl -->
 
 ## DataRow
 
@@ -1349,13 +1425,20 @@ import {
 </Card>;
 ```
 
-| Prop          | Type                                                               | Default      | Description                         |
-| ------------- | ------------------------------------------------------------------ | ------------ | ----------------------------------- |
-| padding       | `'none' \| 'sm' \| 'default' \| 'lg'`                              | `'default'`  | Card interior padding               |
-| unstyled      | `boolean`                                                          | `false`      | Remove built-in card surface styles |
-| frosted       | `boolean`                                                          | `false`      | Enables frosted tint + blur layer   |
-| blurIntensity | `number`                                                           | token preset | Override blur amount directly       |
-| blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'card'`     | Tint token used for frosted mode    |
+<!-- api:Card -->
+
+| Prop          | Type                                  | Default     | Description                                             |
+| ------------- | ------------------------------------- | ----------- | ------------------------------------------------------- |
+| shadow        | `ShadowTier`                          | `'sm'`      | Elevation tier; 'sm' by default, 'none' for flat cards. |
+| className     | `string`                              | —           |                                                         |
+| padding       | `'none' \| 'sm' \| 'lg' \| 'default'` | `'default'` |                                                         |
+| unstyled      | `boolean`                             | `false`     |                                                         |
+| frosted       | `boolean`                             | `false`     | Enable the optional frosted overlay.                    |
+| blurIntensity | `number`                              | —           | Override blur amount directly.                          |
+| blurTintToken | `FrostedTintToken`                    | —           | Tint token used for frosted mode.                       |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Card -->
 
 ## Badge
 
@@ -1367,9 +1450,15 @@ import { Badge, BadgeText } from '@thewhileloop/whileui';
 </Badge>;
 ```
 
-| Prop    | Type                                                                                         | Default     |
-| ------- | -------------------------------------------------------------------------------------------- | ----------- |
-| variant | `'default' \| 'secondary' \| 'destructive' \| 'outline' \| 'success' \| 'warning' \| 'info'` | `'default'` |
+<!-- api:Badge -->
+
+| Prop      | Type                                                                                                                                                                                                | Default     | Description |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ----------- |
+| className | `string`                                                                                                                                                                                            | —           |             |
+| variant   | `'default' \| 'soft' \| 'destructive' \| 'outline' \| 'secondary' \| 'success' \| 'warning' \| 'info' \| 'soft-secondary' \| 'soft-destructive' \| 'soft-success' \| 'soft-warning' \| 'soft-info'` | `'default'` |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Badge -->
 
 ## Alert
 
@@ -1382,9 +1471,15 @@ import { Alert, AlertTitle, AlertDescription } from '@thewhileloop/whileui';
 </Alert>;
 ```
 
-| Prop    | Type                                                   | Default     |
-| ------- | ------------------------------------------------------ | ----------- |
-| variant | `'default' \| 'destructive' \| 'success' \| 'warning'` | `'default'` |
+<!-- api:Alert -->
+
+| Prop      | Type                                                             | Default     | Description |
+| --------- | ---------------------------------------------------------------- | ----------- | ----------- |
+| className | `string`                                                         | —           |             |
+| variant   | `'default' \| 'destructive' \| 'success' \| 'warning' \| 'info'` | `'default'` |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Alert -->
 
 ## Dialog
 
@@ -1425,11 +1520,17 @@ import {
 
 `DialogContent` supports frosted props:
 
-| Prop          | Type                                                               | Default                | Description                      |
-| ------------- | ------------------------------------------------------------------ | ---------------------- | -------------------------------- |
-| frosted       | `boolean`                                                          | `false`                | Enables frosted tint + blur      |
-| blurIntensity | `number`                                                           | medium preset          | Override blur amount             |
-| blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'surfaceTranslucent'` | Tint token used for frosted mode |
+<!-- api:DialogContent -->
+
+| Prop          | Type               | Default                | Description                          |
+| ------------- | ------------------ | ---------------------- | ------------------------------------ |
+| className     | `string`           | —                      |                                      |
+| frosted       | `boolean`          | `false`                | Enable the optional frosted overlay. |
+| blurIntensity | `number`           | medium preset          | Override blur amount directly.       |
+| blurTintToken | `FrostedTintToken` | `'surfaceTranslucent'` | Tint token used for frosted mode.    |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:DialogContent -->
 
 ## AlertDialog
 
@@ -1467,12 +1568,18 @@ import {
 
 `AlertDialogContent` supports the same frosted props as `DialogContent`.
 
-| Prop          | Type                               | Default   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------- | ---------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| presentation  | `'modal' \| 'native' \| 'overlay'` | `'modal'` | **`modal`** — themed card in an RN `Modal` (iOS `overFullScreen`). **`native`** — `Alert.alert` on iOS/Android (system UI); use when a second `Modal` won’t stack; ignored on web. **`overlay`** — same themed card as `modal`, but absolutely positioned **inside the parent view** (no second `Modal`). Nest `<AlertDialog>` under your fullscreen sheet’s root so the confirm matches app styling. **Web:** `'native'` is ignored; `overlay` behaves like `modal`. |
-| frosted       | `boolean`                          | `false`   | Same as `DialogContent`                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| blurIntensity | `number`                           | —         | Same as `DialogContent`                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| blurTintToken | `'surfaceElevated' \| …`           | —         | Same as `DialogContent`                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+<!-- api:AlertDialogContent -->
+
+| Prop          | Type                      | Default                | Description                                                                                                                                                                                                                          |
+| ------------- | ------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| className     | `string`                  | —                      |                                                                                                                                                                                                                                      |
+| presentation  | `AlertDialogPresentation` | `'modal'`              | `modal` — RN `Modal` + themed card (default). `native` — `Alert.alert` on iOS/Android (system chrome); ignored on web. `overlay` — same themed card as `modal`, but absolute fill inside the parent view (nest inside your `Modal`). |
+| frosted       | `boolean`                 | `false`                | Enable the optional frosted overlay.                                                                                                                                                                                                 |
+| blurIntensity | `number`                  | medium preset          | Override blur amount directly.                                                                                                                                                                                                       |
+| blurTintToken | `FrostedTintToken`        | `'surfaceTranslucent'` | Tint token used for frosted mode.                                                                                                                                                                                                    |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:AlertDialogContent -->
 
 ### React Native: stacked modals
 
@@ -1491,11 +1598,18 @@ import { Checkbox } from '@thewhileloop/whileui';
 <Checkbox checked={checked} onCheckedChange={setChecked} />;
 ```
 
-| Prop            | Type                         | Default |
-| --------------- | ---------------------------- | ------- |
-| checked         | `boolean`                    | `false` |
-| onCheckedChange | `(checked: boolean) => void` | —       |
-| disabled        | `boolean`                    | `false` |
+<!-- api:Checkbox -->
+
+| Prop            | Type                         | Default | Description |
+| --------------- | ---------------------------- | ------- | ----------- |
+| checked         | `boolean`                    | —       |             |
+| defaultChecked  | `boolean`                    | `false` |             |
+| onCheckedChange | `(checked: boolean) => void` | —       |             |
+| disabled        | `boolean`                    | `false` |             |
+| className       | `string`                     | —       |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Checkbox -->
 
 ## Switch
 
@@ -1505,10 +1619,18 @@ import { Switch } from '@thewhileloop/whileui';
 <Switch checked={checked} onCheckedChange={setChecked} />;
 ```
 
-| Prop            | Type                         | Default |
-| --------------- | ---------------------------- | ------- |
-| checked         | `boolean`                    | `false` |
-| onCheckedChange | `(checked: boolean) => void` | —       |
+<!-- api:Switch -->
+
+| Prop            | Type                         | Default | Description |
+| --------------- | ---------------------------- | ------- | ----------- |
+| checked         | `boolean`                    | —       |             |
+| defaultChecked  | `boolean`                    | `false` |             |
+| onCheckedChange | `(checked: boolean) => void` | —       |             |
+| disabled        | `boolean`                    | `false` |             |
+| className       | `string`                     | —       |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Switch -->
 
 ## RadioGroup
 
@@ -1551,11 +1673,19 @@ itself to the collision-available viewport, and wraps long option labels inside 
 
 `SelectContent` supports optional frosted props:
 
-| Prop          | Type                                                               | Default       |
-| ------------- | ------------------------------------------------------------------ | ------------- |
-| frosted       | `boolean`                                                          | `false`       |
-| blurIntensity | `number`                                                           | subtle preset |
-| blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'popover'`   |
+<!-- api:SelectContent -->
+
+| Prop          | Type                                                               | Default       | Description                          |
+| ------------- | ------------------------------------------------------------------ | ------------- | ------------------------------------ |
+| className     | `string`                                                           | —             |                                      |
+| portalHost    | `string`                                                           | —             |                                      |
+| insets        | `{ top?: number; bottom?: number; left?: number; right?: number }` | —             |                                      |
+| frosted       | `boolean`                                                          | `false`       | Enable the optional frosted overlay. |
+| blurIntensity | `number`                                                           | subtle preset | Override blur amount directly.       |
+| blurTintToken | `FrostedTintToken`                                                 | `'popover'`   | Tint token used for frosted mode.    |
+
+Also accepts the props of the underlying primitive.
+<!-- /api:SelectContent -->
 
 `SelectContent` keeps its listbox inside the safe area by default; pass `insets` only to
 change that margin. A list taller than the screen scrolls inside the listbox on every
@@ -1604,10 +1734,17 @@ import {
 </Accordion>;
 ```
 
-| Prop        | Type                     | Default    |
-| ----------- | ------------------------ | ---------- |
-| type        | `'single' \| 'multiple'` | `'single'` |
-| collapsible | `boolean`                | `false`    |
+<!-- api:Accordion -->
+
+| Prop         | Type                 | Default    | Description |
+| ------------ | -------------------- | ---------- | ----------- |
+| type         | `AccordionType`      | `'single'` |             |
+| defaultValue | `string \| string[]` | —          |             |
+| collapsible  | `boolean`            | `true`     |             |
+| className    | `string`             | —          |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Accordion -->
 
 ## Avatar
 
@@ -1620,9 +1757,15 @@ import { Avatar, AvatarImage, AvatarFallback } from '@thewhileloop/whileui';
 </Avatar>;
 ```
 
-| Prop | Type                        | Default     |
-| ---- | --------------------------- | ----------- |
-| size | `'sm' \| 'default' \| 'lg'` | `'default'` |
+<!-- api:Avatar -->
+
+| Prop      | Type                                | Default     | Description |
+| --------- | ----------------------------------- | ----------- | ----------- |
+| className | `string`                            | —           |             |
+| size      | `'sm' \| 'lg' \| 'xl' \| 'default'` | `'default'` |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Avatar -->
 
 `AvatarImage` keeps `AvatarFallback` visible while loading or after an error. Its
 `onLoadingStatusChange` callback reports `'loading'`, `'loaded'`, and `'error'`, including
@@ -1636,10 +1779,17 @@ import { Progress } from '@thewhileloop/whileui';
 <Progress value={50} size="default" />;
 ```
 
-| Prop  | Type                        | Default     |
-| ----- | --------------------------- | ----------- |
-| value | `number`                    | `0`         |
-| size  | `'sm' \| 'default' \| 'lg'` | `'default'` |
+<!-- api:Progress -->
+
+| Prop               | Type                        | Default     | Description |
+| ------------------ | --------------------------- | ----------- | ----------- |
+| value              | `number`                    | `0`         |             |
+| indicatorClassName | `string`                    | —           |             |
+| className          | `string`                    | —           |             |
+| size               | `'sm' \| 'lg' \| 'default'` | `'default'` |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Progress -->
 
 ## Toast
 
@@ -1691,11 +1841,19 @@ import { Popover, PopoverTrigger, PopoverContent } from '@thewhileloop/whileui';
 
 `PopoverContent` supports frosted props:
 
-| Prop          | Type                                                               | Default       |
-| ------------- | ------------------------------------------------------------------ | ------------- |
-| frosted       | `boolean`                                                          | `false`       |
-| blurIntensity | `number`                                                           | subtle preset |
-| blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'popover'`   |
+<!-- api:PopoverContent -->
+
+| Prop          | Type                     | Default       | Description                                                                                           |
+| ------------- | ------------------------ | ------------- | ----------------------------------------------------------------------------------------------------- |
+| className     | `string`                 | —             |                                                                                                       |
+| portalHost    | `string`                 | —             |                                                                                                       |
+| insets        | `Partial<OverlayInsets>` | —             | Collision padding. Defaults to safe area plus a margin so the panel never sits flush against an edge. |
+| frosted       | `boolean`                | `false`       | Enable the optional frosted overlay.                                                                  |
+| blurIntensity | `number`                 | subtle preset | Override blur amount directly.                                                                        |
+| blurTintToken | `FrostedTintToken`       | `'popover'`   | Tint token used for frosted mode.                                                                     |
+
+Also accepts the props of the underlying primitive.
+<!-- /api:PopoverContent -->
 
 ## DropdownMenu
 
@@ -1862,14 +2020,20 @@ import { AppShell, PageSkeleton } from '@thewhileloop/whileui';
 </AppShell>;
 ```
 
-| Prop        | Type        | Default | Description                                         |
-| ----------- | ----------- | ------- | --------------------------------------------------- |
-| `header`    | `ReactNode` | —       | Header slot                                         |
-| `footer`    | `ReactNode` | —       | Footer slot                                         |
-| `bottomNav` | `ReactNode` | —       | Bottom navigation slot                              |
-| `safeArea`  | `boolean`   | `true`  | Wrap in SafeAreaView                                |
-| `loading`   | `boolean`   | `false` | Show `skeleton` in content area, keep shell mounted |
-| `skeleton`  | `ReactNode` | —       | Content placeholder rendered when `loading=true`    |
+<!-- api:AppShell -->
+
+| Prop      | Type              | Default | Description                                               |
+| --------- | ----------------- | ------- | --------------------------------------------------------- |
+| header    | `React.ReactNode` | —       | Header slot.                                              |
+| footer    | `React.ReactNode` | —       | Footer slot.                                              |
+| bottomNav | `React.ReactNode` | —       | Bottom navigation slot.                                   |
+| safeArea  | `boolean`         | `true`  | Wrap in SafeAreaView.                                     |
+| loading   | `boolean`         | `false` | Keep shell mounted while swapping content with skeleton.  |
+| skeleton  | `React.ReactNode` | —       | Optional custom loading placeholder for the content area. |
+| className | `string`          | —       |                                                           |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:AppShell -->
 
 ## ActionBar
 
@@ -1975,19 +2139,32 @@ const [value, setValue] = useState('');
 />;
 ```
 
-| Prop                     | Type                 | Description                                       |
-| ------------------------ | -------------------- | ------------------------------------------------- |
-| `messages`               | `ChatMessage[]`      | `{ id, role, content, secondary?, contentSize? }` |
-| `value`                  | `string`             | Input value                                       |
-| `onChangeText`           | `(text) => void`     | Input change                                      |
-| `onSend`                 | `() => void`         | Send handler                                      |
-| `suggestions`            | `string[]`           | Chips when empty                                  |
-| `leftSlot` / `rightSlot` | `ReactNode`          | Attach, send, etc.                                |
-| `exampleMessage`         | `ChatMessage`        | Shown in empty state                              |
-| `renderMessage`          | `(msg) => ReactNode` | Custom message (markdown, code, images)           |
-| `loadingIndicator`       | `ReactNode`          | Shown when loading (typing dots)                  |
-| `inputSafeArea`          | `boolean`            | SmartInput safe-area (default `true`)             |
-| `keyboardVerticalOffset` | `number`             | For header offset when keyboard opens             |
+<!-- api:Chat -->
+
+| Prop                    | Type                                        | Default             | Description                                                                              |
+| ----------------------- | ------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------- |
+| messages (required)     | `ChatMessage[]`                             | —                   | Messages to show, each `{ id, role, content, secondary?, contentSize? }`.                |
+| value (required)        | `string`                                    | —                   | Input value.                                                                             |
+| onChangeText (required) | `(text: string) => void`                    | —                   | Input change.                                                                            |
+| onSend (required)       | `() => void`                                | —                   | Send handler.                                                                            |
+| placeholder             | `string`                                    | `'Message...'`      |                                                                                          |
+| suggestions             | `string[]`                                  | `EMPTY_SUGGESTIONS` | Chips when empty.                                                                        |
+| onSuggestionPress       | `(text: string) => void`                    | —                   |                                                                                          |
+| leftSlot                | `React.ReactNode`                           | —                   |                                                                                          |
+| rightSlot               | `React.ReactNode`                           | —                   |                                                                                          |
+| loading                 | `boolean`                                   | `false`             |                                                                                          |
+| header                  | `React.ReactNode`                           | —                   |                                                                                          |
+| emptyTitle              | `string`                                    | —                   |                                                                                          |
+| emptyDescription        | `string`                                    | —                   |                                                                                          |
+| exampleMessage          | `ChatMessage`                               | —                   | Example message shown in empty state so users see the bubble UI.                         |
+| renderMessage           | `(message: ChatMessage) => React.ReactNode` | —                   | Custom message renderer (markdown, code, images). Falls back to ChatMessageBubble.       |
+| loadingIndicator        | `React.ReactNode`                           | —                   | Shown at bottom when loading (typing indicator).                                         |
+| inputSafeArea           | `boolean`                                   | `true`              | Passed to SmartInput. Use false when Chat is in a contained demo.                        |
+| keyboardVerticalOffset  | `number`                                    | `0`                 | Offset for KeyboardAvoidingView when Chat has a header (e.g. StatusBar + header height). |
+| className               | `string`                                    | —                   |                                                                                          |
+| messagesClassName       | `string`                                    | —                   |                                                                                          |
+
+<!-- /api:Chat -->
 
 `ChatConversation` extends React Native `ScrollViewProps`, forwards its ref, and adds `contentContainerClassName` to style the constrained inner column. Caller `onScroll` and `onContentSizeChange` callbacks are preserved.
 
@@ -2022,18 +2199,24 @@ import { SmartImage } from '@thewhileloop/whileui';
 />;
 ```
 
-| Prop                | Type                                               | Default   |
-| ------------------- | -------------------------------------------------- | --------- |
-| `source`            | `ImageProps['source']`                             | required  |
-| `alt`               | `string`                                           | required  |
-| `fallbackSource`    | `ImageProps['source']`                             | —         |
-| `skeleton`          | `boolean`                                          | `true`    |
-| `skeletonClassName` | `string`                                           | —         |
-| `transition`        | `number`                                           | `200`     |
-| `radius`            | `'none' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'full'` | `'md'`    |
-| `objectFit`         | `'cover' \| 'contain' \| 'fill' \| 'scale-down'`   | `'cover'` |
-| `onLoad`            | `() => void`                                       | —         |
-| `onError`           | `() => void`                                       | —         |
+<!-- api:SmartImage -->
+
+| Prop              | Type                                               | Default   | Description |
+| ----------------- | -------------------------------------------------- | --------- | ----------- |
+| className         | `string`                                           | —         |             |
+| source (required) | `ImageProps['source']`                             | —         |             |
+| alt (required)    | `string`                                           | —         |             |
+| skeleton          | `boolean`                                          | `true`    |             |
+| skeletonClassName | `string`                                           | —         |             |
+| transition        | `number`                                           | `200`     |             |
+| onLoad            | `() => void`                                       | —         |             |
+| onError           | `() => void`                                       | —         |             |
+| fallbackSource    | `ImageProps['source']`                             | —         |             |
+| radius            | `'none' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'full'` | `'md'`    |             |
+| objectFit         | `'fill' \| 'cover' \| 'contain' \| 'scale-down'`   | `'cover'` |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:SmartImage -->
 
 The skeleton returns whenever the primary image starts loading again. A failed primary
 source switches to `fallbackSource` when supplied without re-entering a primary/fallback
@@ -2103,19 +2286,26 @@ const [time, setTime] = useState<string | null>(null);
 />;
 ```
 
-| Prop                    | Type                                                               | Description                            |
-| ----------------------- | ------------------------------------------------------------------ | -------------------------------------- |
-| `value`                 | `string \| null` / `DateRange \| null`                             | Selected date(s) YYYY-MM-DD            |
-| `onValueChange`         | `(date) => void`                                                   | Change handler                         |
-| `open` / `onOpenChange` | —                                                                  | Modal state (modal variants)           |
-| `trigger`               | `ReactNode`                                                        | Custom trigger (modal variants)        |
-| `minDate` / `maxDate`   | `string`                                                           | YYYY-MM-DD bounds                      |
-| `theme`                 | `CalendarTheme`                                                    | Override calendar colors               |
-| `hourCycle`             | `'h12' \| 'h23'`                                                   | Time picker wheels; defaults to locale |
-| `minuteStep`            | `number`                                                           | Minutes between options (default 1)    |
-| `frosted`               | `boolean`                                                          | Enable frosted surface for modal panel |
-| `blurIntensity`         | `number`                                                           | Override blur amount                   |
-| `blurTintToken`         | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | Tint token for frosted panel           |
+<!-- api:DatePickerModal -->
+
+| Prop                    | Type                             | Default                | Description                                               |
+| ----------------------- | -------------------------------- | ---------------------- | --------------------------------------------------------- |
+| value                   | `string \| null`                 | —                      | Controlled: selected date in YYYY-MM-DD                   |
+| onValueChange           | `(date: string \| null) => void` | —                      | Controlled: change handler                                |
+| open (required)         | `boolean`                        | —                      | Modal open state                                          |
+| onOpenChange (required) | `(open: boolean) => void`        | —                      | Modal open change handler                                 |
+| minDate                 | `string`                         | —                      | Minimum selectable date YYYY-MM-DD                        |
+| maxDate                 | `string`                         | —                      | Maximum selectable date YYYY-MM-DD                        |
+| theme                   | `CalendarTheme`                  | —                      | Override calendar theme (RN color strings)                |
+| trigger                 | `React.ReactNode`                | —                      | Trigger element. If not provided, no trigger is rendered. |
+| title                   | `string`                         | `'Select date'`        | Title shown in modal header                               |
+| confirmLabel            | `string`                         | `'Done'`               | Button label for confirm                                  |
+| className               | `string`                         | —                      |                                                           |
+| frosted                 | `boolean`                        | `false`                | Enable the optional frosted overlay.                      |
+| blurIntensity           | `number`                         | medium preset          | Override blur amount directly.                            |
+| blurTintToken           | `FrostedTintToken`               | `'surfaceTranslucent'` | Tint token used for frosted mode.                         |
+
+<!-- /api:DatePickerModal -->
 
 ## ConfirmActionSheet
 
@@ -2133,11 +2323,27 @@ import { ConfirmActionSheet } from '@thewhileloop/whileui';
 />;
 ```
 
-| Prop            | Type                                                               | Default                |
-| --------------- | ------------------------------------------------------------------ | ---------------------- |
-| `frosted`       | `boolean`                                                          | `false`                |
-| `blurIntensity` | `number`                                                           | medium preset          |
-| `blurTintToken` | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'surfaceTranslucent'` |
+<!-- api:ConfirmActionSheet -->
+
+| Prop                    | Type                         | Default                | Description                          |
+| ----------------------- | ---------------------------- | ---------------------- | ------------------------------------ |
+| open (required)         | `boolean`                    | —                      |                                      |
+| onOpenChange (required) | `(open: boolean) => void`    | —                      |                                      |
+| title (required)        | `string`                     | —                      |                                      |
+| description             | `string`                     | —                      |                                      |
+| actions                 | `ConfirmActionSheetAction[]` | —                      |                                      |
+| confirmLabel            | `string`                     | `'Confirm'`            |                                      |
+| cancelLabel             | `string`                     | `'Cancel'`             |                                      |
+| onConfirm               | `() => void`                 | —                      |                                      |
+| onCancel                | `() => void`                 | —                      |                                      |
+| destructive             | `boolean`                    | `true`                 |                                      |
+| className               | `string`                     | —                      |                                      |
+| frosted                 | `boolean`                    | `false`                | Enable the optional frosted overlay. |
+| blurIntensity           | `number`                     | medium preset          | Override blur amount directly.       |
+| blurTintToken           | `FrostedTintToken`           | `'surfaceTranslucent'` | Tint token used for frosted mode.    |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:ConfirmActionSheet -->
 
 ## Sheet
 
@@ -2167,15 +2373,20 @@ import {
 </Sheet>;
 ```
 
-| Prop          | Type                                                               | Default                |
-| ------------- | ------------------------------------------------------------------ | ---------------------- |
-| open          | `boolean`                                                          | —                      |
-| onOpenChange  | `(open: boolean) => void`                                          | —                      |
-| maxHeight     | `'half' \| 'full' \| number`                                       | `'full'`               |
-| maxWidth      | `number`                                                           | `360`                  |
-| frosted       | `boolean`                                                          | `false`                |
-| blurIntensity | `number`                                                           | medium preset          |
-| blurTintToken | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'surfaceTranslucent'` |
+<!-- api:Sheet -->
+
+| Prop                    | Type                         | Default                | Description                                                 |
+| ----------------------- | ---------------------------- | ---------------------- | ----------------------------------------------------------- |
+| open (required)         | `boolean`                    | —                      |                                                             |
+| onOpenChange (required) | `(open: boolean) => void`    | —                      |                                                             |
+| children (required)     | `React.ReactNode`            | —                      |                                                             |
+| maxHeight               | `'half' \| 'full' \| number` | `'full'`               | Max height: 'half' \| 'full' \| number (px). Default 'full' |
+| maxWidth                | `number`                     | —                      | Web: max width. Default ~360 for mobile-first.              |
+| frosted                 | `boolean`                    | `false`                | Enable the optional frosted overlay.                        |
+| blurIntensity           | `number`                     | medium preset          | Override blur amount directly.                              |
+| blurTintToken           | `FrostedTintToken`           | `'surfaceTranslucent'` | Tint token used for frosted mode.                           |
+
+<!-- /api:Sheet -->
 
 `SheetContent` is a `ScrollView` and accepts its props. It enables nested scrolling and
 keeps taps on inputs while the keyboard is open (`keyboardShouldPersistTaps="handled"`).
@@ -2216,11 +2427,22 @@ import { SplashScreen } from '@thewhileloop/whileui';
 />;
 ```
 
-| Prop        | Type                           | Default   |
-| ----------- | ------------------------------ | --------- |
-| variant     | `'fade' \| 'scale' \| 'slide'` | `'scale'` |
-| duration    | `number`                       | `800`     |
-| showLoading | `boolean`                      | `false`   |
+<!-- api:SplashScreen -->
+
+| Prop                | Type                           | Default   | Description                                     |
+| ------------------- | ------------------------------ | --------- | ----------------------------------------------- |
+| appName             | `string`                       | —         | App name displayed below logo                   |
+| tagline             | `string`                       | —         | Tagline displayed below app name                |
+| logo                | `React.ReactNode`              | —         | Logo element (icon, image, or custom component) |
+| variant             | `'fade' \| 'scale' \| 'slide'` | `'scale'` | Animation variant                               |
+| duration            | `number`                       | `800`     | Animation duration in ms                        |
+| onAnimationComplete | `() => void`                   | —         | Callback when animation completes               |
+| showLoading         | `boolean`                      | `false`   | Whether to show loading indicator               |
+| loadingText         | `string`                       | —         | Loading text                                    |
+| className           | `string`                       | —         |                                                 |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:SplashScreen -->
 
 ## ContentSkeleton
 
@@ -2234,10 +2456,16 @@ import { ContentSkeleton } from '@thewhileloop/whileui';
 <ContentSkeleton variant="generic" />
 ```
 
-| Prop    | Type                            | Default  | Description                             |
-| ------- | ------------------------------- | -------- | --------------------------------------- |
-| variant | `'list' \| 'card' \| 'generic'` | `'list'` | Layout preset                           |
-| rows    | `number`                        | `4`      | Number of list rows (list variant only) |
+<!-- api:ContentSkeleton -->
+
+| Prop      | Type                            | Default  | Description                                                                                                |
+| --------- | ------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| variant   | `'list' \| 'card' \| 'generic'` | `'list'` | Layout preset. `list` = avatar + lines rows, `card` = card with image/body, `generic` = simple page lines. |
+| rows      | `number`                        | `4`      | Number of list rows (list variant only). Default 4.                                                        |
+| className | `string`                        | —        |                                                                                                            |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:ContentSkeleton -->
 
 ## PageSkeleton
 
@@ -2256,14 +2484,19 @@ import { PageSkeleton } from '@thewhileloop/whileui';
 <PageSkeleton variant="list" padding="none" className="flex-1" />
 ```
 
-| Prop                | Type                                                         | Default                | Description                                   |
-| ------------------- | ------------------------------------------------------------ | ---------------------- | --------------------------------------------- |
-| `variant`           | `'dashboard' \| 'list' \| 'settings' \| 'card' \| 'generic'` | required               | Layout preset                                 |
-| `count`             | `number`                                                     | 3 (list), 4 (settings) | Rows/items for list or settings variant       |
-| `padding`           | `'none' \| 'sm' \| 'default' \| 'lg'`                        | `'default'`            | Container padding                             |
-| `header`            | `ReactNode`                                                  | —                      | Optional real header slot above content       |
-| `headerPlaceholder` | `boolean \| 'compact' \| 'default'`                          | `false`                | Skeleton header when real header is not ready |
-| `className`         | `string`                                                     | —                      | Outer container classes                       |
+<!-- api:PageSkeleton -->
+
+| Prop               | Type                                       | Default     | Description                                                         |
+| ------------------ | ------------------------------------------ | ----------- | ------------------------------------------------------------------- |
+| variant (required) | `PageSkeletonVariant`                      | —           | Layout preset.                                                      |
+| count              | `number`                                   | `3`         | Rows/items for list (default 3) or settings (default 4) variant.    |
+| padding            | `PageSkeletonPadding`                      | `'default'` | Container padding.                                                  |
+| header             | `ReactNode`                                | —           | Optional header slot rendered above skeleton content.               |
+| headerPlaceholder  | `boolean \| PageSkeletonHeaderPlaceholder` | `false`     | Optional placeholder header (when no real header is available yet). |
+| className          | `string`                                   | —           |                                                                     |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:PageSkeleton -->
 
 ## ScreenSkeleton
 
@@ -2276,13 +2509,19 @@ import { ScreenSkeleton } from '@thewhileloop/whileui';
 <ScreenSkeleton variant="list" count={5} header={<Header title="Projects" />} />
 ```
 
-| Prop                | Type                                | Default     | Description                           |
-| ------------------- | ----------------------------------- | ----------- | ------------------------------------- |
-| `variant`           | `PageSkeletonVariant`               | `'generic'` | Skeleton content preset               |
-| `count`             | `number`                            | —           | Rows/items for list/settings variants |
-| `padding`           | `PageSkeletonPadding`               | `'default'` | Inner content padding                 |
-| `header`            | `ReactNode`                         | —           | Real header slot                      |
-| `headerPlaceholder` | `boolean \| 'compact' \| 'default'` | `'default'` | Placeholder header                    |
+<!-- api:ScreenSkeleton -->
+
+| Prop              | Type                                       | Default     | Description                            |
+| ----------------- | ------------------------------------------ | ----------- | -------------------------------------- |
+| variant           | `PageSkeletonVariant`                      | `'generic'` | Skeleton content preset.               |
+| count             | `number`                                   | —           | Rows/items for list/settings variants. |
+| padding           | `PageSkeletonPadding`                      | `'default'` | Inner content padding.                 |
+| header            | `ReactNode`                                | —           | Real header slot.                      |
+| headerPlaceholder | `boolean \| PageSkeletonHeaderPlaceholder` | `'default'` | Placeholder header.                    |
+| className         | `string`                                   | —           |                                        |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:ScreenSkeleton -->
 
 ## ErrorBoundary
 
@@ -2296,10 +2535,15 @@ import { ErrorBoundary } from '@thewhileloop/whileui';
 </ErrorBoundary>;
 ```
 
-| Prop     | Type                                       | Description                             |
-| -------- | ------------------------------------------ | --------------------------------------- |
-| fallback | `ReactNode \| (error, reset) => ReactNode` | Custom fallback; defaults to ErrorState |
-| onError  | `(error, errorInfo) => void`               | Called when error is caught             |
+<!-- api:ErrorBoundary -->
+
+| Prop                | Type                                                            | Default | Description                                        |
+| ------------------- | --------------------------------------------------------------- | ------- | -------------------------------------------------- |
+| children (required) | `ReactNode`                                                     | —       |                                                    |
+| fallback            | `ReactNode \| ((error: Error, reset: () => void) => ReactNode)` | —       | Custom fallback. If not provided, uses ErrorState. |
+| onError             | `(error: Error, errorInfo: ErrorInfo) => void`                  | —       | Called when error is caught.                       |
+
+<!-- /api:ErrorBoundary -->
 
 ## PullToRefreshScrollView
 
@@ -2313,11 +2557,17 @@ import { PullToRefreshScrollView } from '@thewhileloop/whileui';
 </PullToRefreshScrollView>;
 ```
 
-| Prop         | Type                          | Description                                                                                                     |
-| ------------ | ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| refreshing   | `boolean`                     | Whether refresh is in progress                                                                                  |
-| onRefresh    | `() => void \| Promise<void>` | Called when user pulls to refresh. Not awaited — drive the spinner with `refreshing`, and catch your own errors |
-| refreshColor | `string`                      | Optional hex override; defaults to primary                                                                      |
+<!-- api:PullToRefreshScrollView -->
+
+| Prop                  | Type                          | Default | Description                                                                                                                                                                                                     |
+| --------------------- | ----------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| refreshing (required) | `boolean`                     | —       | Whether refresh is in progress.                                                                                                                                                                                 |
+| onRefresh (required)  | `() => void \| Promise<void>` | —       | Refreshing is almost always async, so the signature says so. Nothing here awaits it — the spinner is driven by `refreshing`, which the owner controls — so a handler that can reject must catch its own errors. |
+| refreshColor          | `string`                      | —       | Override tint/colors. Defaults to theme primary.                                                                                                                                                                |
+| className             | `string`                      | —       |                                                                                                                                                                                                                 |
+
+Also accepts the props of `ScrollViewProps`.
+<!-- /api:PullToRefreshScrollView -->
 
 The scroll view owns the refresh gesture; don't pass `refreshControl`. It bounces even
 when content is shorter than the screen, so a short list can still be pulled. Screen
@@ -2349,10 +2599,16 @@ import { LoadingState } from '@thewhileloop/whileui';
 The in-flow counterpart of `EmptyState` and `ErrorState` for a section that is still
 fetching. The spinner is named for assistive technology by `label` (default "Loading").
 
-| Prop  | Type                        | Default     |
-| ----- | --------------------------- | ----------- |
-| label | `string`                    | `'Loading'` |
-| size  | `'sm' \| 'default' \| 'lg'` | `'default'` |
+<!-- api:LoadingState -->
+
+| Prop      | Type                        | Default     | Description                                                                    |
+| --------- | --------------------------- | ----------- | ------------------------------------------------------------------------------ |
+| label     | `string`                    | —           | Read by assistive technology as the spinner's name; shown under it when given. |
+| size      | `'sm' \| 'default' \| 'lg'` | `'default'` |                                                                                |
+| className | `string`                    | —           |                                                                                |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:LoadingState -->
 
 ## ProfileHeader
 
@@ -2413,10 +2669,25 @@ import { ProductCard } from '@thewhileloop/whileui';
 />;
 ```
 
-| Prop    | Type                         | Default      |
-| ------- | ---------------------------- | ------------ |
-| variant | `'vertical' \| 'horizontal'` | `'vertical'` |
-| loading | `boolean`                    | `false`      |
+<!-- api:ProductCard -->
+
+| Prop             | Type                         | Default      | Description                                     |
+| ---------------- | ---------------------------- | ------------ | ----------------------------------------------- |
+| imageUrl         | `string`                     | —            |                                                 |
+| title (required) | `string`                     | —            |                                                 |
+| description      | `string`                     | —            |                                                 |
+| price (required) | `string`                     | —            |                                                 |
+| originalPrice    | `string`                     | —            |                                                 |
+| badge            | `string`                     | —            |                                                 |
+| rating           | `number`                     | —            |                                                 |
+| reviewCount      | `number`                     | —            |                                                 |
+| inStock          | `boolean`                    | `true`       |                                                 |
+| variant          | `'vertical' \| 'horizontal'` | `'vertical'` |                                                 |
+| loading          | `boolean`                    | `false`      | Show a skeleton placeholder instead of content. |
+| className        | `string`                     | —            |                                                 |
+
+Also accepts the props of `PressableProps`.
+<!-- /api:ProductCard -->
 
 ## PricingCard
 
@@ -2455,16 +2726,24 @@ import { SubscriptionCard } from '@thewhileloop/whileui';
 />;
 ```
 
-| Prop        | Type         | Description                 |
-| ----------- | ------------ | --------------------------- |
-| `planName`  | `string`     | Current plan label          |
-| `price`     | `string`     | Plan price                  |
-| `period`    | `string`     | Billing period label        |
-| `expiresAt` | `string`     | Renewal/expiry date text    |
-| `isActive`  | `boolean`    | Active/inactive badge state |
-| `onManage`  | `() => void` | Manage action               |
-| `onUpgrade` | `() => void` | Upgrade action              |
-| `loading`   | `boolean`    | Show skeleton placeholder   |
+<!-- api:SubscriptionCard -->
+
+| Prop                | Type         | Default         | Description                                     |
+| ------------------- | ------------ | --------------- | ----------------------------------------------- |
+| planName (required) | `string`     | —               | Current plan label.                             |
+| price (required)    | `string`     | —               | Plan price.                                     |
+| period              | `string`     | `'/month'`      | Billing period label.                           |
+| expiresAt           | `string`     | —               | Renewal/expiry date text.                       |
+| isActive            | `boolean`    | `true`          | Active/inactive badge state.                    |
+| onManage            | `() => void` | —               | Manage action.                                  |
+| onUpgrade           | `() => void` | —               | Upgrade action.                                 |
+| manageLabel         | `string`     | `'Manage plan'` |                                                 |
+| upgradeLabel        | `string`     | `'Upgrade'`     |                                                 |
+| loading             | `boolean`    | `false`         | Show a skeleton placeholder instead of content. |
+| className           | `string`     | —               |                                                 |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:SubscriptionCard -->
 
 ## FeatureGate
 
@@ -2489,12 +2768,18 @@ import { UsageBar } from '@thewhileloop/whileui';
 <UsageBar label="AI generations" used={8} limit={20} />;
 ```
 
-| Prop      | Type                                   | Default | Description                    |
-| --------- | -------------------------------------- | ------- | ------------------------------ |
-| `label`   | `string`                               | —       | Usage label                    |
-| `used`    | `number`                               | —       | Used amount                    |
-| `limit`   | `number`                               | —       | Quota limit                    |
-| `variant` | `'default' \| 'warning' \| 'exceeded'` | auto    | Optional explicit visual state |
+<!-- api:UsageBar -->
+
+| Prop             | Type              | Default | Description                     |
+| ---------------- | ----------------- | ------- | ------------------------------- |
+| label (required) | `string`          | —       | Usage label.                    |
+| used (required)  | `number`          | —       | Used amount.                    |
+| limit (required) | `number`          | —       | Quota limit.                    |
+| variant          | `UsageBarVariant` | —       | Optional explicit visual state. |
+| className        | `string`          | —       |                                 |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:UsageBar -->
 
 ## PlanToggle
 
@@ -2547,14 +2832,600 @@ import { DrawerMenu } from '@thewhileloop/whileui';
 />;
 ```
 
-| Prop            | Type                                                               | Default                |
-| --------------- | ------------------------------------------------------------------ | ---------------------- |
-| `frosted`       | `boolean`                                                          | `false`                |
-| `blurIntensity` | `number`                                                           | medium preset          |
-| `blurTintToken` | `'surfaceElevated' \| 'surfaceTranslucent' \| 'card' \| 'popover'` | `'surfaceTranslucent'` |
+<!-- api:DrawerMenu -->
+
+| Prop                | Type                    | Default                | Description                                                 |
+| ------------------- | ----------------------- | ---------------------- | ----------------------------------------------------------- |
+| visible (required)  | `boolean`               | —                      |                                                             |
+| onClose (required)  | `() => void`            | —                      |                                                             |
+| sections (required) | `DrawerMenuSection[]`   | —                      |                                                             |
+| activeKey           | `string`                | —                      |                                                             |
+| onSelect            | `(key: string) => void` | —                      |                                                             |
+| header              | `React.ReactNode`       | —                      |                                                             |
+| footer              | `React.ReactNode`       | —                      |                                                             |
+| maxWidth            | `number`                | —                      | Max width in px. On web, defaults to 360 when not provided. |
+| className           | `string`                | —                      |                                                             |
+| style               | `StyleProp<ViewStyle>`  | —                      |                                                             |
+| frosted             | `boolean`               | `false`                | Enable the optional frosted overlay.                        |
+| blurIntensity       | `number`                | medium preset          | Override blur amount directly.                              |
+| blurTintToken       | `FrostedTintToken`      | `'surfaceTranslucent'` | Tint token used for frosted mode.                           |
+
+<!-- /api:DrawerMenu -->
 
 Closes from the backdrop, an item, Android back or Escape on web. It is hosted in a modal
 on every platform, so keyboard focus stays inside it while it is open.
+
+## More components
+
+The rest of the catalog: what each is for and the props its type declares.
+
+### View
+
+Themed view wrapper
+
+```tsx
+import { View } from '@thewhileloop/whileui';
+```
+
+<!-- api:View -->
+
+| Prop      | Type     | Default | Description |
+| --------- | -------- | ------- | ----------- |
+| className | `string` | —       |             |
+
+Also accepts the props of React Native's `ViewProps`.
+<!-- /api:View -->
+
+### Stack
+
+Vertical flex layout with gap
+
+```tsx
+import { Stack } from '@thewhileloop/whileui';
+```
+
+<!-- api:Stack -->
+
+| Prop      | Type                                                                | Default     | Description |
+| --------- | ------------------------------------------------------------------- | ----------- | ----------- |
+| className | `string`                                                            | —           |             |
+| gap       | `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| '2xl'`           | `'md'`      |             |
+| align     | `'start' \| 'center' \| 'end' \| 'stretch' \| 'baseline'`           | `'stretch'` |             |
+| justify   | `'start' \| 'center' \| 'end' \| 'between' \| 'around' \| 'evenly'` | `'start'`   |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Stack -->
+
+### MotionProvider
+
+System reduced motion, explicit preview modes, and deterministic testing
+
+```tsx
+import { MotionProvider } from '@thewhileloop/whileui';
+```
+
+<!-- api:MotionProvider -->
+
+| Prop                | Type              | Default    | Description |
+| ------------------- | ----------------- | ---------- | ----------- |
+| children (required) | `React.ReactNode` | —          |             |
+| mode                | `MotionMode`      | `'system'` |             |
+
+<!-- /api:MotionProvider -->
+
+### Textarea
+
+Multi-line text input
+
+```tsx
+import { Textarea } from '@thewhileloop/whileui';
+```
+
+<!-- api:Textarea -->
+
+| Prop         | Type                        | Default     | Description |
+| ------------ | --------------------------- | ----------- | ----------- |
+| aria-invalid | `boolean`                   | —           |             |
+| className    | `string`                    | —           |             |
+| size         | `'sm' \| 'lg' \| 'default'` | `'default'` |             |
+
+Also accepts the props of `TextInputProps`.
+<!-- /api:Textarea -->
+
+### Label
+
+Form field label
+
+```tsx
+import { Label } from '@thewhileloop/whileui';
+```
+
+<!-- api:Label -->
+
+| Prop      | Type     | Default | Description |
+| --------- | -------- | ------- | ----------- |
+| className | `string` | —       |             |
+
+Also accepts the props of `TextProps`.
+<!-- /api:Label -->
+
+### Toggle
+
+ToggleText sub-component
+
+```tsx
+import { Toggle } from '@thewhileloop/whileui';
+```
+
+<!-- api:Toggle -->
+
+| Prop            | Type                                             | Default     | Description |
+| --------------- | ------------------------------------------------ | ----------- | ----------- |
+| pressed         | `boolean`                                        | `false`     |             |
+| defaultPressed  | `boolean`                                        | `false`     |             |
+| onPressedChange | `(pressed: boolean) => void`                     | —           |             |
+| variant         | `VariantProps<typeof toggleVariants>['variant']` | `'default'` |             |
+| size            | `VariantProps<typeof toggleVariants>['size']`    | `'default'` |             |
+| className       | `string`                                         | —           |             |
+| children        | `React.ReactNode`                                | —           |             |
+
+Also accepts the props of `PressableProps`.
+<!-- /api:Toggle -->
+
+### ToggleGroup
+
+Group of toggle items
+
+```tsx
+import { ToggleGroup } from '@thewhileloop/whileui';
+```
+
+<!-- api:ToggleGroup -->
+
+| Prop          | Type                                  | Default     | Description |
+| ------------- | ------------------------------------- | ----------- | ----------- |
+| type          | `ToggleGroupType`                     | `'single'`  |             |
+| defaultValue  | `string \| string[]`                  | —           |             |
+| value         | `string \| string[]`                  | —           |             |
+| onValueChange | `(value: string \| string[]) => void` | —           |             |
+| variant       | `'default' \| 'outline'`              | `'default'` |             |
+| size          | `'default' \| 'sm' \| 'lg'`           | `'default'` |             |
+| className     | `string`                              | —           |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:ToggleGroup -->
+
+### Separator
+
+Themed divider
+
+```tsx
+import { Separator } from '@thewhileloop/whileui';
+```
+
+<!-- api:Separator -->
+
+| Prop        | Type                         | Default        | Description |
+| ----------- | ---------------------------- | -------------- | ----------- |
+| orientation | `'horizontal' \| 'vertical'` | `'horizontal'` |             |
+| className   | `string`                     | —              |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Separator -->
+
+### Spinner
+
+ActivityIndicator wrapper
+
+```tsx
+import { Spinner } from '@thewhileloop/whileui';
+```
+
+<!-- api:Spinner -->
+
+| Prop      | Type                        | Default     | Description |
+| --------- | --------------------------- | ----------- | ----------- |
+| className | `string`                    | —           |             |
+| size      | `'sm' \| 'lg' \| 'default'` | `'default'` |             |
+
+Also accepts the props of `ActivityIndicatorProps`.
+<!-- /api:Spinner -->
+
+### Skeleton
+
+Loading placeholder (pulse = opacity fade, shimmer = sweep)
+
+```tsx
+import { Skeleton } from '@thewhileloop/whileui';
+```
+
+<!-- api:Skeleton -->
+
+| Prop      | Type                   | Default   | Description |
+| --------- | ---------------------- | --------- | ----------- |
+| className | `string`               | —         |             |
+| variant   | `'pulse' \| 'shimmer'` | `'pulse'` |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Skeleton -->
+
+### AspectRatio
+
+Maintain aspect ratio container
+
+```tsx
+import { AspectRatio } from '@thewhileloop/whileui';
+```
+
+<!-- api:AspectRatio -->
+
+| Prop      | Type     | Default | Description |
+| --------- | -------- | ------- | ----------- |
+| ratio     | `number` | `1`     |             |
+| className | `string` | —       |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:AspectRatio -->
+
+### Collapsible
+
+CollapsibleTrigger, CollapsibleContent
+
+```tsx
+import { Collapsible } from '@thewhileloop/whileui';
+```
+
+<!-- api:Collapsible -->
+
+| Prop         | Type                      | Default | Description |
+| ------------ | ------------------------- | ------- | ----------- |
+| defaultOpen  | `boolean`                 | `false` |             |
+| open         | `boolean`                 | —       |             |
+| onOpenChange | `(open: boolean) => void` | —       |             |
+| disabled     | `boolean`                 | `false` |             |
+| className    | `string`                  | —       |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Collapsible -->
+
+### Tooltip
+
+Position-aware tooltip (requires PortalHost)
+
+```tsx
+import { Tooltip } from '@thewhileloop/whileui';
+```
+
+<!-- api:Tooltip -->
+
+| Prop                    | Type                      | Default | Description |
+| ----------------------- | ------------------------- | ------- | ----------- |
+| onOpenChange            | `(open: boolean) => void` | —       |             |
+| delayDuration           | `number`                  | —       |             |
+| skipDelayDuration       | `number`                  | —       |             |
+| disableHoverableContent | `boolean`                 | —       |             |
+| children (required)     | `React.ReactNode`         | —       |             |
+
+<!-- /api:Tooltip -->
+
+### FloatingBottomNav
+
+Elevated bottom nav with safe area support
+
+```tsx
+import { FloatingBottomNav } from '@thewhileloop/whileui';
+```
+
+<!-- api:FloatingBottomNav -->
+
+| Prop                 | Type                      | Default | Description |
+| -------------------- | ------------------------- | ------- | ----------- |
+| items (required)     | `FloatingBottomNavItem[]` | —       |             |
+| activeKey (required) | `string`                  | —       |             |
+| onSelect (required)  | `(key: string) => void`   | —       |             |
+| className            | `string`                  | —       |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:FloatingBottomNav -->
+
+### TabBar
+
+Top tab bar with indicator
+
+```tsx
+import { TabBar } from '@thewhileloop/whileui';
+```
+
+<!-- api:TabBar -->
+
+| Prop                 | Type                                  | Default     | Description |
+| -------------------- | ------------------------------------- | ----------- | ----------- |
+| items (required)     | `TabBarItem[]`                        | —           |             |
+| activeKey (required) | `string`                              | —           |             |
+| onSelect (required)  | `(key: string) => void`               | —           |             |
+| variant              | `'default' \| 'pills' \| 'underline'` | `'default'` |             |
+| scrollable           | `boolean`                             | `false`     |             |
+| className            | `string`                              | —           |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:TabBar -->
+
+### FormModalScreen
+
+Modal scaffold for forms with loading states
+
+```tsx
+import { FormModalScreen } from '@thewhileloop/whileui';
+```
+
+<!-- api:FormModalScreen -->
+
+| Prop                | Type              | Default       | Description                                                                               |
+| ------------------- | ----------------- | ------------- | ----------------------------------------------------------------------------------------- |
+| className           | `string`          | —             |                                                                                           |
+| title (required)    | `string`          | —             |                                                                                           |
+| subtitle            | `string`          | —             |                                                                                           |
+| leftSlot            | `React.ReactNode` | —             |                                                                                           |
+| rightSlot           | `React.ReactNode` | —             |                                                                                           |
+| onClose             | `() => void`      | —             |                                                                                           |
+| loading             | `boolean`         | `false`       |                                                                                           |
+| saving              | `boolean`         | `false`       |                                                                                           |
+| savingText          | `string`          | `'Saving...'` |                                                                                           |
+| loadingSpinnerColor | `string`          | —             | Hex color for spinner in loading state. ActivityIndicator requires hex.                   |
+| savingSpinnerColor  | `string`          | —             | Hex color for spinner in saving banner. Defaults to platform (Android blue) when not set. |
+| scrollEnabled       | `boolean`         | `true`        |                                                                                           |
+| children (required) | `React.ReactNode` | —             |                                                                                           |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:FormModalScreen -->
+
+### ErrorState
+
+Error display with retry
+
+```tsx
+import { ErrorState } from '@thewhileloop/whileui';
+```
+
+<!-- api:ErrorState -->
+
+| Prop        | Type              | Default                  | Description |
+| ----------- | ----------------- | ------------------------ | ----------- |
+| icon        | `React.ReactNode` | —                        |             |
+| title       | `string`          | `'Something went wrong'` |             |
+| description | `string`          | —                        |             |
+| error       | `Error \| string` | —                        |             |
+| onRetry     | `() => void`      | —                        |             |
+| retryLabel  | `string`          | `'Try again'`            |             |
+| className   | `string`          | —                        |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:ErrorState -->
+
+### LoadingScreen
+
+Full-screen loading indicator
+
+```tsx
+import { LoadingScreen } from '@thewhileloop/whileui';
+```
+
+<!-- api:LoadingScreen -->
+
+| Prop         | Type                   | Default | Description                                            |
+| ------------ | ---------------------- | ------- | ------------------------------------------------------ |
+| message      | `string`               | —       |                                                        |
+| size         | `'sm' \| 'md' \| 'lg'` | `'md'`  |                                                        |
+| spinnerColor | `string`               | —       | Hex color for spinner. ActivityIndicator requires hex. |
+| className    | `string`               | —       |                                                        |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:LoadingScreen -->
+
+### MinimalSplash
+
+Minimal monochrome splash
+
+```tsx
+import { MinimalSplash } from '@thewhileloop/whileui';
+```
+
+<!-- api:MinimalSplash -->
+
+| Prop                | Type              | Default | Description                                     |
+| ------------------- | ----------------- | ------- | ----------------------------------------------- |
+| className           | `string`          | —       |                                                 |
+| appName             | `string`          | —       | App name displayed below logo                   |
+| tagline             | `string`          | —       | Tagline displayed below app name                |
+| logo                | `React.ReactNode` | —       | Logo element (icon, image, or custom component) |
+| duration            | `number`          | `800`   | Animation duration in ms                        |
+| onAnimationComplete | `() => void`      | —       | Callback when animation completes               |
+| showLoading         | `boolean`         | `false` | Whether to show loading indicator               |
+| loadingText         | `string`          | —       | Loading text                                    |
+
+Also accepts the props of `SplashScreenProps`.
+<!-- /api:MinimalSplash -->
+
+### BrandedSplash
+
+Splash with brand imagery
+
+```tsx
+import { BrandedSplash } from '@thewhileloop/whileui';
+```
+
+<!-- api:BrandedSplash -->
+
+| Prop                | Type              | Default | Description                                     |
+| ------------------- | ----------------- | ------- | ----------------------------------------------- |
+| className           | `string`          | —       |                                                 |
+| appName             | `string`          | —       | App name displayed below logo                   |
+| tagline             | `string`          | —       | Tagline displayed below app name                |
+| logo                | `React.ReactNode` | —       | Logo element (icon, image, or custom component) |
+| duration            | `number`          | `800`   | Animation duration in ms                        |
+| onAnimationComplete | `() => void`      | —       | Callback when animation completes               |
+| loadingText         | `string`          | —       | Loading text                                    |
+
+Also accepts the props of `SplashScreenProps`.
+<!-- /api:BrandedSplash -->
+
+### ChatMessageBubble
+
+One message in a `Chat`, rendered on its own when a screen composes the conversation itself.
+
+```tsx
+import { ChatMessageBubble } from '@thewhileloop/whileui';
+```
+
+<!-- api:ChatMessageBubble -->
+
+| Prop               | Type          | Default | Description                                                     |
+| ------------------ | ------------- | ------- | --------------------------------------------------------------- |
+| message (required) | `ChatMessage` | —       | The message to render; its `role` decides alignment and colour. |
+| contentClassName   | `string`      | —       | Classes for the bubble's content wrapper.                       |
+
+<!-- /api:ChatMessageBubble -->
+
+### ChatSuggestions
+
+Suggestion chips when empty
+
+```tsx
+import { ChatSuggestions } from '@thewhileloop/whileui';
+```
+
+<!-- api:ChatSuggestions -->
+
+| Prop                   | Type                     | Default             | Description |
+| ---------------------- | ------------------------ | ------------------- | ----------- |
+| suggestions (required) | `string[]`               | `EMPTY_SUGGESTIONS` |             |
+| onSelect (required)    | `(text: string) => void` | —                   |             |
+| className              | `string`                 | —                   |             |
+
+<!-- /api:ChatSuggestions -->
+
+### ListItem
+
+Title/subtitle row
+
+```tsx
+import { ListItem } from '@thewhileloop/whileui';
+```
+
+<!-- api:ListItem -->
+
+| Prop             | Type              | Default | Description                                     |
+| ---------------- | ----------------- | ------- | ----------------------------------------------- |
+| icon             | `React.ReactNode` | —       |                                                 |
+| title (required) | `string`          | —       |                                                 |
+| subtitle         | `string`          | —       |                                                 |
+| description      | `string`          | —       |                                                 |
+| rightIcon        | `React.ReactNode` | —       |                                                 |
+| rightText        | `string`          | —       |                                                 |
+| action           | `React.ReactNode` | —       |                                                 |
+| showBorder       | `boolean`         | `true`  |                                                 |
+| compact          | `boolean`         | `false` |                                                 |
+| loading          | `boolean`         | `false` | Show a skeleton placeholder instead of content. |
+| className        | `string`          | —       |                                                 |
+
+Also accepts the props of `PressableProps`.
+<!-- /api:ListItem -->
+
+### NotificationItem
+
+Notification row with metadata
+
+```tsx
+import { NotificationItem } from '@thewhileloop/whileui';
+```
+
+<!-- api:NotificationItem -->
+
+| Prop               | Type              | Default | Description                                     |
+| ------------------ | ----------------- | ------- | ----------------------------------------------- |
+| icon               | `React.ReactNode` | —       |                                                 |
+| avatarUrl          | `string`          | —       |                                                 |
+| avatarFallback     | `string`          | —       |                                                 |
+| title (required)   | `string`          | —       |                                                 |
+| message (required) | `string`          | —       |                                                 |
+| time (required)    | `string`          | —       |                                                 |
+| read               | `boolean`         | `false` |                                                 |
+| showDot            | `boolean`         | `true`  |                                                 |
+| loading            | `boolean`         | `false` | Show a skeleton placeholder instead of content. |
+| className          | `string`          | —       |                                                 |
+
+Also accepts the props of `PressableProps`.
+<!-- /api:NotificationItem -->
+
+### TimelineFeed
+
+Vertical feed with connecting lines
+
+```tsx
+import { TimelineFeed } from '@thewhileloop/whileui';
+```
+
+<!-- api:TimelineFeed -->
+
+| Prop             | Type             | Default | Description |
+| ---------------- | ---------------- | ------- | ----------- |
+| className        | `string`         | —       |             |
+| items (required) | `TimelineItem[]` | —       |             |
+| showConnector    | `boolean`        | `true`  |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:TimelineFeed -->
+
+### CheckoutSummary
+
+Cart summary with line items
+
+```tsx
+import { CheckoutSummary } from '@thewhileloop/whileui';
+```
+
+<!-- api:CheckoutSummary -->
+
+| Prop                | Type                 | Default      | Description |
+| ------------------- | -------------------- | ------------ | ----------- |
+| items (required)    | `CheckoutLineItem[]` | —            |             |
+| subtotal (required) | `string`             | —            |             |
+| shipping            | `string`             | —            |             |
+| tax                 | `string`             | —            |             |
+| discount            | `string`             | —            |             |
+| total (required)    | `string`             | —            |             |
+| buttonLabel         | `string`             | `'Checkout'` |             |
+| onCheckout          | `() => void`         | —            |             |
+| loading             | `boolean`            | `false`      |             |
+| className           | `string`             | —            |             |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:CheckoutSummary -->
+
+### MetricCard
+
+Stats/progress card for dashboards
+
+```tsx
+import { MetricCard } from '@thewhileloop/whileui';
+```
+
+<!-- api:MetricCard -->
+
+| Prop             | Type                                 | Default     | Description                                     |
+| ---------------- | ------------------------------------ | ----------- | ----------------------------------------------- |
+| className        | `string`                             | —           |                                                 |
+| label (required) | `string`                             | —           |                                                 |
+| value (required) | `string \| number`                   | —           |                                                 |
+| subtitle         | `string`                             | —           |                                                 |
+| progress         | `number`                             | —           |                                                 |
+| segments         | `{ value: number; color: string }[]` | —           |                                                 |
+| icon             | `React.ReactNode`                    | —           |                                                 |
+| loading          | `boolean`                            | `false`     | Show a skeleton placeholder instead of content. |
+| variant          | `'default' \| 'outlined'`            | `'default'` |                                                 |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:MetricCard -->
 
 ## Roadmap
 

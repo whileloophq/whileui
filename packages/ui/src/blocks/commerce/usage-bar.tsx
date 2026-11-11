@@ -7,9 +7,13 @@ import { typographyStyle } from '../../lib/recipes';
 export type UsageBarVariant = 'default' | 'warning' | 'exceeded';
 
 export interface UsageBarProps extends ViewProps {
+  /** Usage label. */
   label: string;
+  /** Used amount. */
   used: number;
+  /** Quota limit. */
   limit: number;
+  /** Optional explicit visual state. */
   variant?: UsageBarVariant;
   className?: string;
 }

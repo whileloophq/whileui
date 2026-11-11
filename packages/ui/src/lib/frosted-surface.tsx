@@ -10,8 +10,11 @@ export type FrostedTintToken = 'surfaceElevated' | 'surfaceTranslucent' | 'card'
 export type FrostedBlurPreset = 'subtle' | 'medium' | 'strong';
 
 export interface FrostedSurfaceProps {
+  /** Enable the optional frosted overlay. */
   frosted?: boolean;
+  /** Override blur amount directly. */
   blurIntensity?: number;
+  /** Tint token used for frosted mode. */
   blurTintToken?: FrostedTintToken;
 }
 

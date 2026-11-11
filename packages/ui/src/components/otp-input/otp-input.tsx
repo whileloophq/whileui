@@ -30,14 +30,22 @@ const otpCellVariants = tv({
 });
 
 export interface OTPInputProps extends Omit<ViewProps, 'children'> {
+  /** Number of digit cells. */
   length?: number;
+  /** Controlled value. */
   value?: string;
+  /** Called on each digit change. */
   onValueChange?: (value: string) => void;
+  /** Called when all digits are filled. */
   onComplete?: (code: string) => void;
+  /** Error variant triggers shake. */
   variant?: 'default' | 'error';
+  /** Cell size. */
   size?: 'default' | 'compact';
+  /** Mask digits with dots. */
   secure?: boolean;
   disabled?: boolean;
+  /** Focus first cell on mount. */
   autoFocus?: boolean;
   className?: string;
 }

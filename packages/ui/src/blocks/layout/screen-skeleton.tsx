@@ -9,10 +9,15 @@ import {
 import { cn } from '../../lib/cn';
 
 export interface ScreenSkeletonProps extends Omit<ViewProps, 'children'> {
+  /** Skeleton content preset. */
   variant?: PageSkeletonVariant;
+  /** Rows/items for list/settings variants. */
   count?: number;
+  /** Inner content padding. */
   padding?: PageSkeletonPadding;
+  /** Real header slot. */
   header?: ReactNode;
+  /** Placeholder header. */
   headerPlaceholder?: boolean | PageSkeletonHeaderPlaceholder;
   className?: string;
 }
