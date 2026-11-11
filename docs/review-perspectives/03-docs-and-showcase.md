@@ -20,7 +20,7 @@ repo's own rule.
 ## Key Questions
 
 - New or changed component/block: README table row? API section if the props are
-  notable? Demo in `apps/showcase`?
+  notable? Demo in `apps/showcase/catalog`?
 - Removed or renamed: gone from README, the showcase, and `index.ts`?
 - New export path: in `package.json` `exports` **and** documented?
 - Does any doc still name a file, command or directory this diff deletes?
@@ -59,7 +59,7 @@ repo's own rule.
 
 - README: Components table, Blocks table, and per-component API sections further
   down.
-- `apps/showcase/App.tsx` is the executable component catalog for native and React
+- `apps/showcase/catalog/App.tsx` is the executable component catalog for native and React
   Native Web.
 - `ROADMAP.md` is direction, `PLAN.md` is the foundation plan and phases, `AGENTS.md`
   is day-to-day rules. A diff that outdates one of them must change it.

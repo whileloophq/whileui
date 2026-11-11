@@ -6,7 +6,7 @@ const path = require('path');
 const config = getDefaultConfig(__dirname);
 
 // Monorepo support — watch the root so changes in packages/ui are detected
-const monorepoRoot = path.resolve(__dirname, '../..');
+const monorepoRoot = path.resolve(__dirname, '../../..');
 config.watchFolders = [monorepoRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(__dirname, 'node_modules'),

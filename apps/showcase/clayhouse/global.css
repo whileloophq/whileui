@@ -1,0 +1,305 @@
+@import 'tailwindcss';
+@import 'uniwind';
+
+@source '../../../packages/ui/src';
+
+@theme {
+  --font-sans: Geist_400Regular;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --tracking-widest: 0.12em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Clayhouse — a made-up ceramics studio app built on WhileUI.
+   A calm off-white ground (close to Pantone's 2026 Cloud Dancer) with
+   cool charcoal ink by day; charcoal and a marigold kiln-ember by night.
+   One warm accent, everything else tonal, so the photography carries colour.
+   ═══════════════════════════════════════════════════════════════ */
+
+@layer theme {
+  :root {
+    @variant light {
+      --color-background: oklch(0.948 0.006 85);
+      --color-foreground: oklch(0.2 0.012 260);
+      --color-card: oklch(0.978 0.004 85);
+      --color-card-foreground: oklch(0.2 0.012 260);
+      --color-popover: oklch(0.985 0.004 85);
+      --color-popover-foreground: oklch(0.2 0.012 260);
+      --color-primary: oklch(0.56 0.15 50);
+      --color-primary-foreground: oklch(0.985 0.004 85);
+      --color-accent: oklch(0.55 0.07 170);
+      --color-accent-foreground: oklch(0.985 0.004 85);
+      --color-destructive: oklch(0.52 0.18 25);
+      --color-destructive-foreground: oklch(0.985 0.004 85);
+      --color-success: oklch(0.55 0.1 155);
+      --color-success-foreground: oklch(0.985 0.004 85);
+      --color-warning: oklch(0.72 0.15 75);
+      --color-warning-foreground: oklch(0.2 0.012 260);
+      --color-info: oklch(0.52 0.09 245);
+      --color-info-foreground: oklch(0.985 0.004 85);
+      --color-secondary: oklch(0.91 0.008 85);
+      --color-secondary-foreground: oklch(0.3 0.012 260);
+      --color-muted: oklch(0.92 0.007 85);
+      --color-muted-foreground: oklch(0.47 0.012 260);
+      --color-border: oklch(0.2 0.012 260 / 0.13);
+      --color-input: oklch(0.92 0.007 85);
+      --color-ring: oklch(0.56 0.15 50);
+      --color-overlay: oklch(0.2 0.012 260 / 0.35);
+      --color-overlay-strong: oklch(0.2 0.012 260 / 0.55);
+      --color-surface-elevated: oklch(0.985 0.004 85);
+      --color-surface-border: oklch(0.2 0.012 260 / 0.12000000000000001);
+      --color-surface-highlight: oklch(0.56 0.15 50 / 0.12);
+      --color-surface-translucent: oklch(0.978 0.004 85 / 0.85);
+      --color-surface-translucent-border: oklch(0.2 0.012 260 / 0.1);
+      --color-shadow: oklch(0.2 0.012 260);
+      --color-state-hover: oklch(0.2 0.012 260 / 0.05);
+      --color-state-pressed: oklch(0.2 0.012 260 / 0.1);
+      --color-state-disabled: oklch(0.2 0.012 260 / 0.16);
+      --color-primary-active: oklch(0.5 0.14 50);
+      --color-secondary-active: oklch(0.87 0.01 85);
+      --color-destructive-active: oklch(0.47 0.17 25);
+      --color-primary-soft: oklch(0.56 0.15 50 / 0.14);
+      --color-primary-soft-subtle: oklch(0.56 0.15 50 / 0.07);
+      --color-secondary-soft: oklch(0.55 0.07 170 / 0.12);
+      --color-muted-soft: oklch(0.92 0.007 85 / 0.5);
+      --color-destructive-soft: oklch(0.52 0.18 25 / 0.14);
+      --color-destructive-soft-border: oklch(0.52 0.18 25 / 0.34);
+      --color-success-soft: oklch(0.55 0.1 155 / 0.14);
+      --color-success-soft-border: oklch(0.55 0.1 155 / 0.34);
+      --color-warning-soft: oklch(0.72 0.15 75 / 0.14);
+      --color-warning-soft-border: oklch(0.72 0.15 75 / 0.34);
+      --color-info-soft: oklch(0.52 0.09 245 / 0.14);
+      --color-info-soft-border: oklch(0.52 0.09 245 / 0.34);
+
+      --app-color-background: #f0ede9;
+      --app-color-foreground: #13161c;
+      --app-color-card: #f9f8f5;
+      --app-color-card-foreground: #13161c;
+      --app-color-popover: #fbfaf7;
+      --app-color-popover-foreground: #13161c;
+      --app-color-primary: #b65400;
+      --app-color-primary-foreground: #fbfaf7;
+      --app-color-accent: #447f6b;
+      --app-color-accent-foreground: #fbfaf7;
+      --app-color-destructive: #ba2b2e;
+      --app-color-destructive-foreground: #fbfaf7;
+      --app-color-success: #3a8357;
+      --app-color-success-foreground: #fbfaf7;
+      --app-color-warning: #da950b;
+      --app-color-warning-foreground: #13161c;
+      --app-color-info: #386e99;
+      --app-color-info-foreground: #fbfaf7;
+      --app-color-secondary: #e4e1db;
+      --app-color-secondary-foreground: #2a2e34;
+      --app-color-muted: #e7e4df;
+      --app-color-muted-foreground: #575b62;
+      --app-color-border: rgba(19, 22, 28, 0.13);
+      --app-color-input: #e7e4df;
+      --app-color-ring: #b65400;
+      --app-color-overlay: rgba(19, 22, 28, 0.35);
+      --app-color-overlay-strong: rgba(19, 22, 28, 0.55);
+      --app-color-surface-elevated: #fbfaf7;
+      --app-color-surface-border: rgba(19, 22, 28, 0.12);
+      --app-color-surface-highlight: rgba(182, 84, 0, 0.12);
+      --app-color-surface-translucent: rgba(249, 248, 245, 0.85);
+      --app-color-surface-translucent-border: rgba(19, 22, 28, 0.1);
+      --app-color-shadow: #13161c;
+      --app-color-state-hover: rgba(19, 22, 28, 0.05);
+      --app-color-state-pressed: rgba(19, 22, 28, 0.1);
+      --app-color-state-disabled: rgba(19, 22, 28, 0.16);
+      --app-color-primary-active: #9c4700;
+      --app-color-secondary-active: #d7d4cd;
+      --app-color-destructive-active: #a51e24;
+      --app-color-primary-soft: rgba(182, 84, 0, 0.14);
+      --app-color-primary-soft-subtle: rgba(182, 84, 0, 0.07);
+      --app-color-secondary-soft: rgba(68, 127, 107, 0.12);
+      --app-color-muted-soft: rgba(231, 228, 223, 0.5);
+      --app-color-destructive-soft: rgba(186, 43, 46, 0.14);
+      --app-color-destructive-soft-border: rgba(186, 43, 46, 0.34);
+      --app-color-success-soft: rgba(58, 131, 87, 0.14);
+      --app-color-success-soft-border: rgba(58, 131, 87, 0.34);
+      --app-color-warning-soft: rgba(218, 149, 11, 0.14);
+      --app-color-warning-soft-border: rgba(218, 149, 11, 0.34);
+      --app-color-info-soft: rgba(56, 110, 153, 0.14);
+      --app-color-info-soft-border: rgba(56, 110, 153, 0.34);
+
+      --ui-radius-sm: 4;
+      --ui-radius-md: 8;
+      --ui-radius-lg: 12;
+      --ui-radius-xl: 16;
+      --ui-control-height-sm: 36;
+      --ui-control-height-default: 46;
+      --ui-control-height-lg: 54;
+      --ui-control-padding-x-default: 18;
+      --ui-badge-radius: 999;
+      --ui-shadow-opacity-sm: 0.06;
+      --ui-shadow-opacity-md: 0.08;
+      --ui-shadow-opacity-lg: 0.12;
+      --ui-shadow-radius-sm: 0;
+      --ui-shadow-radius-md: 3;
+      --ui-shadow-radius-lg: 16;
+      --ui-shadow-offset-y-sm: 1;
+      --ui-shadow-offset-y-md: 2;
+      --ui-shadow-offset-y-lg: 8;
+      --ui-blur-intensity-subtle: 12;
+      --ui-blur-intensity-medium: 18;
+      --ui-blur-intensity-strong: 26;
+      --ui-blur-saturation-pct: 100;
+      --ui-frosted-backdrop-blur-intensity: 16;
+      --ui-letter-spacing-title: -0.2;
+      --ui-letter-spacing-headline: -0.6;
+    }
+
+    @variant dark {
+      --color-background: oklch(0.165 0.006 260);
+      --color-foreground: oklch(0.945 0.006 85);
+      --color-card: oklch(0.205 0.007 260);
+      --color-card-foreground: oklch(0.945 0.006 85);
+      --color-popover: oklch(0.235 0.008 260);
+      --color-popover-foreground: oklch(0.945 0.006 85);
+      --color-primary: oklch(0.78 0.145 70);
+      --color-primary-foreground: oklch(0.2 0.03 60);
+      --color-accent: oklch(0.78 0.075 170);
+      --color-accent-foreground: oklch(0.2 0.03 60);
+      --color-destructive: oklch(0.64 0.17 25);
+      --color-destructive-foreground: oklch(0.985 0.004 85);
+      --color-success: oklch(0.74 0.11 155);
+      --color-success-foreground: oklch(0.2 0.03 60);
+      --color-warning: oklch(0.82 0.13 80);
+      --color-warning-foreground: oklch(0.2 0.03 60);
+      --color-info: oklch(0.74 0.09 245);
+      --color-info-foreground: oklch(0.2 0.03 60);
+      --color-secondary: oklch(0.26 0.008 260);
+      --color-secondary-foreground: oklch(0.86 0.008 85);
+      --color-muted: oklch(0.245 0.007 260);
+      --color-muted-foreground: oklch(0.7 0.01 260);
+      --color-border: oklch(0.945 0.006 85 / 0.12);
+      --color-input: oklch(0.245 0.007 260);
+      --color-ring: oklch(0.78 0.145 70);
+      --color-overlay: oklch(0 0 0 / 0.6);
+      --color-overlay-strong: oklch(0 0 0 / 0.8);
+      --color-surface-elevated: oklch(0.235 0.008 260);
+      --color-surface-border: oklch(0.945 0.006 85 / 0.11);
+      --color-surface-highlight: oklch(0.78 0.145 70 / 0.12);
+      --color-surface-translucent: oklch(0.205 0.007 260 / 0.85);
+      --color-surface-translucent-border: oklch(0.945 0.006 85 / 0.1);
+      --color-shadow: oklch(0 0 0);
+      --color-state-hover: oklch(0.945 0.006 85 / 0.06);
+      --color-state-pressed: oklch(0.945 0.006 85 / 0.12);
+      --color-state-disabled: oklch(0.945 0.006 85 / 0.12);
+      --color-primary-active: oklch(0.83 0.13 72);
+      --color-secondary-active: oklch(0.3 0.009 260);
+      --color-destructive-active: oklch(0.58 0.16 25);
+      --color-primary-soft: oklch(0.78 0.145 70 / 0.14);
+      --color-primary-soft-subtle: oklch(0.78 0.145 70 / 0.07);
+      --color-secondary-soft: oklch(0.78 0.075 170 / 0.12);
+      --color-muted-soft: oklch(0.245 0.007 260 / 0.5);
+      --color-destructive-soft: oklch(0.64 0.17 25 / 0.14);
+      --color-destructive-soft-border: oklch(0.64 0.17 25 / 0.34);
+      --color-success-soft: oklch(0.74 0.11 155 / 0.14);
+      --color-success-soft-border: oklch(0.74 0.11 155 / 0.34);
+      --color-warning-soft: oklch(0.82 0.13 80 / 0.14);
+      --color-warning-soft-border: oklch(0.82 0.13 80 / 0.34);
+      --color-info-soft: oklch(0.74 0.09 245 / 0.14);
+      --color-info-soft-border: oklch(0.74 0.09 245 / 0.34);
+
+      --app-color-background: #0d0e11;
+      --app-color-foreground: #efece8;
+      --app-color-card: #15171a;
+      --app-color-card-foreground: #efece8;
+      --app-color-popover: #1c1e22;
+      --app-color-popover-foreground: #efece8;
+      --app-color-primary: #f2a53f;
+      --app-color-primary-foreground: #201308;
+      --app-color-accent: #86c7b0;
+      --app-color-accent-foreground: #201308;
+      --app-color-destructive: #e15955;
+      --app-color-destructive-foreground: #fbfaf7;
+      --app-color-success: #6ebf8c;
+      --app-color-success-foreground: #201308;
+      --app-color-warning: #f0ba59;
+      --app-color-warning-foreground: #201308;
+      --app-color-info: #79b1e0;
+      --app-color-info-foreground: #201308;
+      --app-color-secondary: #222428;
+      --app-color-secondary-foreground: #d3d1cb;
+      --app-color-muted: #1e2124;
+      --app-color-muted-foreground: #9b9fa5;
+      --app-color-border: rgba(239, 236, 232, 0.12);
+      --app-color-input: #1e2124;
+      --app-color-ring: #f2a53f;
+      --app-color-overlay: rgba(0, 0, 0, 0.6);
+      --app-color-overlay-strong: rgba(0, 0, 0, 0.8);
+      --app-color-surface-elevated: #1c1e22;
+      --app-color-surface-border: rgba(239, 236, 232, 0.11);
+      --app-color-surface-highlight: rgba(242, 165, 63, 0.12);
+      --app-color-surface-translucent: rgba(21, 23, 26, 0.85);
+      --app-color-surface-translucent-border: rgba(239, 236, 232, 0.1);
+      --app-color-shadow: #000000;
+      --app-color-state-hover: rgba(239, 236, 232, 0.06);
+      --app-color-state-pressed: rgba(239, 236, 232, 0.12);
+      --app-color-state-disabled: rgba(239, 236, 232, 0.12);
+      --app-color-primary-active: #fbb961;
+      --app-color-secondary-active: #2b2e32;
+      --app-color-destructive-active: #c74b47;
+      --app-color-primary-soft: rgba(242, 165, 63, 0.14);
+      --app-color-primary-soft-subtle: rgba(242, 165, 63, 0.07);
+      --app-color-secondary-soft: rgba(134, 199, 176, 0.12);
+      --app-color-muted-soft: rgba(30, 33, 36, 0.5);
+      --app-color-destructive-soft: rgba(225, 89, 85, 0.14);
+      --app-color-destructive-soft-border: rgba(225, 89, 85, 0.34);
+      --app-color-success-soft: rgba(110, 191, 140, 0.14);
+      --app-color-success-soft-border: rgba(110, 191, 140, 0.34);
+      --app-color-warning-soft: rgba(240, 186, 89, 0.14);
+      --app-color-warning-soft-border: rgba(240, 186, 89, 0.34);
+      --app-color-info-soft: rgba(121, 177, 224, 0.14);
+      --app-color-info-soft-border: rgba(121, 177, 224, 0.34);
+
+      --ui-radius-sm: 4;
+      --ui-radius-md: 8;
+      --ui-radius-lg: 12;
+      --ui-radius-xl: 16;
+      --ui-control-height-sm: 36;
+      --ui-control-height-default: 46;
+      --ui-control-height-lg: 54;
+      --ui-control-padding-x-default: 18;
+      --ui-badge-radius: 999;
+      --ui-shadow-opacity-sm: 0.3;
+      --ui-shadow-opacity-md: 0.4;
+      --ui-shadow-opacity-lg: 0.5;
+      --ui-shadow-radius-sm: 0;
+      --ui-shadow-radius-md: 4;
+      --ui-shadow-radius-lg: 20;
+      --ui-shadow-offset-y-sm: 1;
+      --ui-shadow-offset-y-md: 3;
+      --ui-shadow-offset-y-lg: 10;
+      --ui-blur-intensity-subtle: 12;
+      --ui-blur-intensity-medium: 18;
+      --ui-blur-intensity-strong: 26;
+      --ui-blur-saturation-pct: 100;
+      --ui-frosted-backdrop-blur-intensity: 16;
+      --ui-letter-spacing-title: -0.2;
+      --ui-letter-spacing-headline: -0.6;
+    }
+  }
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    overflow: hidden;
+    background: var(--color-background);
+  }
+  #root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+}

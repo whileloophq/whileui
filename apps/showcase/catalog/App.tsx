@@ -548,6 +548,7 @@ function CategoryPill({
       )}
     >
       <Feather
+        aria-hidden
         name={category.icon}
         size={14}
         color={active ? colors.primaryForeground : colors.muted}

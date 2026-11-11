@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import 'uniwind';
 
-@source '../../packages/ui/src';
+@source '../../../packages/ui/src';
 
 /* ═══════════════════════════════════════════════════════════════
    WhileUI Showcase Theme — "Cosmic Aura Redesign"

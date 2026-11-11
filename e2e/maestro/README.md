@@ -41,7 +41,7 @@ Needs a built app on a running simulator or emulator — these run against artif
 Metro.
 
 ```bash
-cd apps/showcase && bunx expo run:android   # or run:ios
+cd apps/showcase/catalog && bunx expo run:android   # or run:ios
 maestro test e2e/maestro
 ```
 

@@ -605,7 +605,7 @@ and wide widths; manual VoiceOver/TalkBack checklist recorded in `docs/stability
 
 **Notes/evidence:** Keyboard slice started 2026-10-18. The Layout tab's 144px Smart Input
 clip cannot prove avoidance, so the showcase opens a full-screen `KeyboardAwareScreen` +
-`DockedInput` (`apps/showcase/keyboard-dock-screen.tsx`). `e2e/maestro/keyboard-dock.yaml`
+`DockedInput` (`apps/showcase/catalog/keyboard-dock-screen.tsx`). `e2e/maestro/keyboard-dock.yaml`
 types into that field with the keyboard open and asserts the field, the send button, and
 the submitted word. `e2e/maestro/otp.yaml` rejects `000000`, accepts `123456`, pastes
 `1234567` (truncated), and accepts PIN `0000`. The result text no longer clears on a

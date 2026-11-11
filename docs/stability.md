@@ -495,7 +495,7 @@ phases are measured against.
 
 Reproduce with `bun run build`, `npm pack` in `packages/ui`, and
 `bunx expo export --platform web` / `--platform ios --platform android` in
-`apps/showcase`.
+`apps/showcase/catalog`.
 
 **Not yet recorded:** React Doctor findings and release-build interaction traces. Both
 need tooling and a device that Phase 1 sets up; they are Phase 1 exit items, not
@@ -508,5 +508,5 @@ Phase 0 blockers.
 - **Shipped** = at least one export imported from `@thewhileloop/whileui` in a
   production application's source. The applications themselves are listed in
   `CONSUMERS.md`, which is local.
-- **Demo** = at least one export referenced in `apps/showcase`.
+- **Demo** = at least one export referenced in `apps/showcase/catalog`.
 - **Tests** = files matching `*.test.*` in `packages/ui`. Six families have one.

@@ -57,7 +57,7 @@ public WhileUI API stays shared even when a narrow web implementation is justifi
 
 ## Codebase-Specific Patterns
 
-- `apps/showcase` is exported before Playwright runs; tests do not rely on the dev
+- `apps/showcase/catalog` is exported before Playwright runs; tests do not rely on the dev
   server.
 - `e2e/keyboard.spec.ts` owns keyboard order and activation;
   `e2e/responsive.spec.ts` owns both ends of the width range.

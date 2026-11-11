@@ -8,7 +8,7 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/showcase/*"
   ],
   "scripts": {
     "dev": "turbo dev",
@@ -20,7 +20,7 @@
     "test": "turbo test",
     "clean": "turbo clean && rm -rf node_modules",
     "test:web": "turbo build && playwright test -c e2e/playwright.config.ts",
-    "bundle:native": "bun run --cwd apps/showcase build:native",
+    "bundle:native": "bun run --cwd apps/showcase/catalog build:native",
     "verify": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build && bun run verify:package && bun run bundle:native && bun run test:web",
     "verify:package": "node scripts/verify-package.mjs",
     "changeset": "changeset",

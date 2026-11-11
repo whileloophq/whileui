@@ -73,5 +73,5 @@ test-results/
 playwright-report/
 
 # Generated native projects (managed workflow — `expo prebuild` recreates them)
-apps/*/ios/
-apps/*/android/
+apps/**/ios/
+apps/**/android/

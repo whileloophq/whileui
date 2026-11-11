@@ -34,7 +34,7 @@ export default defineConfig({
   webServer: {
     // Export first so the run cannot silently pass against a stale `dist/`.
     command: 'bun run build:web && bun run serve:web',
-    cwd: '../apps/showcase',
+    cwd: '../apps/showcase/catalog',
     url: `http://localhost:${PORT}`,
     // Never reuse. The command above exports first precisely so a run cannot pass
     // against a stale bundle — reusing a server someone left running defeats that, and

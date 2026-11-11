@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Clayhouse",
+    "slug": "clayhouse",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.whileloop.clayhouse"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#13161c"
+      },
+      "package": "dev.whileloop.clayhouse",
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-image",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#f0ede9",
+          "dark": {
+            "backgroundColor": "#0d0e11"
+          }
+        }
+      ],
+      "expo-status-bar"
+    ]
+  }
+}
