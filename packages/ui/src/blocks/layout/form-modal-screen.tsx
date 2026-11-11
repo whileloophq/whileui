@@ -1,26 +1,30 @@
 import React from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type ViewProps,
-} from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View, type ViewProps } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { Button, ButtonText } from '../../components/button';
 import { Text } from '../../components/text';
 import { Spinner } from '../../components/spinner';
 import { cn } from '../../lib/cn';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 
 export interface FormModalScreenProps extends Omit<ViewProps, 'className'> {
   className?: string;
   title: string;
   subtitle?: string;
+  /** Replaces the Cancel button. */
   leftSlot?: React.ReactNode;
+  /** Replaces the Save button. */
   rightSlot?: React.ReactNode;
+  /** Draws a Cancel text button that calls this. */
   onClose?: () => void;
+  /** @default 'Cancel' */
+  closeLabel?: string;
+  /** Draws a primary Save button that calls this. */
+  onSave?: () => void;
+  /** @default 'Save' */
+  saveLabel?: string;
+  /** Disable Save, for a form that is not ready to submit. */
+  saveDisabled?: boolean;
   loading?: boolean;
   saving?: boolean;
   savingText?: string;
@@ -39,6 +43,10 @@ function FormModalScreen({
   leftSlot,
   rightSlot,
   onClose,
+  closeLabel = 'Cancel',
+  onSave,
+  saveLabel = 'Save',
+  saveDisabled = false,
   loading = false,
   saving = false,
   savingText = 'Saving...',
@@ -49,7 +57,6 @@ function FormModalScreen({
   ...props
 }: FormModalScreenProps) {
   const { height: screenHeight } = useWindowDimensions();
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
 
   // `className` is silently dropped on react-native-safe-area-context's `SafeAreaView`:
@@ -64,52 +71,52 @@ function FormModalScreen({
   ) : (
     <SafeAreaView style={styles.fill} edges={['top']}>
       <View style={styles.fill} className={cn('bg-background', className)} {...props}>
-        <View className="flex-row items-center px-4 py-3 border-b border-border">
-          <View className="w-12">
-            {leftSlot ? (
-              leftSlot
-            ) : onClose ? (
-              <Pressable
-                onPress={onClose}
-                disabled={saving}
-                className="p-2 -m-2 items-center justify-center"
-                style={(state) => {
-                  const interactiveStyle = withInteractivePressableStyle(undefined, interaction, {
-                    disabled: saving,
-                    pressedVariant: 'default',
-                  });
-                  const resolved =
-                    typeof interactiveStyle === 'function'
-                      ? interactiveStyle(state)
-                      : interactiveStyle;
-                  return [
-                    {
-                      minWidth: visual.touchTargetMinSize,
-                      minHeight: visual.touchTargetMinSize,
-                    },
-                    resolved,
-                  ];
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
-              >
-                <Text className="text-foreground text-xl font-medium">×</Text>
-              </Pressable>
-            ) : null}
+        {/* Each side takes the width its button needs and never shrinks; the title takes
+            the rest and truncates. A fixed 48px slot let a Save button spill into the
+            title, and equal flexible sides let a long title push over both buttons. */}
+        <View className="flex-row items-center gap-2 px-4 py-3 border-b border-border">
+          <View className="shrink-0 items-start">
+            {leftSlot ??
+              (onClose ? (
+                <Button variant="ghost" size="sm" onPress={onClose} disabled={saving}>
+                  <ButtonText>{closeLabel}</ButtonText>
+                </Button>
+              ) : null)}
           </View>
 
-          <View className="flex-1 items-center">
-            <Text variant="title" className="text-center">
+          <View className="min-w-0 flex-1 items-center">
+            <Text
+              variant="title"
+              accessibilityRole="header"
+              className="text-center"
+              numberOfLines={1}
+            >
               {title}
             </Text>
             {subtitle && (
-              <Text variant="caption" className="text-center text-muted-foreground">
+              <Text
+                variant="caption"
+                className="text-center text-muted-foreground"
+                numberOfLines={1}
+              >
                 {subtitle}
               </Text>
             )}
           </View>
 
-          <View className="w-12 items-end">{rightSlot}</View>
+          <View className="shrink-0 items-end">
+            {rightSlot ??
+              (onSave ? (
+                <Button
+                  size="sm"
+                  onPress={onSave}
+                  disabled={saveDisabled || saving}
+                  loading={saving}
+                >
+                  <ButtonText>{saveLabel}</ButtonText>
+                </Button>
+              ) : null)}
+          </View>
         </View>
 
         {saving && (

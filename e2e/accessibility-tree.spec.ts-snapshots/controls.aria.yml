@@ -54,7 +54,9 @@
   - radio "CAD"
   - radio "CHF"
   - radio "SGD"
-- text: /Data Row Reusable left\/center\/right rows with narrow-width safety AL Alex Lee Lead Product Designer Owner  Average Session Duration This label truncates safely on narrow screens\. [\d,.]+[bkmBKM]+ \d+[hmsp]+ OTP Input Verification code entry with auto-focus and paste/
+- text: Data Row Reusable left/center/right rows with narrow-width safety
+- button "AL Alex Lee Lead Product Designer Owner"
+- text: / Average Session Duration This label truncates safely on narrow screens\. [\d,.]+[bkmBKM]+ \d+[hmsp]+ OTP Input Verification code entry with auto-focus and paste/
 - textbox "Enter 6-digit verification code"
 - text: /Enter code \(try \d+\) Secure \(4-digit PIN — try \d+\)/
 - textbox "Enter 4-digit verification code"

@@ -1,13 +1,64 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { ListItem, NotificationItem, TimelineFeed, useIconColors } from '@thewhileloop/whileui';
+import {
+  DataRow,
+  DataRowCenter,
+  DataRowLabel,
+  DataRowRight,
+  DataRowValue,
+  ListItem,
+  NotificationItem,
+  Pagination,
+  SectionedList,
+  TimelineFeed,
+  useIconColors,
+} from '@thewhileloop/whileui';
 import { Section } from '../ui';
+
+const EXPENSES = [
+  { id: '1', month: 'November 2026', name: 'Ramen', amount: '¥2,400' },
+  { id: '2', month: 'November 2026', name: 'Train to Nara', amount: '¥1,560' },
+  { id: '3', month: 'October 2026', name: 'Hotel deposit', amount: '¥18,000' },
+  { id: '4', month: 'October 2026', name: 'Airport bus', amount: '¥3,200' },
+];
 
 export function ListsBlocksTab() {
   const colors = useIconColors();
+  const [page, setPage] = useState(1);
 
   return (
     <View className="gap-6">
+      <Section
+        title="Sectioned List"
+        subtitle="Headings where the section changes; none when there is one section"
+      >
+        <View className="overflow-hidden rounded-xl border border-border">
+          <SectionedList
+            items={EXPENSES}
+            sectionOf={(expense) => expense.month}
+            keyOf={(expense) => expense.id}
+            renderItem={(expense) => (
+              <DataRow className="px-3" onPress={() => {}}>
+                <DataRowCenter>
+                  <DataRowLabel>{expense.name}</DataRowLabel>
+                </DataRowCenter>
+                <DataRowRight>
+                  <DataRowValue>{expense.amount}</DataRowValue>
+                </DataRowRight>
+              </DataRow>
+            )}
+          />
+          <Pagination
+            page={page}
+            totalPages={4}
+            totalItems={83}
+            onPageChange={setPage}
+            className="border-t border-border px-3 py-2"
+          />
+        </View>
+      </Section>
+
       <Section title="List Items" subtitle="Standard list rows">
         <View className="rounded-xl overflow-hidden border border-border">
           <ListItem

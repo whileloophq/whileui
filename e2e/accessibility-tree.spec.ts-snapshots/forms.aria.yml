@@ -25,6 +25,10 @@
 - text: USD Used for alerts and spending caps Notes
 - textbox "Notes":
   - /placeholder: Write something great...
+- textbox "Search groups"
+- text: Type two letters; the query waits for a pause. Group
+- button "Group, Just for me"
+- text: Nobody else sees an expense that is just for you.
 - checkbox "Terms & Privacy You can change this later in settings."
 - switch "Notify me" [checked]
 - text: Date Picker Modal Compact trigger opens bottom sheet with calendar

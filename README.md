@@ -254,10 +254,12 @@ a component named here is not exported.
 | **FormField**        | default, compact                                      | Compound API: FormField, FormLabel, FormControl, FormHint, FormMessage                        |
 | **LabeledField**     | default, compact                                      | Field wrapper with label/helper/error plus left/right slots                                   |
 | **Textarea**         | —                                                     | Multi-line text input                                                                         |
-| **Checkbox**         | —                                                     | Controlled/uncontrolled, accessibility roles                                                  |
-| **Switch**           | —                                                     | Controlled/uncontrolled, accessibility roles                                                  |
+| **Checkbox**         | —                                                     | Controlled/uncontrolled; `label` and `description` make one labelled row                      |
+| **Switch**           | —                                                     | Controlled/uncontrolled; `label` and `description` make one labelled row                      |
 | **RadioGroup**       | —                                                     | RadioGroup + RadioGroupItem                                                                   |
 | **Select**           | —                                                     | Uses `SelectOption` type `{value, label}`. Includes SelectGroup, SelectLabel, SelectSeparator |
+| **SelectField**      | —                                                     | Labelled select from an `options` array; empty-string values allowed                          |
+| **SearchField**      | —                                                     | Search input with a magnifier and clear button; pairs with `useDebouncedSearch`               |
 | **Label**            | —                                                     | Form field label                                                                              |
 | **SegmentedControl** | default, pill; single select                          | SegmentedControl, SegmentedControlItem, SegmentedControlItemText with wrapping layout support |
 | **Toggle**           | default, outline                                      | ToggleText sub-component                                                                      |
@@ -273,7 +275,8 @@ a component named here is not exported.
 | **FAB**         | default, secondary, destructive, surface; sm/default/lg | Floating action button. `label` required; pass your own icon as children        |
 | **Alert**       | default, destructive, success, warning                  | AlertTitle & AlertDescription                                                   |
 | **Avatar**      | sm, default, lg                                         | AvatarImage + AvatarFallback                                                    |
-| **DataRow**     | default, compact                                        | DataRow, DataRowLeft/Center/Right, DataRowLabel/Description/Value               |
+| **DataRow**     | default, compact                                        | DataRow, DataRowLeft/Center/Right, DataRowLabel/Description/Value; `onPress`    |
+| **Pagination**  | —                                                       | "83 total · Previous · Page 2 of 4 · Next" under a paged list                   |
 | **Separator**   | horizontal, vertical                                    | Themed divider                                                                  |
 | **Progress**    | sm, default, lg                                         | Value-based progress bar with accessibility                                     |
 | **Spinner**     | sm, default, lg                                         | ActivityIndicator wrapper                                                       |
@@ -326,14 +329,15 @@ Copy from `apps/showcase/catalog/templates/auth/`:
 
 ### Navigation
 
-| Block                 | Description                                     |
-| --------------------- | ----------------------------------------------- |
-| **AppShell**          | Layout shell with header/footer/bottomNav slots |
-| **Header**            | Top app bar with back/actions                   |
-| **BottomNav**         | Tab-style bottom navigation bar                 |
-| **FloatingBottomNav** | Elevated bottom nav with safe area support      |
-| **TabBar**            | Top tab bar with indicator                      |
-| **DrawerMenu**        | Drawer with sections and items                  |
+| Block                 | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| **AppShell**          | Layout shell with header/footer/bottomNav slots  |
+| **Header**            | Top app bar with back/actions                    |
+| **PageHeader**        | A screen's heading: kicker, title, mark, actions |
+| **BottomNav**         | Tab-style bottom navigation bar                  |
+| **FloatingBottomNav** | Elevated bottom nav with safe area support       |
+| **TabBar**            | Top tab bar with indicator                       |
+| **DrawerMenu**        | Drawer with sections and items                   |
 
 ### Layout
 
@@ -387,6 +391,7 @@ Copy from `apps/showcase/catalog/templates/profile/`:
 | **ListItem**         | Title/subtitle row                  |
 | **NotificationItem** | Notification row with metadata      |
 | **TimelineFeed**     | Vertical feed with connecting lines |
+| **SectionedList**    | Rows under a heading per section    |
 
 ### Commerce
 
@@ -1094,6 +1099,27 @@ import {
 </DataRow>;
 ```
 
+Give a row `onPress` and the whole row becomes one button: it gets the button role, the
+shared pressed background and a focus ring, and a screen reader reads its content as the
+button's name. Without `onPress` it stays plain content, so a row that does nothing
+never looks disabled. Do not wrap a row in your own `Pressable`.
+
+```tsx
+<DataRow onPress={() => router.push(`/members/${member.id}`)}>…</DataRow>
+```
+
+<!-- api:DataRow -->
+
+| Prop        | Type                                     | Default     | Description                                                                                                                                                            |
+| ----------- | ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| size        | `'default' \| 'compact'`                 | `'default'` | `compact` tightens the height and text for dense lists.                                                                                                                |
+| className   | `string`                                 | —           |                                                                                                                                                                        |
+| onPress     | `(event: GestureResponderEvent) => void` | —           | Make the whole row one button: role, pressed background and focus ring included. Without it the row is plain content, so a row that does nothing never looks disabled. |
+| onLongPress | `(event: GestureResponderEvent) => void` | —           | Long-press handler; only used together with `onPress`.                                                                                                                 |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:DataRow -->
+
 ## Card
 
 ```tsx
@@ -1417,6 +1443,84 @@ change that margin. A list taller than the screen scrolls inside the listbox on 
 platform. Inside a Dialog, Sheet or other WhileUI overlay it renders in that
 overlay's layer automatically. Option values must be non-empty strings: the web
 primitive rejects `""`, so model "none" as an explicit value such as `'none'`.
+
+## SearchField
+
+A text field for searching: a leading magnifier, a clear button once there is text, and a
+search return key. Pair it with `useDebouncedSearch`, which returns the query to run:
+trimmed, `''` under two characters, and 300ms behind the keys, so a server is asked once
+per pause rather than once per letter.
+
+```tsx
+import { SearchField, useDebouncedSearch } from '@thewhileloop/whileui';
+
+const [search, setSearch] = useState('');
+const query = useDebouncedSearch(search); // or useDebouncedSearch(search, { delay, minLength })
+const results = useQuery({ queryKey: ['groups', query], queryFn: () => searchGroups(query) });
+
+<SearchField value={search} onChangeText={setSearch} placeholder="Search groups" />;
+```
+
+The placeholder names the field for screen readers; pass `accessibilityLabel` to name it
+differently. `icon` replaces the drawn magnifier.
+
+<!-- api:SearchField -->
+
+| Prop                    | Type                     | Default          | Description                                                                                                                |
+| ----------------------- | ------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| placeholder             | `string`                 | `'Search'`       | Shown in the empty field and used as its accessible name.                                                                  |
+| value (required)        | `string`                 | —                | The text in the field.                                                                                                     |
+| onChangeText (required) | `(text: string) => void` | —                | Callback that is called when the text input's text changes. Changed text is passed as an argument to the callback handler. |
+| icon                    | `React.ReactNode`        | —                | Replaces the drawn magnifier, for an app with its own icon set.                                                            |
+| clearLabel              | `string`                 | `'Clear search'` |                                                                                                                            |
+| className               | `string`                 | —                |                                                                                                                            |
+| aria-invalid            | `boolean`                | —                |                                                                                                                            |
+| inputClassName          | `string`                 | —                |                                                                                                                            |
+
+Also accepts the props of `InputProps`.
+<!-- /api:SearchField -->
+
+## SelectField
+
+A labelled single choice built from an `options` array: a label over a trigger that shows
+the chosen option, with an optional hint or error under it. It is the field most forms
+need, without composing `FormField`, `Select`, `SelectTrigger`, `SelectContent` and an
+item per option.
+
+```tsx
+import { SelectField } from '@thewhileloop/whileui';
+
+<SelectField
+  label="Group"
+  value={groupId}
+  onValueChange={setGroupId}
+  options={[
+    { value: '', label: 'Just for me' },
+    ...groups.map((group) => ({ value: group.id, label: group.name })),
+  ]}
+/>;
+```
+
+An option's `value` may be `''`, for choices such as "None" or "All"; the `Select`
+primitive cannot hold an empty value, so `SelectField` carries it through for you. The
+trigger is named by the label and the current choice ("Group, Just for me").
+
+<!-- api:SelectField -->
+
+| Prop                     | Type                      | Default    | Description                                                       |
+| ------------------------ | ------------------------- | ---------- | ----------------------------------------------------------------- |
+| label (required)         | `string`                  | —          | Visible label over the trigger; also names it for screen readers. |
+| value (required)         | `string`                  | —          | The chosen option's value.                                        |
+| options (required)       | `SelectFieldOption[]`     | —          |                                                                   |
+| onValueChange (required) | `(value: string) => void` | —          |                                                                   |
+| placeholder              | `string`                  | `'Choose'` | Shown when `value` matches no option.                             |
+| hint                     | `string`                  | —          | Help under the field.                                             |
+| error                    | `string`                  | —          | An error under the field; marks it invalid.                       |
+| disabled                 | `boolean`                 | `false`    |                                                                   |
+| required                 | `boolean`                 | `false`    |                                                                   |
+| className                | `string`                  | —          |                                                                   |
+
+<!-- /api:SelectField -->
 
 ## Tabs
 
@@ -2173,6 +2277,46 @@ import { Header, HeaderBackButton } from '@thewhileloop/whileui';
   ]}
 />;
 ```
+
+`HeaderBackButton` is named "Back" unless it has a `label`, and draws a chevron unless
+you pass `icon`.
+
+## PageHeader
+
+The heading at the top of a screen's content. `Header` is the app bar; `PageHeader` sits
+inside the scroll view under it: a kicker over the title, an optional mark and back
+button leading, actions trailing, and anything under the row (tabs, a search field) as
+children. The title is announced as a header.
+
+```tsx
+import { PageHeader } from '@thewhileloop/whileui';
+
+<PageHeader
+  kicker={group.name}
+  title="Settle up"
+  onBack={() => router.back()}
+  mark={<GroupAvatar group={group} />}
+  actions={<ShareButton />}
+>
+  <SegmentedControl wrap="scroll">{tabs}</SegmentedControl>
+</PageHeader>;
+```
+
+<!-- api:PageHeader -->
+
+| Prop             | Type              | Default | Description                                                                       |
+| ---------------- | ----------------- | ------- | --------------------------------------------------------------------------------- |
+| title (required) | `string`          | —       | The screen's heading, announced as a header.                                      |
+| kicker           | `string`          | —       | A short line above the title naming where this screen sits, such as a group name. |
+| description      | `string`          | —       | A line under the title.                                                           |
+| mark             | `React.ReactNode` | —       | Leads the title: an avatar or identity mark for the thing this screen is about.   |
+| actions          | `React.ReactNode` | —       | Trailing controls, such as an edit or share button.                               |
+| onBack           | `() => void`      | —       | Puts a back button first, at the leading edge where both platforms put it.        |
+| children         | `React.ReactNode` | —       | Content under the header row, such as tabs or a search field.                     |
+| className        | `string`          | —       |                                                                                   |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:PageHeader -->
 
 ## SplashScreen
 
@@ -2937,11 +3081,26 @@ Also accepts the props of `ViewProps`.
 
 ### FormModalScreen
 
-Modal scaffold for forms with loading states
+The screen for a form in a modal: a Cancel · title · Save bar, a scrolling body that keeps
+the focused field above the keyboard, and loading and saving states.
 
 ```tsx
 import { FormModalScreen } from '@thewhileloop/whileui';
+
+<FormModalScreen
+  title="New expense"
+  onClose={() => router.back()}
+  onSave={save}
+  saveDisabled={!canSave}
+  saving={busy}
+>
+  {fields}
+</FormModalScreen>;
 ```
+
+`onClose` and `onSave` draw text buttons; `leftSlot` and `rightSlot` replace them. Each
+side keeps the width its button needs and the title truncates between them. While
+`saving`, both buttons are disabled and Save shows a spinner.
 
 <!-- api:FormModalScreen -->
 
@@ -2950,9 +3109,13 @@ import { FormModalScreen } from '@thewhileloop/whileui';
 | className           | `string`          | —             |                                                                                           |
 | title (required)    | `string`          | —             |                                                                                           |
 | subtitle            | `string`          | —             |                                                                                           |
-| leftSlot            | `React.ReactNode` | —             |                                                                                           |
-| rightSlot           | `React.ReactNode` | —             |                                                                                           |
-| onClose             | `() => void`      | —             |                                                                                           |
+| leftSlot            | `React.ReactNode` | —             | Replaces the Cancel button.                                                               |
+| rightSlot           | `React.ReactNode` | —             | Replaces the Save button.                                                                 |
+| onClose             | `() => void`      | —             | Draws a Cancel text button that calls this.                                               |
+| closeLabel          | `string`          | `'Cancel'`    |                                                                                           |
+| onSave              | `() => void`      | —             | Draws a primary Save button that calls this.                                              |
+| saveLabel           | `string`          | `'Save'`      |                                                                                           |
+| saveDisabled        | `boolean`         | `false`       | Disable Save, for a form that is not ready to submit.                                     |
 | loading             | `boolean`         | `false`       |                                                                                           |
 | saving              | `boolean`         | `false`       |                                                                                           |
 | savingText          | `string`          | `'Saving...'` |                                                                                           |
@@ -3141,6 +3304,62 @@ import { NotificationItem } from '@thewhileloop/whileui';
 
 Also accepts the props of `PressableProps`.
 <!-- /api:NotificationItem -->
+
+### SectionedList
+
+Rows grouped under a heading wherever the section changes: a month, a day, a letter. With
+every row in one section it draws no heading, which would only repeat what the reader can
+see. Headings are headers, so a screen reader can jump between them. Every item renders,
+so use it for a bounded list such as one page of results; use React Native's virtualized
+`SectionList` for a list that can grow without limit.
+
+```tsx
+import { SectionedList, Pagination } from '@thewhileloop/whileui';
+
+<SectionedList
+  items={expenses}
+  sectionOf={(expense) => monthName(expense.spentAt)}
+  keyOf={(expense) => expense.id}
+  renderItem={(expense) => <ExpenseRow expense={expense} />}
+/>
+<Pagination page={page} totalPages={pages} totalItems={total} onPageChange={setPage} />;
+```
+
+<!-- api:SectionedList -->
+
+| Prop                  | Type                           | Default | Description                                                      |
+| --------------------- | ------------------------------ | ------- | ---------------------------------------------------------------- |
+| items (required)      | `readonly T[]`                 | —       | In display order; a section starts wherever `sectionOf` changes. |
+| sectionOf (required)  | `(item: T) => string`          | —       | The heading an item belongs under, such as its month.            |
+| keyOf (required)      | `(item: T) => string`          | —       |                                                                  |
+| renderItem (required) | `(item: T) => React.ReactNode` | —       |                                                                  |
+| separators            | `boolean`                      | `true`  | Draw a divider between rows in a section.                        |
+| className             | `string`                       | —       |                                                                  |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:SectionedList -->
+
+### Pagination
+
+"83 total · Previous · Page 2 of 4 · Next" under a paged list. It draws nothing when there
+is one page, disables Previous and Next at the ends, and announces the new page after a
+press. The buttons are named "Previous page" and "Next page"; change the words with
+`previousLabel` and `nextLabel`.
+
+<!-- api:Pagination -->
+
+| Prop                    | Type                     | Default      | Description                                         |
+| ----------------------- | ------------------------ | ------------ | --------------------------------------------------- |
+| page (required)         | `number`                 | —            | The current page, from 1.                           |
+| totalPages (required)   | `number`                 | —            |                                                     |
+| totalItems              | `number`                 | —            | Shown as "83 total" at the leading edge when given. |
+| onPageChange (required) | `(page: number) => void` | —            |                                                     |
+| previousLabel           | `string`                 | `'Previous'` |                                                     |
+| nextLabel               | `string`                 | `'Next'`     |                                                     |
+| className               | `string`                 | —            |                                                     |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:Pagination -->
 
 ### TimelineFeed
 

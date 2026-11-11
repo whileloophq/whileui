@@ -1,13 +1,16 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import {
+  Pressable,
   Text,
   View,
+  type GestureResponderEvent,
   type TextInstance,
   type TextProps,
   type ViewInstance,
   type ViewProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
+import { focusRingInset } from '../../lib/focus-ring';
 import { tv } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
@@ -87,8 +90,16 @@ const DataRowContext = createContext<DataRowContextValue>({
 });
 
 export interface DataRowProps extends ViewProps {
+  /** `compact` tightens the height and text for dense lists. */
   size?: 'default' | 'compact';
   className?: string;
+  /**
+   * Make the whole row one button: role, pressed background and focus ring included.
+   * Without it the row is plain content, so a row that does nothing never looks disabled.
+   */
+  onPress?: (event: GestureResponderEvent) => void;
+  /** Long-press handler; only used together with `onPress`. */
+  onLongPress?: (event: GestureResponderEvent) => void;
 }
 
 export interface DataRowLeftProps extends ViewProps {
@@ -116,17 +127,35 @@ export interface DataRowValueProps extends TextProps {
 }
 
 const DataRow: ForwardRefComponent<ViewInstance, DataRowProps> = React.forwardRef(
-  ({ className, size = 'default', style, ...props }, ref) => {
+  ({ className, size = 'default', style, onPress, onLongPress, ...props }, ref) => {
     const visual = useVisualTokens();
     const contextValue = useMemo(() => ({ size }), [size]);
+    const rowStyle = [getDataRowStyle(visual, size), style];
     return (
       <DataRowContext.Provider value={contextValue}>
-        <View
-          ref={ref}
-          className={cn(dataRowVariants({ size }), className)}
-          style={[getDataRowStyle(visual, size), style]}
-          {...props}
-        />
+        {onPress ? (
+          <Pressable
+            ref={ref}
+            accessibilityRole="button"
+            onPress={onPress}
+            onLongPress={onLongPress}
+            className={cn(
+              dataRowVariants({ size }),
+              'active:bg-state-pressed',
+              focusRingInset,
+              className
+            )}
+            style={rowStyle}
+            {...props}
+          />
+        ) : (
+          <View
+            ref={ref}
+            className={cn(dataRowVariants({ size }), className)}
+            style={rowStyle}
+            {...props}
+          />
+        )}
       </DataRowContext.Provider>
     );
   }

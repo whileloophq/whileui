@@ -37,7 +37,7 @@ import {
   ToggleText,
   useIconColors,
 } from '@thewhileloop/whileui';
-import { Section } from '../ui';
+import { Section, triggerHaptic } from '../ui';
 
 const LONG_REGIONS = Array.from({ length: 40 }, (_, index) => `Region ${index + 1}`);
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'INR', 'AUD', 'CAD', 'CHF', 'SGD'];
@@ -199,7 +199,11 @@ export function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }
 
       <Section title="Data Row" subtitle="Reusable left/center/right rows with narrow-width safety">
         <View className="rounded-xl border border-border p-3 gap-2">
-          <DataRow className="border-b border-border px-1 pb-3">
+          {/* With `onPress` the row is one button: role, pressed state and focus ring. */}
+          <DataRow
+            className="border-b border-border px-1 pb-3"
+            onPress={() => triggerHaptic('light')}
+          >
             <DataRowLeft>
               <Avatar size="sm">
                 <AvatarFallback>AL</AvatarFallback>

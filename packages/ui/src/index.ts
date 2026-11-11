@@ -140,6 +140,9 @@ export {
 } from './components/card';
 
 export { Input, inputVariants, type InputProps } from './components/input';
+export { SearchField, type SearchFieldProps } from './components/search-field';
+export { Pagination, type PaginationProps } from './components/pagination';
+export { useDebouncedSearch, type DebouncedSearchOptions } from './lib/use-debounced-search';
 export {
   NumericInput,
   numericInputVariants,
@@ -321,6 +324,12 @@ export {
   type SelectLabelProps,
   type SelectSeparatorProps,
 } from './components/select';
+
+export {
+  SelectField,
+  type SelectFieldOption,
+  type SelectFieldProps,
+} from './components/select-field';
 
 export {
   Toggle,

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
@@ -104,7 +105,9 @@ export function Header({
 }
 
 export interface HeaderBackButtonProps extends Omit<PressableProps, 'children'> {
+  /** Replaces the drawn chevron, for an app with its own icon set. */
   icon?: React.ReactNode;
+  /** Visible text after the chevron. The button is named "Back" without it. */
   label?: string;
 }
 
@@ -123,13 +126,22 @@ export function HeaderBackButton({
   });
 
   return (
+    // A role, a name and a touch target, set before `props` so a caller can override.
+    // Without the role, React Native Web gave Tab a stop that Enter could not press, and
+    // without the name VoiceOver read the chevron glyph.
     <Pressable
-      className={cn('flex-row items-center gap-1 rounded-full py-1', className)}
-      style={interactiveStyle}
+      accessibilityRole="button"
+      accessibilityLabel={label ?? 'Back'}
+      hitSlop={8}
+      className={cn('flex-row items-center gap-1 rounded-full py-1', focusRing, className)}
+      style={(state) => [
+        { minHeight: visual.touchTargetMinSize, minWidth: visual.touchTargetMinSize },
+        typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle,
+      ]}
       {...props}
     >
       {icon || (
-        <Text className="text-primary" style={typographyStyle(visual, 'title')}>
+        <Text aria-hidden className="text-primary" style={typographyStyle(visual, 'title')}>
           ‹
         </Text>
       )}

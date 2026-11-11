@@ -25,9 +25,17 @@
   - tab "Explore"
   - tab "Create"
   - tab "Inbox"
-- text: Header App header with actions ‹ Back Settings Manage your preferences
+- text: Header App header with actions
+- button "Back"
+- text: Settings Manage your preferences
 - button "Search": 
 - button "More": 
+- text: "Page Header A screen's own heading: kicker, mark, actions, back"
+- button "Back"
+- text: KY Weekend in Kyoto
+- heading "Settle up" [level=1]
+- text: Three payments clear the group.
+- button "Share"
 - text: Tab Bar Content filtering tabs
 - tablist:
   - tab "All" [selected]

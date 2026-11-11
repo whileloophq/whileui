@@ -11,6 +11,7 @@ export {
   type HeaderBackButtonProps,
   type HeaderProps,
 } from './header';
+export { PageHeader, type PageHeaderProps } from './page-header';
 export { TabBar, type TabBarItem, type TabBarProps } from './tab-bar';
 export {
   DrawerMenu,

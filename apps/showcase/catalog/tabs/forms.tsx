@@ -28,6 +28,9 @@ import {
   TimePickerTrigger,
   useIconColors,
   useToast,
+  SearchField,
+  SelectField,
+  useDebouncedSearch,
 } from '@thewhileloop/whileui';
 import { Section } from '../ui';
 
@@ -36,6 +39,9 @@ export function FormsBlocksTab() {
   const [weight, setWeight] = useState<number | null>(72.4);
   const [budget, setBudget] = useState<number | null>(2500);
   const [checkVal, setCheckVal] = useState(false);
+  const [group, setGroup] = useState('');
+  const [search, setSearch] = useState('');
+  const query = useDebouncedSearch(search);
   const [switchVal, setSwitchVal] = useState(true);
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [formSaving, setFormSaving] = useState(false);
@@ -107,6 +113,25 @@ export function FormsBlocksTab() {
             <Textarea placeholder="Write something great..." />
           </FormControl>
         </FormField>
+
+        <View className="gap-1">
+          <SearchField value={search} onChangeText={setSearch} placeholder="Search groups" />
+          <Text variant="caption">
+            {query ? `Searching for “${query}”` : 'Type two letters; the query waits for a pause.'}
+          </Text>
+        </View>
+
+        <SelectField
+          label="Group"
+          value={group}
+          onValueChange={setGroup}
+          hint="Nobody else sees an expense that is just for you."
+          options={[
+            { value: '', label: 'Just for me' },
+            { value: 'kyoto', label: 'Weekend in Kyoto' },
+            { value: 'flat', label: 'Flat 3B' },
+          ]}
+        />
 
         <View className="gap-4">
           <Checkbox
@@ -194,6 +219,14 @@ export function FormsBlocksTab() {
               title="Edit Profile"
               subtitle="Update your account details"
               onClose={() => setFormModalOpen(false)}
+              onSave={() => {
+                setFormSaving(true);
+                setTimeout(() => {
+                  setFormSaving(false);
+                  toast({ title: 'Profile updated', variant: 'success' });
+                  setFormModalOpen(false);
+                }, 1500);
+              }}
               saving={formSaving}
               savingText="Saving..."
               scrollEnabled
@@ -218,19 +251,6 @@ export function FormsBlocksTab() {
                   </FormControl>
                   <FormHint>Optional. Shown on your public profile.</FormHint>
                 </FormField>
-                <Button
-                  className="mt-2"
-                  onPress={() => {
-                    setFormSaving(true);
-                    setTimeout(() => {
-                      setFormSaving(false);
-                      toast({ title: 'Profile updated', variant: 'success' });
-                      setFormModalOpen(false);
-                    }, 1500);
-                  }}
-                >
-                  <ButtonText>Save Changes</ButtonText>
-                </Button>
               </View>
             </FormModalScreen>
           </View>

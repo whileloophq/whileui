@@ -2,10 +2,15 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
+  Avatar,
+  AvatarFallback,
   BottomNav,
+  Button,
+  ButtonText,
   FloatingBottomNav,
   Header,
   HeaderBackButton,
+  PageHeader,
   TabBar,
   useIconColors,
 } from '@thewhileloop/whileui';
@@ -91,6 +96,25 @@ export function NavigationBlocksTab() {
             ]}
           />
         </View>
+      </Section>
+
+      <Section title="Page Header" subtitle="A screen's own heading: kicker, mark, actions, back">
+        <PageHeader
+          kicker="Weekend in Kyoto"
+          title="Settle up"
+          description="Three payments clear the group."
+          onBack={() => {}}
+          mark={
+            <Avatar size="sm">
+              <AvatarFallback>KY</AvatarFallback>
+            </Avatar>
+          }
+          actions={
+            <Button size="sm" variant="outline">
+              <ButtonText>Share</ButtonText>
+            </Button>
+          }
+        />
       </Section>
 
       <Section title="Tab Bar" subtitle="Content filtering tabs">
