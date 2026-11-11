@@ -49,3 +49,17 @@ describe('Switch', () => {
     expect(screen.getByRole('switch')).toBeChecked();
   });
 });
+
+describe('Switch with a label', () => {
+  it('is one switch named by its label, toggled by pressing the text', async () => {
+    const onCheckedChange = jest.fn();
+    const user = userEvent.setup();
+    await render(<Switch label="Notify me" onCheckedChange={onCheckedChange} />);
+
+    expect(screen.getAllByRole('switch')).toHaveLength(1);
+    await user.press(screen.getByText('Notify me'));
+
+    expect(onCheckedChange).toHaveBeenCalledWith(true);
+    expect(screen.getByRole('switch', { name: /Notify me/ })).toBeChecked();
+  });
+});

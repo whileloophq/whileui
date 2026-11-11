@@ -25,10 +25,9 @@
 - text: USD Used for alerts and spending caps Notes
 - textbox "Notes":
   - /placeholder: Write something great...
-- checkbox "Terms & Privacy"
-- text: Terms & Privacy
+- checkbox "Terms & Privacy You can change this later in settings."
 - switch "Notify me" [checked]
-- text: Notify me Date Picker Modal Compact trigger opens bottom sheet with calendar
+- text: Date Picker Modal Compact trigger opens bottom sheet with calendar
 - button "Pick a date"
 - text: Time Picker Modal Hour and minute wheels in the same sheet
 - button "Pick a time"

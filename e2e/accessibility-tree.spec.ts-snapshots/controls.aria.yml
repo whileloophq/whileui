@@ -40,9 +40,20 @@
 - button "Select a framework"
 - button "Select a region (long list)"
 - button "Bold"
-- button "L"
-- button "C"
-- button "R"
+- radiogroup:
+  - radio "L"
+  - radio "C"
+  - radio "R"
+- radiogroup "Currency":
+  - radio "USD" [checked]
+  - radio "EUR"
+  - radio "GBP"
+  - radio "JPY"
+  - radio "INR"
+  - radio "AUD"
+  - radio "CAD"
+  - radio "CHF"
+  - radio "SGD"
 - text: /Data Row Reusable left\/center\/right rows with narrow-width safety AL Alex Lee Lead Product Designer Owner  Average Session Duration This label truncates safely on narrow screens\. [\d,.]+[bkmBKM]+ \d+[hmsp]+ OTP Input Verification code entry with auto-focus and paste/
 - textbox "Enter 6-digit verification code"
 - text: /Enter code \(try \d+\) Secure \(4-digit PIN — try \d+\)/

@@ -118,7 +118,10 @@ function Toggle({
         ]}
         onPress={handlePress}
         accessibilityRole="button"
+        // `selected` for native; React Native Web ignores `accessibilityState`, so the
+        // pressed state needs `aria-pressed` to reach a browser.
         accessibilityState={{ selected: pressed }}
+        aria-pressed={pressed}
         {...props}
       >
         {children}

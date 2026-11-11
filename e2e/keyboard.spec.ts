@@ -99,3 +99,30 @@ test('every keyboard-reachable control shows a focus indicator', async ({ page }
 
   expect(missing, `no focus indicator on:\n  ${missing.join('\n  ')}`).toEqual([]);
 });
+
+/**
+ * `Checkbox` and `Switch` drew their ring on an inner view that never takes focus, so on
+ * web they showed none. The tab walk above covers the Controls tab only; these two live
+ * on Forms.
+ */
+test('Checkbox and Switch show a focus indicator', async ({ page }) => {
+  await openShowcase(page);
+  await openCategory(page, 'Forms');
+
+  for (const [role, name] of [
+    ['checkbox', /Terms & Privacy/],
+    ['switch', /Notify me/],
+  ] as const) {
+    const control = page.getByRole(role, { name });
+    await control.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(control).toBeFocused();
+
+    const indicated = await control.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return /0px 0px 0px [1-9]\d*px/.test(style.boxShadow);
+    });
+    expect(indicated, `${role} has no focus indicator`).toBe(true);
+  }
+});

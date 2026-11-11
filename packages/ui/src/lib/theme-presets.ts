@@ -269,6 +269,27 @@ export function themePresetToCssVariables(preset: ThemePreset): {
   return { light, dark, visual };
 }
 
+/**
+ * Tailwind theme variables derived from the visual tokens. The `--ui-*` values are bare
+ * numbers for React Native styles, so no utility class could read them: an app's own
+ * `rounded-md` was Tailwind's fixed 6px while the preset's controls used another radius.
+ */
+function utilityVariables(preset: ThemePreset): Record<string, string> {
+  const value = (key: (typeof VISUAL_TOKEN_SPECS)[number]['key']) => {
+    const spec = VISUAL_TOKEN_SPECS.find((candidate) => candidate.key === key);
+    return `${formatCssNumber(preset.visual[key] ?? spec?.fallback ?? 0)}px`;
+  };
+  return {
+    '--radius-sm': value('radiusSm'),
+    '--radius-md': value('radiusMd'),
+    '--radius-lg': value('radiusLg'),
+    '--radius-xl': value('radiusXl'),
+    '--spacing-control-sm': value('controlHeightSm'),
+    '--spacing-control': value('controlHeightDefault'),
+    '--spacing-control-lg': value('controlHeightLg'),
+  };
+}
+
 /** Render a preset as ready-to-paste CSS blocks. */
 export function themePresetToCss(preset: ThemePreset): string {
   const { light, dark, visual } = themePresetToCssVariables(preset);
@@ -281,6 +302,8 @@ export function themePresetToCss(preset: ThemePreset): string {
     `/* WhileUI preset: ${preset.name} — ${preset.description} */`,
     `@theme {`,
     renderVars(visual, '  '),
+    `  /* Utility classes in app markup (rounded-md, h-control) follow the preset too. */`,
+    renderVars(utilityVariables(preset), '  '),
     `}`,
     ``,
     `@layer theme {`,

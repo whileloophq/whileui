@@ -441,6 +441,13 @@ const preset = createThemePreset({
 writeFileSync('theme.generated.css', themePresetToCss(preset));
 ```
 
+The generated `@theme` block also sets Tailwind's `--radius-sm/md/lg/xl` and a
+`control` spacing size from the preset, so classes in your own markup match the
+components: `rounded-md` is the preset's medium radius, and `h-control-sm`, `h-control`
+and `h-control-lg` (or `min-h-*`) are its control heights. Without them `rounded-md` is
+Tailwind's fixed 6px, whatever the preset says. To keep a different class scale, define
+those variables after importing the generated file.
+
 The literal form asks for all 52 colours per scheme, including every active variant,
 soft variant, overlay, surface, interaction state and shadow. Those are exactly what
 `deriveThemeColors` computes, so hand-writing them produces a second derivation that
@@ -1291,17 +1298,30 @@ required.
 import { Checkbox } from '@thewhileloop/whileui';
 
 <Checkbox checked={checked} onCheckedChange={setChecked} />;
+
+<Checkbox
+  checked={archived}
+  onCheckedChange={setArchived}
+  label="Show archived groups"
+  description="Closed groups stay out of your totals."
+/>;
 ```
+
+With `label`, the whole row is one checkbox: the text names it and pressing the text
+toggles it. Do not wrap a checkbox in your own `Pressable` with a label beside it; that
+nests a checkbox inside a checkbox, which Android and web expose as two.
 
 <!-- api:Checkbox -->
 
-| Prop            | Type                         | Default | Description |
-| --------------- | ---------------------------- | ------- | ----------- |
-| checked         | `boolean`                    | —       |             |
-| defaultChecked  | `boolean`                    | `false` |             |
-| onCheckedChange | `(checked: boolean) => void` | —       |             |
-| disabled        | `boolean`                    | `false` |             |
-| className       | `string`                     | —       |             |
+| Prop            | Type                         | Default | Description                                                                                                                       |
+| --------------- | ---------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| checked         | `boolean`                    | —       | Controlled state. Leave unset to let the control hold its own.                                                                    |
+| defaultChecked  | `boolean`                    | `false` | Initial state when uncontrolled.                                                                                                  |
+| onCheckedChange | `(checked: boolean) => void` | —       | Called with the next state on every press.                                                                                        |
+| disabled        | `boolean`                    | `false` | Ignore presses and dim the control.                                                                                               |
+| label           | `string`                     | —       | Text beside the box. The row becomes one pressable checkbox named by it, so do not wrap a labelled checkbox in another pressable. |
+| description     | `string`                     | —       | Secondary text under `label`. Ignored without a `label`.                                                                          |
+| className       | `string`                     | —       | Classes for the control itself (the box or the track), not the labelled row.                                                      |
 
 Also accepts the props of `ViewProps`.
 <!-- /api:Checkbox -->
@@ -1312,17 +1332,23 @@ Also accepts the props of `ViewProps`.
 import { Switch } from '@thewhileloop/whileui';
 
 <Switch checked={checked} onCheckedChange={setChecked} />;
+
+<Switch checked={notify} onCheckedChange={setNotify} label="Notify me" />;
 ```
+
+`label` and `description` work as on `Checkbox`; the text sits before the switch.
 
 <!-- api:Switch -->
 
-| Prop            | Type                         | Default | Description |
-| --------------- | ---------------------------- | ------- | ----------- |
-| checked         | `boolean`                    | —       |             |
-| defaultChecked  | `boolean`                    | `false` |             |
-| onCheckedChange | `(checked: boolean) => void` | —       |             |
-| disabled        | `boolean`                    | `false` |             |
-| className       | `string`                     | —       |             |
+| Prop            | Type                         | Default | Description                                                                                                                      |
+| --------------- | ---------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| checked         | `boolean`                    | —       | Controlled state. Leave unset to let the control hold its own.                                                                   |
+| defaultChecked  | `boolean`                    | `false` | Initial state when uncontrolled.                                                                                                 |
+| onCheckedChange | `(checked: boolean) => void` | —       | Called with the next state on every press.                                                                                       |
+| disabled        | `boolean`                    | `false` | Ignore presses and dim the control.                                                                                              |
+| label           | `string`                     | —       | Text before the switch. The row becomes one pressable switch named by it, so do not wrap a labelled switch in another pressable. |
+| description     | `string`                     | —       | Secondary text under `label`. Ignored without a `label`.                                                                         |
+| className       | `string`                     | —       | Classes for the control itself (the box or the track), not the labelled row.                                                     |
 
 Also accepts the props of `ViewProps`.
 <!-- /api:Switch -->
@@ -2712,11 +2738,32 @@ Also accepts the props of `PressableProps`.
 
 ### ToggleGroup
 
-Group of toggle items
+A row of toggle items. `type="single"` is a radio group: one item is checked, and a
+screen reader says which. `type="multiple"` is a set of toggle buttons, each pressed or
+not. For choice chips, add `flex-wrap` so they flow onto the next line.
 
 ```tsx
-import { ToggleGroup } from '@thewhileloop/whileui';
+import { ToggleGroup, ToggleGroupItem, ToggleGroupItemText } from '@thewhileloop/whileui';
+
+<ToggleGroup
+  type="single"
+  variant="outline"
+  size="sm"
+  value={currency}
+  onValueChange={(next) => setCurrency(next as string)}
+  accessibilityLabel="Currency"
+  className="flex-wrap"
+>
+  {['USD', 'EUR', 'GBP', 'JPY'].map((code) => (
+    <ToggleGroupItem key={code} value={code}>
+      <ToggleGroupItemText>{code}</ToggleGroupItemText>
+    </ToggleGroupItem>
+  ))}
+</ToggleGroup>;
 ```
+
+In single mode, pressing the checked item clears the choice and calls `onValueChange`
+with `''`. Ignore `''` if the value is required.
 
 <!-- api:ToggleGroup -->
 

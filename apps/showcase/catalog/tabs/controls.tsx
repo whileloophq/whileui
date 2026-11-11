@@ -40,6 +40,7 @@ import {
 import { Section } from '../ui';
 
 const LONG_REGIONS = Array.from({ length: 40 }, (_, index) => `Region ${index + 1}`);
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'INR', 'AUD', 'CAD', 'CHF', 'SGD'];
 const LEDGER_TABS = ['Overview', 'Transactions', 'Recurring', 'Statements', 'Settings'];
 
 export function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }) {
@@ -179,6 +180,21 @@ export function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }
             </ToggleGroupItem>
           </ToggleGroup>
         </View>
+        {/* Chips that wrap: a single-choice group with `flex-wrap`. */}
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          defaultValue="USD"
+          accessibilityLabel="Currency"
+          className="flex-wrap"
+        >
+          {CURRENCIES.map((code) => (
+            <ToggleGroupItem key={code} value={code}>
+              <ToggleGroupItemText>{code}</ToggleGroupItemText>
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </Section>
 
       <Section title="Data Row" subtitle="Reusable left/center/right rows with narrow-width safety">

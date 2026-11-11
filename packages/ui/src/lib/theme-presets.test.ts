@@ -3,8 +3,10 @@ import { THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './theme-derive';
 import { checkThemeContrast } from './theme-seeds';
 import {
   WHILEUI_PRESET_ATELIER,
+  WHILEUI_PRESET_SOFT,
   WHILEUI_THEME_PRESETS,
   createThemePreset,
+  themePresetToCss,
   themePresetToCssVariables,
 } from './theme-presets';
 
@@ -103,5 +105,33 @@ describe('built-in presets', () => {
     )
   )('%s %s passes every contrast check', (_name, _mode, colors) => {
     expect(checkThemeContrast(colors).filter((c) => !c.pass)).toEqual([]);
+  });
+});
+
+describe('utility classes follow the preset', () => {
+  it('writes Tailwind radius and control-height variables from the visual tokens', () => {
+    const preset = {
+      ...WHILEUI_PRESET_SOFT,
+      visual: {
+        ...WHILEUI_PRESET_SOFT.visual,
+        radiusSm: 6,
+        radiusMd: 9,
+        radiusLg: 12,
+        radiusXl: 16,
+        controlHeightSm: 36,
+        controlHeightDefault: 44,
+        controlHeightLg: 52,
+      },
+    };
+    const css = themePresetToCss(preset);
+
+    // `rounded-md` and `h-control` in an app's own markup then match the controls.
+    expect(css).toContain('--radius-sm: 6px;');
+    expect(css).toContain('--radius-md: 9px;');
+    expect(css).toContain('--radius-lg: 12px;');
+    expect(css).toContain('--radius-xl: 16px;');
+    expect(css).toContain('--spacing-control-sm: 36px;');
+    expect(css).toContain('--spacing-control: 44px;');
+    expect(css).toContain('--spacing-control-lg: 52px;');
   });
 });

@@ -157,7 +157,13 @@ function ToggleGroup({
 
   return (
     <ToggleGroupContext.Provider value={contextValue}>
-      <View className={cn('flex flex-row items-center gap-1', className)} {...props}>
+      <View
+        // One choice is a radio group; several are independent checkboxes, which need no
+        // grouping role. Add `flex-wrap` to `className` for chips that wrap.
+        accessibilityRole={type === 'single' ? 'radiogroup' : undefined}
+        className={cn('flex flex-row items-center gap-1', className)}
+        {...props}
+      >
         {children}
       </View>
     </ToggleGroupContext.Provider>
@@ -171,7 +177,7 @@ function ToggleGroupItem({
   style: styleProp,
   ...props
 }: ToggleGroupItemProps) {
-  const { value, onValueChange, variant, size } = useContext(ToggleGroupContext);
+  const { type, value, onValueChange, variant, size } = useContext(ToggleGroupContext);
   const pressed = value.includes(itemValue);
   const visual = useVisualTokens();
   const contextValue = useMemo(() => ({ pressed, size }), [pressed, size]);
@@ -190,8 +196,20 @@ function ToggleGroupItem({
           typeof styleProp === 'function' ? styleProp(state) : styleProp,
         ]}
         onPress={() => onValueChange(itemValue)}
-        accessibilityRole="button"
-        accessibilityState={{ selected: pressed }}
+        // React Native Web no longer derives ARIA from `accessibilityState`, so a button
+        // with only `selected` told web nothing. One choice is a radio, checked; several
+        // are toggle buttons, pressed — `selected` for native, `aria-pressed` for web.
+        {...(type === 'single'
+          ? {
+              accessibilityRole: 'radio',
+              accessibilityState: { checked: pressed },
+              'aria-checked': pressed,
+            }
+          : {
+              accessibilityRole: 'button',
+              accessibilityState: { selected: pressed },
+              'aria-pressed': pressed,
+            })}
         {...props}
       >
         {children}

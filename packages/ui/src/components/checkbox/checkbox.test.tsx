@@ -16,3 +16,24 @@ describe('Checkbox', () => {
     expect(screen.getByTestId('checkbox-tick')).toBeOnTheScreen();
   });
 });
+
+describe('Checkbox with a label', () => {
+  it('is one checkbox named by its label, toggled by pressing the text', async () => {
+    const onCheckedChange = jest.fn();
+    await render(
+      <Checkbox
+        label="Show archived groups"
+        description="Groups you closed stay out of totals."
+        onCheckedChange={onCheckedChange}
+      />
+    );
+
+    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+    const box = screen.getByRole('checkbox', { name: /Show archived groups/ });
+    expect(screen.getByText('Groups you closed stay out of totals.')).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByText('Show archived groups'));
+    expect(onCheckedChange).toHaveBeenCalledWith(true);
+    expect(box).toBeChecked();
+  });
+});

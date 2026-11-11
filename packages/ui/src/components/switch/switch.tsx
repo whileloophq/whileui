@@ -4,12 +4,25 @@ import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
+import { ControlLabel } from '../checkbox/control-label';
 
 export interface SwitchProps extends Omit<ViewProps, 'children'> {
+  /** Controlled state. Leave unset to let the control hold its own. */
   checked?: boolean;
+  /** Initial state when uncontrolled. */
   defaultChecked?: boolean;
+  /** Called with the next state on every press. */
   onCheckedChange?: (checked: boolean) => void;
+  /** Ignore presses and dim the control. */
   disabled?: boolean;
+  /**
+   * Text before the switch. The row becomes one pressable switch named by it, so do not
+   * wrap a labelled switch in another pressable.
+   */
+  label?: string;
+  /** Secondary text under `label`. Ignored without a `label`. */
+  description?: string;
+  /** Classes for the control itself (the box or the track), not the labelled row. */
   className?: string;
 }
 
@@ -18,6 +31,8 @@ function Switch({
   defaultChecked = false,
   onCheckedChange,
   disabled = false,
+  label,
+  description,
   className,
   ...props
 }: SwitchProps) {
@@ -25,11 +40,14 @@ function Switch({
   const isChecked = controlledChecked ?? internalChecked;
   const interaction = useInteractionTokens();
   const visual = useVisualTokens();
-  const interactiveStyle = withInteractivePressableStyle(undefined, interaction, {
-    disabled,
-    pressedVariant: 'default',
-  });
   const trackHeight = Math.max(24, Math.round(visual.controlHeightSm * 0.9));
+  // The ring belongs on the pressable, which is what takes keyboard focus. On the inner
+  // track it never matched `:focus-visible`, so the switch showed no focus on web.
+  const interactiveStyle = withInteractivePressableStyle(
+    { borderRadius: label ? visual.radiusSm : trackHeight / 2 },
+    interaction,
+    { disabled, pressedVariant: 'default' }
+  );
   const trackWidth = Math.round(trackHeight * 1.45);
   const inset = Math.max(2, Math.round(trackHeight * 0.08));
   const thumbSize = trackHeight - inset * 2 - 2;
@@ -47,16 +65,17 @@ function Switch({
       onPress={handleToggle}
       disabled={disabled}
       style={interactiveStyle}
+      className={cn(focusRing, label && 'flex-row items-center gap-3')}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       accessibilityRole="switch"
       accessibilityState={{ checked: isChecked, disabled }}
       aria-checked={isChecked}
     >
+      {label ? <ControlLabel label={label} description={description} /> : null}
       <View
         className={cn(
           'flex-row items-center justify-start',
           isChecked ? 'border-primary bg-primary' : 'border-input bg-muted',
-          focusRing,
           className
         )}
         style={{

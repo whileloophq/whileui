@@ -18,7 +18,6 @@ import {
   FormMessage,
   FormModalScreen,
   Input,
-  Label,
   LabeledField,
   LabeledFieldControl,
   NumericInput,
@@ -109,23 +108,14 @@ export function FormsBlocksTab() {
           </FormControl>
         </FormField>
 
-        <View className="flex-row items-center gap-6">
-          <View className="flex-row items-center gap-2">
-            <Checkbox
-              checked={checkVal}
-              onCheckedChange={setCheckVal}
-              accessibilityLabel="Terms & Privacy"
-            />
-            <Label onPress={() => setCheckVal(!checkVal)}>Terms & Privacy</Label>
-          </View>
-          <View className="flex-row items-center gap-2">
-            <Switch
-              checked={switchVal}
-              onCheckedChange={setSwitchVal}
-              accessibilityLabel="Notify me"
-            />
-            <Label onPress={() => setSwitchVal(!switchVal)}>Notify me</Label>
-          </View>
+        <View className="gap-4">
+          <Checkbox
+            checked={checkVal}
+            onCheckedChange={setCheckVal}
+            label="Terms & Privacy"
+            description="You can change this later in settings."
+          />
+          <Switch checked={switchVal} onCheckedChange={setSwitchVal} label="Notify me" />
         </View>
       </Section>
 
