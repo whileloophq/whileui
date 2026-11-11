@@ -94,6 +94,25 @@ try {
   }
 
   // -------------------------------------------------------------------------
+  step('Agent docs ship and describe this version');
+
+  // llms-full.txt is the README verbatim, so it has no version header to compare.
+  const agentDir = join(installed, 'dist/agent');
+  const versioned = (file) =>
+    readFileSync(join(agentDir, file), 'utf8').startsWith(`# WhileUI ${manifest.version}\n`);
+  for (const file of ['llms.txt', 'llms-components.txt', 'llms-full.txt']) {
+    const ok = existsSync(join(agentDir, file)) && (file === 'llms-full.txt' || versioned(file));
+    if (ok) pass(`dist/agent/${file}`);
+    else fail(`dist/agent/${file} is missing or names another version`);
+  }
+  const catalog = JSON.parse(readFileSync(join(installed, 'dist/agent/catalog.json'), 'utf8'));
+  if (catalog.version === manifest.version && catalog.components.length > 0) {
+    pass(`catalog.json: ${catalog.components.length} components at ${catalog.version}`);
+  } else {
+    fail(`catalog.json describes ${catalog.version}, the package is ${manifest.version}`);
+  }
+
+  // -------------------------------------------------------------------------
   step('Every bare import is a declared dependency or peer');
 
   const declared = new Set([

@@ -13,14 +13,21 @@ production targets — iOS and Android set the interaction baseline. See
 
 ## See it in action
 
-One React Native component contract across native and web, with semantic typography,
-token-driven light and dark themes, accessible controls, and application-owned chat
-composition. The same component tree can feel airy and atmospheric or compact and
-editorial by changing tokens alone.
+The same app code on an iPhone simulator, an Android emulator and the web, running the
+same tour side by side.
+
+**The catalog** — every component and block, in light and dark
+([`apps/showcase/catalog`](apps/showcase/catalog)):
 
 <p align="center">
-  <img src="./docs/assets/whileui-showcase.gif" width="300" alt="WhileUI Cosmic Aura mobile theme demonstrating light and dark modes, controls, Select, and composable chat" />
-  <img src="./docs/assets/whileui-showcase-atelier.gif" width="300" alt="WhileUI Atelier mobile theme demonstrating compact controls, authentication forms, Select, and composable chat" />
+  <img src="./docs/assets/whileui-catalog.gif" width="760" alt="The WhileUI component catalog running side by side on iPhone, Android and web: scrolling the components, switching from light to dark theme, and opening the Controls tab" />
+</p>
+
+**Clayhouse** — a made-up ceramics studio app built only from WhileUI, with its own theme
+and fonts ([`apps/showcase/clayhouse`](apps/showcase/clayhouse)):
+
+<p align="center">
+  <img src="./docs/assets/whileui-clayhouse.gif" width="760" alt="Clayhouse, a made-up ceramics studio app, running side by side on iPhone, Android and web: a live kiln temperature and firing curve, the glaze library, switching to night mode, and the member screen" />
 </p>
 
 ## Installation
@@ -57,7 +64,7 @@ module.exports = withWhileUIMetro(config, {
 > `expo-font` and `@expo/vector-icons` on the real `react-native`. Without that, Uniwind's
 > import rewrite leaves every icon glyph silently missing on iOS and Android while web
 > renders fine. Pass `exemptFromUniwindRewrite: ['pkg']` for any other package that
-> imports a non-component export from `react-native`. It must be the outermost wrapper.
+> imports a `react-native` export Uniwind's wrapper lacks. It must be the outermost wrapper.
 
 2. **global.css** at app root:
 
@@ -226,10 +233,10 @@ function MyScreen() {
 
 **Opinionated blocks** (auth, profile) are **copy-paste templates** in the showcase app:
 
-- **Auth:** `apps/showcase/templates/auth/` — SignInForm, SignUpForm, ForgotPasswordForm, ResetPasswordForm, VerifyEmailForm, SocialConnections, UserMenu
-- **Profile:** `apps/showcase/templates/profile/` — ProfileHeader, SettingsSection, SettingsItem, AccountCard
+- **Auth:** `apps/showcase/catalog/templates/auth/` — SignInForm, SignUpForm, ForgotPasswordForm, ResetPasswordForm, VerifyEmailForm, SocialConnections, UserMenu
+- **Profile:** `apps/showcase/catalog/templates/profile/` — ProfileHeader, SettingsSection, SettingsItem, AccountCard
 
-**To use auth or profile blocks:** Copy the template file(s) from `apps/showcase/templates/` into your app. Customize as needed (error handling, loading state, social auth slot, branding). Each template imports primitives from `@thewhileloop/whileui`.
+**To use auth or profile blocks:** Copy the template file(s) from `apps/showcase/catalog/templates/` into your app. Customize as needed (error handling, loading state, social auth slot, branding). Each template imports primitives from `@thewhileloop/whileui`.
 
 ## Philosophy
 
@@ -239,12 +246,30 @@ function MyScreen() {
 - **Accessible** — Proper ARIA roles, keyboard support, controlled/uncontrolled state.
 - **Tree-Shakeable** — Only imports what you use. `sideEffects: false`.
 
+## AI agents
+
+Every release ships its docs for agents inside the package, so an agent reads the docs for
+the version you have installed, not whatever a website currently shows:
+
+- `node_modules/@thewhileloop/whileui/dist/agent/llms.txt` — rules, composition grammar
+  and every component in one page. `llms-components.txt` adds each API section;
+  `llms-full.txt` is this README.
+- [`@thewhileloop/whileui-mcp`](packages/mcp/README.md) serves the same catalog over MCP
+  (`list_components`, `get_component_docs`, `get_theme_tokens`, `get_guide`):
+
+  ```bash
+  claude mcp add whileui -- npx -y @thewhileloop/whileui-mcp
+  ```
+
+Both are generated from this README at build time, and the build fails if a component
+named here is not exported.
+
 ## Quick Reference (AI / Code Generation)
 
 - **Full-screen:** `AppShell` + `Header` in `header` + `BottomNav` in `bottomNav` + content in `children`
 - **No-jump loading:** keep `AppShell` mounted, set `loading` + `skeleton` (e.g., `PageSkeleton`/`ScreenSkeleton`)
 - **Layout:** `Stack` (vertical), `Row` (horizontal) — both support `gap`, `align`, `justify`
-- **Auth callbacks:** Auth templates use objects: `onSubmit({ email, password })`, `onSubmit({ firstName, lastName, email, password })`, etc. Copy templates from `apps/showcase/templates/auth/`.
+- **Auth callbacks:** Auth templates use objects: `onSubmit({ email, password })`, `onSubmit({ firstName, lastName, email, password })`, etc. Copy templates from `apps/showcase/catalog/templates/auth/`.
 - **PortalHost:** Add `<PortalHost />` at app root for Select, Popover, Tooltip, HoverCard.
   Inside any WhileUI overlay they render into that overlay's layer without configuration.
 - **Motion:** Wrap the root in `<MotionProvider>`; use `useMotionPolicy()` for semantic
@@ -255,7 +280,7 @@ function MyScreen() {
   `@source './node_modules/@thewhileloop/whileui/dist';` or every component renders unstyled.
 - **States:** `LoadingState`, `EmptyState` and `ErrorState` share one shape; `ErrorState`
   takes `onRetry`. `Text variant="eyebrow"` is the muted section label above a title.
-- **Reference:** Block props in `packages/ui/src/blocks` (core) and `apps/showcase/templates/` (auth, profile); flow patterns in README "Flow Patterns" section.
+- **Reference:** Block props in `packages/ui/src/blocks` (core) and `apps/showcase/catalog/templates/` (auth, profile); flow patterns in README "Flow Patterns" section.
 
 ### Composition grammar
 
@@ -360,7 +385,7 @@ function MyScreen() {
 
 ### Auth (Copy from showcase templates)
 
-Copy from `apps/showcase/templates/auth/`:
+Copy from `apps/showcase/catalog/templates/auth/`:
 
 | Block                  | File                       | Description                           |
 | ---------------------- | -------------------------- | ------------------------------------- |
@@ -418,7 +443,7 @@ Copy from `apps/showcase/templates/auth/`:
 
 ### Profile & Settings (Copy from showcase templates)
 
-Copy from `apps/showcase/templates/profile/`:
+Copy from `apps/showcase/catalog/templates/profile/`:
 
 | Block               | File                   | Description                         |
 | ------------------- | ---------------------- | ----------------------------------- |
@@ -634,10 +659,15 @@ Block props: see TypeScript interfaces in `packages/ui/src/blocks`.
 
 ```bash
 bun install
-cd apps/showcase
-bun run dev
-# Or: npx expo start --web
+bun run build                     # the apps resolve the library from packages/ui/dist
+cd apps/showcase/catalog && bun run dev     # every component and block, port 8082
+cd apps/showcase/clayhouse && bun run dev   # a made-up app built from them, port 8084
 ```
+
+The showcase is two independent Expo apps. `catalog` demonstrates each component on its
+own. `clayhouse` is a made-up ceramics studio app that puts the same components to work on
+one believable job, with its own theme and fonts; it shows what a consumer builds, not new
+API.
 
 ## Project Structure
 
@@ -670,13 +700,13 @@ whileui/
 │           │   └── theme-bridge.ts
 │           └── index.ts       # Barrel export
 ├── apps/
-│   └── showcase/              # Expo demo app
-│       ├── templates/         # Copy-paste templates (auth, profile)
-│       │   ├── auth/
-│       │   └── profile/
-│       ├── App.tsx            # Component showcase
-│       ├── global.css         # Theme variables (OKLCH) — at app root!
-│       └── metro.config.js    # Uniwind + monorepo config
+│   └── showcase/
+│       ├── catalog/           # Expo app: every component and block
+│       │   ├── templates/     # Copy-paste templates (auth, profile)
+│       │   ├── App.tsx
+│       │   ├── global.css     # Theme variables (OKLCH) — at app root!
+│       │   └── metro.config.js
+│       └── clayhouse/         # Expo app: a made-up studio app built on WhileUI
 └── package.json               # bun monorepo root
 ```
 
@@ -1599,6 +1629,11 @@ toast({ title: 'Success', description: 'Saved!', variant: 'success' });
 Each toast owns its duration from the moment it appears; adding or dismissing another
 toast does not restart timers already in progress.
 
+Every variant sits on the theme's `popover` surface; `success` and `destructive` mark the
+toast with a status dot and tinted border rather than a solid fill. The stack is capped
+at `max-w-md` and centred, which never engages on a phone. A toast is announced politely
+to screen readers without taking focus, and its slide-in follows the motion policy.
+
 ## Popover
 
 ```tsx
@@ -1710,7 +1745,7 @@ announces as a heading to assistive technology — as do `DropdownMenuLabel` and
 ## SignInForm
 
 Copy `sign-in-form.tsx` and its sibling `auth-form-footer.tsx` from
-`apps/showcase/templates/auth/`, then:
+`apps/showcase/catalog/templates/auth/`, then:
 
 ```tsx
 import { SignInForm } from './templates/auth'; // or your path
@@ -1735,7 +1770,7 @@ import { SignInForm } from './templates/auth'; // or your path
 ## SignUpForm
 
 Copy `sign-up-form.tsx` and its sibling `auth-form-footer.tsx` from
-`apps/showcase/templates/auth/`, then:
+`apps/showcase/catalog/templates/auth/`, then:
 
 ```tsx
 import { SignUpForm } from './templates/auth'; // or your path
@@ -2283,7 +2318,7 @@ fetching. The spinner is named for assistive technology by `label` (default "Loa
 
 ## ProfileHeader
 
-Copy from `apps/showcase/templates/profile/profile-header.tsx`, then:
+Copy from `apps/showcase/catalog/templates/profile/profile-header.tsx`, then:
 
 ```tsx
 import { ProfileHeader } from './templates/profile'; // or your path
@@ -2305,7 +2340,7 @@ import { ProfileHeader } from './templates/profile'; // or your path
 
 ## SettingsSection / SettingsItem
 
-Copy from `apps/showcase/templates/profile/`, then:
+Copy from `apps/showcase/catalog/templates/profile/`, then:
 
 ```tsx
 import { SettingsSection, SettingsItem } from './templates/profile'; // or your path

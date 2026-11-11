@@ -1,7 +1,7 @@
 {
   "name": "@thewhileloop/whileui",
   "version": "4.2.3",
-  "description": "WhileUI Native — Copy-paste components for React Native. You own the code.",
+  "description": "WhileUI Native \u2014 Copy-paste components for React Native. You own the code.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -52,6 +52,7 @@
       "types": "./dist/markdown.d.ts",
       "import": "./dist/markdown.js"
     },
+    "./agent/catalog.json": "./dist/agent/catalog.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -63,7 +64,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && cp src/metro.cjs src/metro.d.cts dist/",
+    "build": "tsc -p tsconfig.build.json && cp src/metro.cjs src/metro.d.cts dist/ && bun scripts/build-agent-docs.mjs",
     "prepack": "cp ../../README.md README.md",
     "postpack": "rm -f README.md",
     "prepare": "bun run build",

@@ -4,10 +4,11 @@ const { withUniwindConfig } = require('uniwind/metro');
 
 /**
  * Packages that must resolve the real `react-native`. Uniwind's native resolver
- * rewrites every `from 'react-native'` to its component wrapper, which re-exports
- * components and nothing else, so a package importing a non-component export gets
- * `undefined` with no build error. `expo-asset` imports `AssetRegistry` that way, and
- * without it every `@expo/vector-icons` glyph is silently absent on iOS and Android.
+ * rewrites every `from 'react-native'` to its component wrapper. The wrapper re-exports
+ * the components and most of the API, but not all of it, and a missing export arrives
+ * as `undefined` with no build error. `expo-asset` imports `AssetRegistry`, which the
+ * wrapper lacks, and without it every `@expo/vector-icons` glyph is silently absent on
+ * iOS and Android.
  */
 const NEEDS_REAL_REACT_NATIVE = ['expo-asset', 'expo-font', '@expo/vector-icons'];
 

@@ -25,22 +25,25 @@ Uniwind's `ios:` / `android:` / `web:` / `native:` selectors for that.
 
 Bun workspace (`bun@1.3.9`). Never run `yarn` here.
 
-| Path                                     | What                                                           |
-| ---------------------------------------- | -------------------------------------------------------------- |
-| `packages/ui/src/components/`, `blocks/` | React Native components and application-shaped blocks          |
-| `packages/ui/src/lib/`                   | Token contracts, recipes, theme helpers and React Native hooks |
-| `packages/ui/src/tokens.ts`              | Renderer-free entry → `@thewhileloop/whileui/tokens`           |
-| `apps/showcase/`                         | Expo showcase, port 8082                                       |
-| `fixtures/`                              | Consumer smoke fixtures — type-smoke, vite-smoke (RNW)         |
-| `eslint.config.mjs`                      | One flat config for every workspace, fixture and config file   |
-| `e2e/`                                   | Playwright specs, config and axe scan — browser evidence       |
-| `e2e/maestro/`                           | Native flows — the platform accessibility tree                 |
-| `scripts/verify-package.mjs`             | Packs and inspects the tarball a consumer would install        |
-| `docs/review-perspectives/`              | Per-PR review cards; `/review-perspectives` runs them          |
-| `docs/stability.md`                      | Maturity of every family and the evidence behind it            |
-| `ROADMAP.md`, `PLAN.md`                  | Direction; production foundation plan and phases               |
-| `IMPLEMENTATION.md`                      | Resumable task ledger, evidence and next safe action           |
-| `TODO.md`, `CONSUMERS.md`                | Task list; consuming apps and their flows. Gitignored — local  |
+| Path                                       | What                                                           |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| `packages/ui/src/components/`, `blocks/`   | React Native components and application-shaped blocks          |
+| `packages/ui/src/lib/`                     | Token contracts, recipes, theme helpers and React Native hooks |
+| `packages/ui/src/tokens.ts`                | Renderer-free entry → `@thewhileloop/whileui/tokens`           |
+| `packages/ui/scripts/build-agent-docs.mjs` | Builds `dist/agent` (llms.txt files, catalog.json) from README |
+| `packages/mcp/`                            | `@thewhileloop/whileui-mcp`: serves that catalog to agents     |
+| `apps/showcase/catalog/`                   | Expo component catalog, port 8082                              |
+| `apps/showcase/clayhouse/`                 | Independent made-up app built on WhileUI, port 8084            |
+| `fixtures/`                                | Consumer smoke fixtures — type-smoke, vite-smoke (RNW)         |
+| `eslint.config.mjs`                        | One flat config for every workspace, fixture and config file   |
+| `e2e/`                                     | Playwright specs, config and axe scan — browser evidence       |
+| `e2e/maestro/`                             | Native flows — the platform accessibility tree                 |
+| `scripts/verify-package.mjs`               | Packs and inspects the tarball a consumer would install        |
+| `docs/review-perspectives/`                | Per-PR review cards; `/review-perspectives` runs them          |
+| `docs/stability.md`                        | Maturity of every family and the evidence behind it            |
+| `ROADMAP.md`, `PLAN.md`                    | Direction; production foundation plan and phases               |
+| `IMPLEMENTATION.md`                        | Resumable task ledger, evidence and next safe action           |
+| `TODO.md`, `CONSUMERS.md`                  | Task list; consuming apps and their flows. Gitignored — local  |
 
 ```bash
 bun install
@@ -52,8 +55,9 @@ bun run verify                # every gate, in order, ~80s — run before pushin
 bun run verify:package        # pack a tarball and check what a consumer would install
 bun run test:native           # Maestro flows against a built app (see e2e/maestro)
 bun run build                 # package build; excludes tests from dist
-cd apps/showcase && bun run dev
-cd apps/showcase && bunx expo export --platform web   # proves it bundles
+cd apps/showcase/catalog && bun run dev
+cd apps/showcase/catalog && bunx expo export --platform web   # proves it bundles
+cd apps/showcase/clayhouse && bun run dev                    # made-up app, port 8084
 ```
 
 A consumer on a local link resolves `packages/ui/dist/` — rebuild after edits.
@@ -158,7 +162,7 @@ Notes:
    `packages/ui/src/blocks/<category>/` — and re-export from `packages/ui/src/index.ts`
 2. Add it to the README components or blocks table
 3. Document its props — README API Reference for a component, Blocks API for a block
-4. Add a demo to `apps/showcase`
+4. Add a demo to `apps/showcase/catalog`
 5. Declare its maturity level (`PLAN.md` > Maturity and lifecycle). Anything new starts
    `experimental`; a showcase demo alone never makes it `stable`
 6. A block that introduces a new flow also goes in the README Flow Patterns table
@@ -193,9 +197,10 @@ never imported; that is the failure this rule exists to prevent.
 - `withUniwindConfig(config, options)` takes the config first and is **not** curried
 - **Uniwind rewrites every `from 'react-native'` to `uniwind/components` on native.**
   That is how `className` reaches the primitives, and it exempts only importers inside
-  `react-native` itself. Any other package importing a **non-component** export gets
-  `undefined`. Exempt the ones that need the real module in `metro.config.js` — see
-  Tooling gotchas
+  `react-native` itself. The wrapper re-exports components and most of the API — on
+  1.12.2, 97 getters including `processColor`, `findNodeHandle` and `TurboModuleRegistry`
+  — but not all of it, and a missing export arrives as `undefined`. Exempt a package only
+  after finding the export it needs missing from `uniwind/components` — see Tooling gotchas
 - Docs: https://docs.uniwind.dev/llms-full.txt
 
 ## Theme System
@@ -370,6 +375,7 @@ Add to this file when you discover:
 - **Pressable has no default role:** Symptom: a custom control is announced as a plain view by VoiceOver/TalkBack, and `getByRole('button')` fails. Cause: `Pressable` sets no `accessibilityRole`. Fix: set it explicitly before spreading `{...props}` so callers can still override.
 - **A Pressable used as a container hides everything inside it:** Symptom: VoiceOver reaches an overlay as one element and cannot focus the buttons within. Cause: `Pressable` defaults to `accessible: true`, and on iOS an accessible view is a single accessibility element whose descendants are not individually reachable. Every backdrop and panel built from `Pressable` — tap-to-dismiss backdrops, panels whose only `onPress` is `stopPropagation` — hits this. Fix: `accessible={false}` on both, plus `importantForAccessibility="no"` on the backdrop. **Only iOS catches it.** RNTL finds descendants regardless of an ancestor's `accessible` prop; React Native Web keeps them in the DOM; Android leaves every node in the UIAutomator tree. On iOS the descendants vanish from the accessibility tree entirely — `e2e/maestro/alert-dialog.yaml` fails without the fix and passes with it. Run `maestro --platform ios test e2e/maestro` when touching an overlay container.
 - **A full-screen `Pressable` backdrop treats a swipe as a tap:** Symptom: scrolling a half-height sheet closes it. Cause: a press stays alive while the finger stays inside the view's bounds, and a backdrop's bounds are the whole screen. Fix: `useTapOnly` from `lib/tap-only`, which drops a press whose finger moved past the touch slop. Found by Maestro on Android; RNTL cannot see it.
+- **An icon inside a pressable joins its VoiceOver label:** Symptom: a button reads as ", Download". Cause: iOS builds a pressable's label by joining each child's text with ", ", and an icon font glyph is text; only children with `accessibilityElementsHidden` are skipped. Fix: `aria-hidden` on the icon or its wrapper — React Native maps it to the iOS and Android props and React Native Web emits it as is. RNTL's name matching includes hidden text, so test that the glyph is unreachable (`queryByText` returns null), not the name.
 - **Section headings need `accessibilityRole="header"`:** Dialog titles and menu section labels announce as plain text without it, and rotor navigation cannot find them.
 - **No role means no keyboard on web:** React Native Web renders a `Pressable` without `accessibilityRole` as `<div tabindex="0">` — Tab reaches it, but Enter and Space do nothing, because RNW only attaches key handling to real roles. A missing role is a keyboard-operability bug, not just an announcement one.
 - **React Native Web dropped `accessibilityState` → `aria-*` derivation:** `accessibilityState={{ checked }}` no longer emits `aria-checked`, so `role="checkbox"`, `"switch"` and `"radio"` fail ARIA validation. Set `aria-checked` as well; React Native maps the `aria-` form on native, so one prop serves both.
@@ -403,9 +409,11 @@ Add to this file when you discover:
   escapes it because Uniwind branches to a different resolver there. Fix: wrap
   `resolveRequest` after `withUniwindConfig` and send `expo-asset`, `expo-font` and
   `@expo/vector-icons` to Metro's own resolver. `withWhileUIMetro` from
-  `@thewhileloop/whileui/metro` does exactly that; `apps/showcase/metro.config.js` uses it. Diagnosed by probing the app: `Object.keys(require('react-native'))` contained
+  `@thewhileloop/whileui/metro` does exactly that; `apps/showcase/catalog/metro.config.js` uses it. Diagnosed by probing the app: `Object.keys(require('react-native'))` contained
   nothing matching "asset", which is how you tell a rewrite from a missing export. This
-  generalises — **any** package importing a non-component export from `react-native` hits it.
+  generalises to any package importing an export the wrapper lacks — but check before
+  exempting: `react-native-svg` and `expo-linear-gradient` need nothing the wrapper is
+  missing, and an exemption added on suspicion is a workaround with no cause.
 - **`Container` swallows a `flex-1` child unless you pass `fill`:** Symptom: a screen
   whose only content is an `EmptyState` renders blank, or shows the icon with the text
   clipped away. Cause: `EmptyState` is `flex-1 items-center justify-center`, and
@@ -413,8 +421,8 @@ Add to this file when you discover:
   content height. Nothing errors. Fix: `<Container size="sm" fill>` whenever the child
   fills its parent.
 - **Release APK install fails with "Requested internal only, but not enough space":** the Pixel 8 AVD's 6 GB data partition sits near 95% from the system image alone, and Android refuses installs below its low-storage threshold even with 300 MB free. Uninstalling apps frees almost nothing. Fix on an emulator: `adb shell settings put global sys_storage_threshold_percentage 1` and `sys_storage_threshold_max_bytes 52428800`, then install. Raising `disk.dataPartition.size` in `config.ini` did not grow the existing image. Under heavy host load the same emulator throws launcher and System UI ANR dialogs that block Maestro; dismiss them with `adb shell input tap` and rerun one flow at a time.
-- **An Android release build keeps a stale JavaScript bundle when only `packages/ui` changed:** Gradle's `createBundleReleaseJsAndAssets` tracks the app directory, not the workspace package, so `expo run:android --variant release` after a library-only edit reports success and ships the previous bundle. Measured: a recipe fix was invisible on the emulator until an unrelated edit in `apps/showcase/App.tsx` forced the task to rerun. Touch an app file, or check the Gradle output for that task, before trusting a device run.
-- **Native projects are generated, not tracked:** `apps/*/ios` and `apps/*/android` come from `expo prebuild` and are gitignored. The showcase stays a managed Expo app; never hand-edit them.
+- **An Android release build keeps a stale JavaScript bundle when only `packages/ui` changed:** Gradle's `createBundleReleaseJsAndAssets` tracks the app directory, not the workspace package, so `expo run:android --variant release` after a library-only edit reports success and ships the previous bundle. Measured: a recipe fix was invisible on the emulator until an unrelated edit in the app's `App.tsx` forced the task to rerun. Touch an app file, or check the Gradle output for that task, before trusting a device run.
+- **Native projects are generated, not tracked:** `apps/showcase/*/ios` and `apps/showcase/*/android` come from `expo prebuild` and are gitignored. Each showcase app stays a managed Expo app; never hand-edit them.
 - **React 19 deprecated `React.MutableRefObject` and `React.ElementRef`:** Use `React.RefObject<T>` (its `current` is mutable now) and `React.ComponentRef<typeof X>`. `no-deprecated` catches both.
 - **`eslint-plugin-react` does not support ESLint 10** (peer caps at `^9.7`), and its rules are mostly DOM JSX anyway. `react-hooks` `recommended-latest` plus type-aware `typescript-eslint` covers what matters here.
 - **ESLint config lives at the root only.** Adding a per-package config or a turbo `lint` task splits the rule set and leaves `fixtures/` and root config files unlinted.
@@ -443,13 +451,13 @@ for a composition that has not repeated.
 
 ### Where to put new things
 
-| What                 | Path                                          | Notes                                                                                                                               |
-| -------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Component**        | `packages/ui/src/components/<name>/`          | Export from `index.ts`, re-export in `packages/ui/src/index.ts`. Demo in `apps/showcase`                                            |
-| **Block**            | `packages/ui/src/blocks/<category>/`          | Categories: `layout`, `navigation`, `chat`, `lists`, `commerce`, `media`, `datepicker`, `splash`                                    |
-| **Auth/Profile**     | `apps/showcase/templates/auth/` or `profile/` | Copy-paste templates; NOT in core package. Import primitives from `@thewhileloop/whileui`                                           |
-| **Shared hook/util** | `packages/ui/src/lib/`                        | Theme helpers, cn, portal, tv, font-context                                                                                         |
-| **Tokens/contract**  | `packages/ui/src/lib/`                        | `theme-contract`, `visual-token-contract`, `theme-presets`. **Keep these free of any renderer import** — they are the portable core |
+| What                 | Path                                                | Notes                                                                                                                               |
+| -------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Component**        | `packages/ui/src/components/<name>/`                | Export from `index.ts`, re-export in `packages/ui/src/index.ts`. Demo in `apps/showcase/catalog`                                    |
+| **Block**            | `packages/ui/src/blocks/<category>/`                | Categories: `layout`, `navigation`, `chat`, `lists`, `commerce`, `media`, `datepicker`, `splash`                                    |
+| **Auth/Profile**     | `apps/showcase/catalog/templates/auth/`, `profile/` | Copy-paste templates; NOT in core package. Import primitives from `@thewhileloop/whileui`                                           |
+| **Shared hook/util** | `packages/ui/src/lib/`                              | Theme helpers, cn, portal, tv, font-context                                                                                         |
+| **Tokens/contract**  | `packages/ui/src/lib/`                              | `theme-contract`, `visual-token-contract`, `theme-presets`. **Keep these free of any renderer import** — they are the portable core |
 
 ## Custom Themes (Starter Kits)
 
