@@ -1,6 +1,6 @@
 {
   "name": "@thewhileloop/whileui-mcp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "MCP server that gives AI agents the docs and theme tokens of the WhileUI version installed in your project.",
   "license": "MIT",
   "repository": {

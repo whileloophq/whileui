@@ -1,5 +1,91 @@
 # @thewhileloop/whileui
 
+## 4.3.0
+
+### Minor Changes
+
+- 4019cba: The package now ships docs for AI agents in `dist/agent/`: `llms.txt` (rules, composition
+  grammar and every component), `llms-components.txt` (each component's API section),
+  `llms-full.txt` (the README) and `catalog.json` (the same data, structured, exported as
+  `@thewhileloop/whileui/agent/catalog.json`). They are generated from the README at build
+  time, so an agent always reads the docs for the installed version. Nothing changes for
+  existing call sites.
+- a6c9935: `Alert` takes `announce` for alerts that appear in response to an action, such as a failed
+  submit. Android and the web already read an appearing alert through its live region; iOS
+  has none, so `announce` speaks the alert's title and description once when it appears.
+  It is off by default, so alerts that are part of a screen's content are not read aloud on
+  every visit.
+- 40ae57d: The built-in presets now pass WCAG AA: 4.5:1 for text, 3:1 for the focus ring. The Soft
+  preset is also the runtime fallback palette, so this changes what an unthemed component
+  shows.
+
+  | Preset · mode   | Token                            | Was                                  | Now       |
+  | --------------- | -------------------------------- | ------------------------------------ | --------- |
+  | Soft · light    | `ring`                           | `rgba(61, 139, 255, 0.34)`           | `#3d8bff` |
+  | Soft · light    | `destructive`                    | `#f66151`                            | `#d03d31` |
+  | Soft · light    | `destructiveActive`              | `#e0503f`                            | `#bb261d` |
+  | Soft · light    | `success`                        | `#13a86d`                            | `#00864d` |
+  | Soft · light    | `info`                           | `#3d8bff`                            | `#2070e1` |
+  | Soft · dark     | `ring`                           | `rgba(127, 240, 197, 0.36)`          | `#7ff0c5` |
+  | Atelier · light | `primary`, `ring`                | `#b4552d`, `rgba(180, 85, 45, 0.45)` | `#af5028` |
+  | Atelier · light | `mutedForeground`, `placeholder` | `#7a6a58`                            | `#716150` |
+  | Atelier · dark  | `ring`                           | `rgba(232, 147, 95, 0.45)`           | `#e8935f` |
+
+  The soft tints and borders of the changed colours follow them. A translucent ring was the
+  main cause: blended onto the page it measured 1.45–2.67:1, too faint for keyboard users to
+  find. To keep an old value, override that token in your theme. A unit test now keeps every
+  built-in preset passing.
+
+- 3e99a15: Add `themeFromSeeds` and `checkThemeContrast` (from the root and from
+  `@thewhileloop/whileui/tokens`). `themeFromSeeds` builds a full
+  light and dark theme from a background, foreground and primary colour, tuning only the
+  colours it derives so they meet WCAG AA; the seeds are kept as given, and `overrides`
+  replaces any base colour. `checkThemeContrast` reports every text and focus-ring pairing
+  of any palette. Nothing changes for existing themes.
+- cbc0cee: `Toast` now looks like the rest of the theme. Every variant renders on the `popover`
+  surface; `success` and `destructive` show a status dot and tinted border instead of
+  filling the whole toast with the status colour. The description uses `muted-foreground` —
+  it previously referenced `success-foreground-muted` and `destructive-foreground-muted`,
+  which are not theme tokens, so it was never styled.
+
+  `ToastContainer` caps the stack at `max-w-md` and centres it, so a toast on a wide browser
+  window is a notice rather than a full-width banner. Phones are unaffected.
+
+  Toasts are now announced to screen readers without taking focus: through a polite live
+  region on Android and the web, and with `AccessibilityInfo.announceForAccessibility` on
+  iOS, which has no live regions. The dismiss control is a 44 px target on every platform
+  with a focus ring, and the entry animation is skipped when the motion policy disables
+  animation.
+
+  No call-site change is needed. `toastVariants` is still exported for extending the variant
+  styles.
+
+### Patch Changes
+
+- d1a1f74: Every component's props now carry doc comments, so editors show them on hover, and
+  `ChatMessageBubbleProps` is exported. The README's API tables are generated from the
+  props types, and 27 components that had no API section now have one.
+- 0932050: The icons in `EmptyState`, `ErrorState`, `FeatureGate` and `MetricCard` are decorative and
+  are now hidden from screen readers. An icon font glyph is text, so it was read inside the
+  block's description. No call-site change is needed.
+- cbc0cee: Icons inside buttons and navigation no longer leak into the spoken label on iOS. React Native
+  builds a pressable's VoiceOver label by joining every child's text, and an icon font glyph is
+  text, so a `Button` with a `ButtonIcon` was read as ", Download". `ButtonIcon` and the icon
+  slots of `BottomNav`, `TabBar`, `FloatingBottomNav`, `DrawerMenu`, `ListItem` and
+  `NotificationItem` are now marked `aria-hidden`. No call-site change is needed.
+- cbc0cee: `FloatingBottomNav` now gives every tab an accessible name. Inactive tabs render only their icon, so VoiceOver, TalkBack and browser screen readers announced them as an unnamed "tab". Each tab now carries its `label` as `accessibilityLabel`. No call-site change is needed.
+- 0932050: A `FormLabel` now names the `Input`, `Textarea` or `NumericInput` in its `FormField` on the
+  web and Android (`aria-labelledby`). A `NumericInput` in a form had no accessible name on
+  the web, and an `Input` was only named by its placeholder. A label you set yourself
+  (`accessibilityLabel`, `aria-label`, `aria-labelledby` or `accessibilityLabelledBy`)
+  still wins. A required field sets `aria-required` on the control, and the asterisk is no
+  longer read as part of the label on any platform. iOS has no labelled-by, so VoiceOver
+  reads the visible label just before the field. No call-site change is needed.
+- 0932050: `SmartImage` now exposes its image to screen readers under its `alt` text on every
+  platform. On the web `expo-image` dropped `alt` (its renderer reads only
+  `accessibilityLabel`), and on iOS and Android an image is skipped unless it is marked
+  accessible. An empty `alt` keeps a decorative image hidden. No call-site change is needed.
+
 ## 4.2.3
 
 ### Patch Changes
