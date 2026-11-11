@@ -41,7 +41,7 @@ export function FeatureGate({
         {...props}
       >
         <View className="items-start gap-3">
-          {icon ? <View>{icon}</View> : null}
+          {icon ? <View aria-hidden>{icon}</View> : null}
           <View className="gap-1">
             <Text className="font-semibold text-foreground" style={body}>
               {title}
@@ -76,7 +76,11 @@ export function FeatureGate({
         className="items-center justify-center bg-background/70 px-6"
         style={{ paddingVertical: surfacePadding(visual, 'default') }}
       >
-        {icon ? <View className="mb-3">{icon}</View> : null}
+        {icon ? (
+          <View aria-hidden className="mb-3">
+            {icon}
+          </View>
+        ) : null}
         <Text className="text-center font-semibold text-foreground" style={body}>
           {title}
         </Text>

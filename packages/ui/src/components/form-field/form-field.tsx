@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useId, useMemo } from 'react';
 import {
   Text,
   View,
@@ -52,6 +52,8 @@ export interface FormFieldState {
   invalid: boolean;
   disabled: boolean;
   required: boolean;
+  /** Set inside a FormField: `FormLabel` takes it as its id and controls point to it. */
+  labelId?: string;
 }
 
 const FormFieldContext = createContext<FormFieldState>({
@@ -94,9 +96,10 @@ const FormField: ForwardRefComponent<ViewInstance, FormFieldProps> = React.forwa
     ref
   ) => {
     const interaction = useInteractionTokens();
+    const labelId = useId();
     const contextValue = useMemo(
-      () => ({ density, invalid, disabled, required }),
-      [density, disabled, invalid, required]
+      () => ({ density, invalid, disabled, required, labelId }),
+      [density, disabled, invalid, labelId, required]
     );
     return (
       <FormFieldContext.Provider value={contextValue}>
@@ -115,12 +118,13 @@ FormField.displayName = 'FormField';
 
 const FormLabel: ForwardRefComponent<TextInstance, FormLabelProps> = React.forwardRef(
   ({ className, showRequiredIndicator = true, children, style, ...props }, ref) => {
-    const { invalid, disabled, required } = useContext(FormFieldContext);
+    const { invalid, disabled, required, labelId } = useContext(FormFieldContext);
     const visual = useVisualTokens();
 
     return (
       <Text
         ref={ref}
+        nativeID={labelId}
         className={cn(
           'font-medium text-foreground',
           invalid && 'text-destructive',
@@ -131,7 +135,12 @@ const FormLabel: ForwardRefComponent<TextInstance, FormLabelProps> = React.forwa
         {...props}
       >
         {children}
-        {required && showRequiredIndicator ? <Text className="text-destructive"> *</Text> : null}
+        {required && showRequiredIndicator ? (
+          // The control announces "required" itself; a spoken "star" adds nothing.
+          <Text aria-hidden className="text-destructive">
+            {' *'}
+          </Text>
+        ) : null}
       </Text>
     );
   }

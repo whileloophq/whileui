@@ -1,0 +1,71 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components"
+- button "Controls"
+- button "Overlays"
+- button "Forms" [pressed]
+- button "Auth"
+- button "Navigation"
+- button "Layout"
+- button "Chat"
+- button "Profile"
+- button "Lists"
+- button "Commerce"
+- text: Form Controls FormField, Input, NumericInput, LabeledField, and compact composition Work Email
+- textbox "Work Email":
+  - /placeholder: you@company.com
+- text: We'll send invoices and account alerts to this email. Weight
+- textbox "Weight": /\d+\.\d+/
+- text: kg
+- button "Decrease value": −
+- button "Increase value": +
+- text: Supports prefix/suffix slots and optional steppers. Monthly Budget 
+- textbox "Monthly Budget": /\d+/
+- text: USD Used for alerts and spending caps Notes
+- textbox "Notes":
+  - /placeholder: Write something great...
+- checkbox "Terms & Privacy"
+- text: Terms & Privacy
+- switch "Notify me" [checked]
+- text: Notify me Date Picker Modal Compact trigger opens bottom sheet with calendar
+- button "Pick a date"
+- text: Time Picker Modal Hour and minute wheels in the same sheet
+- button "Pick a time"
+- text: Date Picker Inline Embedded calendar for forms or dashboards
+- slider: /< June \d+ > Sun Mon Tue Wed Thu Fri Sat/
+- text: /\d+/
+- button /Monday 1 June \d+/
+- button /Tuesday 2 June \d+/
+- button /Wednesday 3 June \d+/
+- button /Thursday 4 June \d+/
+- button /Friday 5 June \d+/
+- button /Saturday 6 June \d+/
+- button /Sunday 7 June \d+/
+- button /Monday 8 June \d+/
+- button /Tuesday 9 June \d+/
+- button /Wednesday \d+ June \d+/
+- button /Thursday \d+ June \d+/
+- button /Friday \d+ June \d+/
+- button /Saturday \d+ June \d+/
+- button /Sunday \d+ June \d+/
+- button /today Monday \d+ June \d+/
+- button /Tuesday \d+ June \d+/
+- button /Wednesday \d+ June \d+/
+- button /Thursday \d+ June \d+/
+- button /Friday \d+ June \d+/
+- button /Saturday \d+ June \d+/
+- button /Sunday \d+ June \d+/
+- button /Monday \d+ June \d+/
+- button /Tuesday \d+ June \d+/
+- button /Wednesday \d+ June \d+/
+- button /Thursday \d+ June \d+/
+- button /Friday \d+ June \d+/
+- button /Saturday \d+ June \d+/
+- button /Sunday \d+ June \d+/
+- button /Monday \d+ June \d+/
+- button /Tuesday \d+ June \d+/
+- text: 1 2 3 4 Date Range Picker Modal Select start and end dates with period marking
+- button "Pick date range"
+- text: Form Modal Screen Modal scaffold for forms with header, loading, and saving states
+- button "Open Form Modal"

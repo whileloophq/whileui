@@ -1,0 +1,56 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components"
+- button "Controls"
+- button "Overlays"
+- button "Forms"
+- button "Auth" [pressed]
+- button "Navigation"
+- button "Layout"
+- button "Chat"
+- button "Profile"
+- button "Lists"
+- button "Commerce"
+- text: Sign In Email & password authentication Welcome back Sign in to your account to continue. Email
+- textbox "you@email.com"
+- text: Password
+- button "Forgot?"
+- textbox "••••••••"
+- button "Sign In"
+- text: or
+- button "Google"
+- button "Apple"
+- button "Don't have an account? Sign Up"
+- text: Sign Up New account registration Create an account Enter your details to get started. First name
+- textbox "Jane"
+- text: Last name
+- textbox "Doe"
+- text: Email
+- textbox "you@email.com"
+- text: Password
+- textbox "••••••••"
+- button "Create Account"
+- text: or
+- button "Google"
+- button "Apple"
+- button "Already have an account? Sign In"
+- text: Forgot Password Password recovery flow Forgot Password Enter your email to reset your password. Email
+- textbox "you@email.com"
+- button "Send Reset Link"
+- button "Remember your password? Back to Sign In"
+- text: Verify Email OTP verification Verify Email We sent a verification code to your email. Enter it below to continue. Verification Code
+- textbox /\d+/
+- button "Verify Email"
+- button "Didn't receive code? Resend"
+- text: Reset Password Set a new password Reset Password Enter your new password below. New Password
+- textbox "********"
+- text: Confirm Password
+- textbox "********"
+- button "Reset Password"
+- text: Social Login Third-party authentication Social Connections Connect your account with social providers.
+- button "G Continue with Google"
+- button "A Continue with Apple"
+- button "GH Continue with GitHub"
+- text: By clicking continue, you agree to our Terms of Service and Privacy Policy. User Menu Signed-in user dropdown
+- button "U"

@@ -389,6 +389,10 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
         >
           <TextInput
             ref={ref}
+            aria-labelledby={
+              (props.accessibilityLabel ?? props['aria-label']) ? undefined : field.labelId
+            }
+            aria-required={field.required || undefined}
             className={cn(
               numericInputTextVariants({ size }),
               'w-full web:outline-none',

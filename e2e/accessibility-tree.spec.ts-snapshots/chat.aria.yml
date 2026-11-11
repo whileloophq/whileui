@@ -1,0 +1,11 @@
+- button "Back": 
+- text: Chat AI conversation
+- button "Open menu": 
+- text: "AI Assistant I can help with summaries, explanations, translations, and more. Try a suggestion below or type your own question. Reasoning trace Reviewed the available primitives and mapped the response into reusable sections. Tool call · searchDocs { \"query\": \"conversation patterns\" }  2 supporting sources How can I help? Ask anything. Supports text, images & attachments."
+- 'button "Suggestion: Summarize this document"'
+- 'button "Suggestion: Explain like I''m 5"'
+- 'button "Suggestion: Translate to Spanish"'
+- 'button "Suggestion: Write a haiku"'
+- button "Attach": 
+- textbox "Message..."
+- button "Send" [disabled]: 

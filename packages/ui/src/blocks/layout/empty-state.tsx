@@ -58,7 +58,13 @@ export function EmptyState({
       {...props}
     >
       <View className="mb-6">
-        {icon ? <View className="text-muted-foreground">{icon}</View> : <DefaultEmptyIcon />}
+        {icon ? (
+          <View aria-hidden className="text-muted-foreground">
+            {icon}
+          </View>
+        ) : (
+          <DefaultEmptyIcon />
+        )}
       </View>
 
       <Text

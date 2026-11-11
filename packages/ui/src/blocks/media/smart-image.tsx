@@ -108,7 +108,9 @@ const SmartImage: ForwardRefComponent<ViewInstance, SmartImageProps> = React.for
         )}
         <Image
           source={imageSource}
-          alt={alt}
+          // expo-image documents `alt` as an alias, but its web renderer reads only
+          // `accessibilityLabel`; this is the prop that names the image everywhere.
+          accessibilityLabel={alt}
           transition={transition}
           onLoadStart={() => setPhase((current) => (current === 'fallback' ? current : 'loading'))}
           onLoad={handleLoad}

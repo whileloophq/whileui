@@ -1,0 +1,21 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components"
+- button "Controls"
+- button "Overlays"
+- button "Forms"
+- button "Auth"
+- button "Navigation"
+- button "Layout"
+- button "Chat"
+- button "Profile" [pressed]
+- button "Lists"
+- button "Commerce"
+- text: Profile Header User profile with stats SM
+- button "Edit Profile"
+- text: /Sarah Miller ✓ @sarahmiller Product designer building beautiful interfaces\. React Native enthusiast\. \d+ Following [\d,.]+[bkmBKM]+ Followers \d+ Projects Account Card Compact user info SM Sarah Miller Pro sarah@whileui\.dev › Settings Grouped preference controls Preferences  Push Notifications/
+- switch "Push Notifications" [checked] [disabled]
+- text:  Dark Mode
+- switch "Dark Mode" [disabled]
+- text:  Privacy Public ›  Sign Out

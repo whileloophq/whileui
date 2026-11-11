@@ -1,0 +1,49 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components"
+- button "Controls"
+- button "Overlays" [pressed]
+- button "Forms"
+- button "Auth"
+- button "Navigation"
+- button "Layout"
+- button "Chat"
+- button "Profile"
+- button "Lists"
+- button "Commerce"
+- text: Feedback Alerts, toasts, skeleton, and spinners
+- alert: 💡 Design tokens Customize every component by editing global.css — no code changes needed.
+- button "Toast"
+- button "Success"
+- button "Error"
+- progressbar "Loading":
+  - img
+- progressbar "Loading":
+  - img
+- text: pulse shimmer Overlays Dialogs, popovers, and menus
+- button "Dialog"
+- button "Delete"
+- button "Sheet + native confirm"
+- button "Nested overlays"
+- button "Popover"
+- button "Tooltip"
+- button "Menu"
+- button "Long press for context menu"
+- text: Disclosure Accordions, collapsibles, and tabs
+- button "Is it fully native?"
+- button "Can I customize the theme?"
+- button "Does it support dark mode?"
+- text: What's included
+- button "Show"
+- tablist:
+  - tab "Preview" [selected]
+  - tab "Code"
+- text: Welcome back Your workspace is ready. Email
+- textbox "you@company.com"
+- button "Continue"
+- text: /Data Display Avatars, aspect ratios, and hover cards WU JD MK \d+:9/
+- link "@whileui (Hover/Press)"
+- button "File"
+- button "Edit"
+- button "View"

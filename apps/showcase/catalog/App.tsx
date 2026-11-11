@@ -992,7 +992,7 @@ function PrimitivesTab({
               <Feather name="arrow-right" size={16} color={colors.foreground} />
             </ButtonIcon>
           </Button>
-          <Button size="icon" variant="outline">
+          <Button size="icon" variant="outline" accessibilityLabel="Favourite">
             <Feather name="heart" size={18} color={colors.foreground} />
           </Button>
         </View>
@@ -2294,13 +2294,19 @@ function ChatBlocksTab({
           <Button
             variant="ghost"
             size="icon"
+            accessibilityLabel="Attach"
             onPress={() => toast({ title: 'Attach (coming soon)' })}
           >
             <Feather name="paperclip" size={20} color={iconColors.foreground} />
           </Button>
         }
         rightSlot={
-          <Button size="icon" disabled={!inputValue.trim()} onPress={handleSend}>
+          <Button
+            size="icon"
+            accessibilityLabel="Send"
+            disabled={!inputValue.trim()}
+            onPress={handleSend}
+          >
             <Feather name="send" size={18} color={iconColors.primaryForeground} />
           </Button>
         }
@@ -2408,13 +2414,19 @@ function LayoutBlocksTab({ onOpenKeyboardScreen }: { onOpenKeyboardScreen: () =>
               placeholderExamples={['Plan a morning walk', 'Log two glasses of water']}
               safeArea={false}
               leftSlot={
-                <Button variant="ghost" size="icon" onPress={() => triggerHaptic('light')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  accessibilityLabel="Attach"
+                  onPress={() => triggerHaptic('light')}
+                >
                   <Feather name="plus" size={20} color={colors.foreground} />
                 </Button>
               }
               rightSlot={
                 <Button
                   size="icon"
+                  accessibilityLabel="Send"
                   onPress={() => {
                     triggerHaptic('medium');
                     toast({ title: 'Sent', description: smartInputValue || '(empty)' });

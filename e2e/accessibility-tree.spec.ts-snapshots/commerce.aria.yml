@@ -1,0 +1,38 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components"
+- button "Controls"
+- button "Overlays"
+- button "Forms"
+- button "Auth"
+- button "Navigation"
+- button "Layout"
+- button "Chat"
+- button "Profile"
+- button "Lists"
+- button "Commerce" [pressed]
+- text: /Product Cards Vertical and horizontal layouts 📦 –\d+% Wireless Earbuds ★ 4\.7 \(\d+\) \$\d+ \$\d+ 📦 Smart Watch ★ 4\.9 \(\d+\) \$\d+ 📦 Noise-Cancelling Headphones ★ 4\.8 \(\d+\) \$\d+ Loading States Component-level skeleton placeholders Pricing Subscription plans/
+- button "Monthly" [pressed]
+- button /Annual Save \d+%/
+- text: /Pro Most Popular For teams and growing products \$\d+ \/month ✓ Unlimited components ✓ Priority support ✓ Figma source files ✓ Custom themes ✕ White-label license/
+- button "Get Started"
+- text: /Subscription Card Current plan summary for settings screens Pro Active \$\d+ \/month Renews on April \d+, \d+/
+- button "Manage plan"
+- button "Upgrade"
+- text: Upgrade Banner Inline upsell with dismiss action Unlock unlimited exports and advanced templates with Pro.
+- button "See plans"
+- button "Dismiss"
+- text: /Usage Bar Usage meter with warning\/exceeded states AI generations today 8\/\d+ Background removals \d+\/\d+ Video exports \d+\/\d+ Checkout Order summary Order Summary Wireless Earbuds × 1 \$\d+\.\d+ Smart Watch × 1 \$\d+\.\d+ Subtotal \$\d+\.\d+ Shipping Free Tax \$\d+\.\d+ Discount -\$\d+\.\d+ Total \$\d+\.\d+/
+- button "Checkout"
+- text: Metric Card Progress bars and segmented stats Total Revenue
+- heading /\$\d+,\d+/ [level=1]
+- text: /\d+% of Q1 target Progress/
+- heading /\d+%/ [level=1]
+- text: Distribution
+- heading /\d+%/ [level=1]
+- text: Feature Gate Locked feature overlay with upgrade CTA Previewed premium output Advanced style transfer is locked Upgrade to Pro to unlock high-resolution transfer presets.
+- button "Upgrade to Pro"
+- text: Smart Image expo-image with skeleton loading and fallback Skeleton (pulsing) shows while loading. Images may load too fast to see it. SmartImage — same size boxes with skeleton while loading.
+- img "Sample image"
+- img "Fallback demo"

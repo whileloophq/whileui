@@ -1,0 +1,40 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components"
+- button "Controls"
+- button "Overlays"
+- button "Forms"
+- button "Auth"
+- button "Navigation"
+- button "Layout" [pressed]
+- button "Chat"
+- button "Profile"
+- button "Lists"
+- button "Commerce"
+- text: "Container — size=\"sm\" Caps content width and centres it. Resize the window: on a phone this is a plain full-width View, because every size is wider than any phone. On a wide screen it stops the line length running away. Container — size=\"lg\" Wider column for dashboards and multi-column content. Bars & Overlays Action Bar Sticky bottom action row with safe-area support"
+- button "Cancel"
+- button "Save Changes"
+- text: Smart Input Screen-owned keyboard handling, a safe-area dock, and rotating examples The box below is a clip for browsing. The full screen is what the keyboard flows drive.
+- button "Open keyboard screen"
+- button "Attach": 
+- textbox /e\.g\..*/
+- button "Send": 
+- text: Confirm Action Sheet Reusable destructive confirmation sheet with action model
+- button "Open Confirm Sheet"
+- text: Sheet Bottom sheet modal with header, scrollable content, footer
+- button "Open Sheet"
+- text: Placeholders & Loading Empty State When there's no content to show No messages yet When you receive messages, they'll appear here.
+- button "Compose"
+- text: Error State Something went wrong Connection lost Check your internet connection and try again.
+- button "Try again"
+- text: Loading State A section still fetching, in flow
+- progressbar "Loading activity":
+  - img
+- text: "Loading activity Content Skeleton Layout placeholder while loading. Use instead of spinner when you need layout preview. Full page preview (list) Variants list card generic Page Skeleton Variant-based page layouts: dashboard, list, settings, card, generic. dashboard list settings card generic Screen Skeleton Header slot or placeholder plus page content skeleton. Overview AppShell loading swap Keep shell mounted, swap only content with skeleton."
+- button "Show Content"
+- text: Settings Loading Screen Content is being fetched
+- button "Show Loading"
+- text: Infrastructure Error Boundary Catches React errors and renders ErrorState
+- button "Throw error (ErrorBoundary demo)"
+- text: Pull to Refresh Themed ScrollView + RefreshControl Pull down to refresh Uses useThemeTokens for RefreshControl colors.

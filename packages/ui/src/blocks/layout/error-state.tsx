@@ -30,7 +30,11 @@ export function ErrorState({
 
   return (
     <View className={cn('flex-1 items-center justify-center p-8', className)} {...props}>
-      {icon && <View className="mb-6 text-destructive">{icon}</View>}
+      {icon && (
+        <View aria-hidden className="mb-6 text-destructive">
+          {icon}
+        </View>
+      )}
 
       <Text className="mb-2 text-center text-xl font-semibold text-foreground">{title}</Text>
 

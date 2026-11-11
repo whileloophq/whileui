@@ -1,0 +1,42 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components"
+- button "Controls"
+- button "Overlays"
+- button "Forms"
+- button "Auth"
+- button "Navigation" [pressed]
+- button "Layout"
+- button "Chat"
+- button "Profile"
+- button "Lists"
+- button "Commerce"
+- text: Bottom Navigation iOS/Android style tab bar
+- tablist:
+  - tab "3 Home" [selected]
+  - tab "Explore"
+  - tab "Create"
+  - tab /\d+ Inbox/
+  - tab "Profile"
+- text: Floating Bottom Nav Modern floating pill style
+- tablist:
+  - tab "Home" [selected]
+  - tab "Explore"
+  - tab "Create"
+  - tab "Inbox"
+- text: Header App header with actions ‹ Back Settings Manage your preferences
+- button "Search": 
+- button "More": 
+- text: Tab Bar Content filtering tabs
+- tablist:
+  - tab "All" [selected]
+  - tab "Following"
+  - tab "Trending"
+  - tab "New"
+- text: Tab Bar — Pills Pill-style variant
+- tablist:
+  - tab "All" [selected]
+  - tab "Following"
+  - tab "Trending"
+  - tab "New"

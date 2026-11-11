@@ -88,6 +88,12 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
         )}
         <TextInput
           ref={ref}
+          // Named by the FormField's label on web and Android unless the caller names it; iOS
+          // reads the label beside it.
+          aria-labelledby={
+            (props.accessibilityLabel ?? props['aria-label']) ? undefined : field.labelId
+          }
+          aria-required={field.required || undefined}
           className={cn(
             'flex-1 text-foreground placeholder:text-muted-foreground web:outline-none',
             !plain && webAutofillField,

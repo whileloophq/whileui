@@ -1,0 +1,53 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components" [pressed]
+- button "Controls"
+- button "Overlays"
+- button "Forms"
+- button "Auth"
+- button "Navigation"
+- button "Layout"
+- button "Chat"
+- button "Profile"
+- button "Lists"
+- button "Commerce"
+- text: Typography Semantic type roles driven by visual tokens Semantic roles
+- heading "Build faster, ship beautiful." [level=1]
+- text: WhileUI gives you production-ready components that look stunning out of the box. Every component uses design tokens for effortless theming. React Native Expo Uniwind Buttons 6 variants × 4 sizes
+- button "Primary"
+- button "Secondary"
+- button "Destructive"
+- button "Outline"
+- button "Ghost"
+- link "Link"
+- button "Small"
+- button "Default"
+- button "Large"
+- button "+"
+- text: With Icons
+- button "Download"
+- button "Settings"
+- button "Next"
+- button "Favourite": 
+- button "Disabled" [disabled]
+- button "Saving changes" [disabled]:
+  - text: ""
+  - progressbar "Loading":
+    - img
+- 'button "Press test: 0"'
+- text: "Theme Bridge Official light/dark/system sync helper Active mode: system"
+- radiogroup:
+  - radio "Light"
+  - radio "Dark"
+  - radio "System" [checked]
+- text: Motion Policy System, reduced, full, and deterministic disabled modes
+- radiogroup:
+  - radio "System" [checked]
+  - radio "Reduced"
+  - radio "Full"
+  - radio "Disabled"
+- text: "/Resolved mode: system Reduced: no · animations: enabled Durations: \\d+\\/\\d+\\/\\d+ ms Surfaces, Cards & Badges Three elevation levels, compound cards, and badges Base Raised Overlay Team Activity Live Your team completed \\d+ tasks this week\\./"
+- progressbar "Progress"
+- button "View Dashboard"
+- text: "`padding=\\\"sm\\\"` Dense cards for compact settings. `padding=\\\"lg\\\"` Roomy layouts for onboarding and forms. Unstyled card shell Use your own spacing/layout for advanced compositions. Default Secondary Destructive Outline Success Warning Info"

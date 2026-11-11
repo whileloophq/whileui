@@ -78,7 +78,7 @@ function MetricCard({
         <Text variant="caption" className="text-muted-foreground">
           {label}
         </Text>
-        {icon && <View>{icon}</View>}
+        {icon && <View aria-hidden>{icon}</View>}
       </View>
 
       <Text variant="heading" className="mb-1">

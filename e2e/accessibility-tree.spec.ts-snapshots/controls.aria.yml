@@ -1,0 +1,42 @@
+- button "Open menu": 
+- text: WhileUI Beautiful native components
+- button "Change theme": 
+- button "All Components"
+- button "Controls" [pressed]
+- button "Overlays"
+- button "Forms"
+- button "Auth"
+- button "Navigation"
+- button "Layout"
+- button "Chat"
+- button "Profile"
+- button "Lists"
+- button "Commerce"
+- text: FAB A floating action button only behaves like itself over a full screen
+- button "Open the FAB screen"
+- text: Selection SegmentedControl, radios, selects, and toggles
+- radiogroup:
+  - radio "kg" [checked]
+  - radio "lbs"
+- radiogroup:
+  - radio "Centimeters" [checked]
+  - radio "Inches"
+  - radio "Feet"
+- text: Pill variant
+- radiogroup:
+  - radio "kg" [checked]
+  - radio "lbs"
+- radio "Free plan" [checked]
+- text: Free plan
+- radio "Pro plan"
+- text: Pro plan
+- button "Select a framework"
+- button "Select a region (long list)"
+- button "Bold"
+- button "L"
+- button "C"
+- button "R"
+- text: /Data Row Reusable left\/center\/right rows with narrow-width safety AL Alex Lee Lead Product Designer Owner  Average Session Duration This label truncates safely on narrow screens\. [\d,.]+[bkmBKM]+ \d+[hmsp]+ OTP Input Verification code entry with auto-focus and paste/
+- textbox "Enter 6-digit verification code"
+- text: /Enter code \(try \d+\) Secure \(4-digit PIN — try \d+\)/
+- textbox "Enter 4-digit verification code"

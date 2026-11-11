@@ -30,7 +30,8 @@ describe('FormField', () => {
       </FormField>
     );
 
-    expect(screen.getByText(' *')).toBeOnTheScreen();
+    // Shown, but hidden from assistive technology: the control announces required.
+    expect(screen.getByText(' *', { includeHiddenElements: true })).toBeOnTheScreen();
   });
 
   it('renders nothing for an empty message', async () => {
@@ -107,5 +108,54 @@ describe('FormField', () => {
     const trigger = screen.getByLabelText('Plan');
     expect(trigger).toBeDisabled();
     expect(trigger.props['aria-invalid']).toBe(true);
+  });
+
+  it('names each text control by its FormLabel', async () => {
+    // 2026-11-11: NumericInput in a FormField had no accessible name on web; Input only
+    // looked named because the browser fell back to its placeholder.
+    await render(
+      <>
+        <FormField>
+          <FormLabel>Weight</FormLabel>
+          <NumericInput value={72} />
+        </FormField>
+        <FormField>
+          <FormLabel>Bio</FormLabel>
+          <Textarea />
+        </FormField>
+        <FormField>
+          <FormLabel>Email</FormLabel>
+          <Input placeholder="you@company.com" />
+        </FormField>
+      </>
+    );
+
+    expect(screen.getByLabelText('Weight')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Bio')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Email')).toBeOnTheScreen();
+  });
+
+  it('announces required once, without the asterisk', async () => {
+    await render(
+      <FormField required>
+        <FormLabel>Email</FormLabel>
+        <Input />
+      </FormField>
+    );
+
+    expect(screen.queryByText('*', { exact: false })).toBeNull();
+    // RNTL joins hidden children into the label text ("Email *"); browsers do not.
+    expect(screen.getByLabelText('Email', { exact: false }).props['aria-required']).toBe(true);
+  });
+
+  it("keeps the caller's own label", async () => {
+    await render(
+      <FormField>
+        <FormLabel>Amount</FormLabel>
+        <NumericInput value={5} accessibilityLabel="Amount in dollars" />
+      </FormField>
+    );
+
+    expect(screen.getByLabelText('Amount in dollars')).toBeOnTheScreen();
   });
 });
