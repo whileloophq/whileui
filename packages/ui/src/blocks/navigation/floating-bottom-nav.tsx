@@ -41,6 +41,8 @@ function FloatingNavItem({
   return (
     <Pressable
       accessibilityRole="tab"
+      // Inactive tabs show only an icon, so the label must still name them.
+      accessibilityLabel={label}
       accessibilityState={{ selected: isActive }}
       aria-selected={isActive}
       className={cn(
@@ -51,7 +53,10 @@ function FloatingNavItem({
       style={(state) => [pillStyle, typeof styleProp === 'function' ? styleProp(state) : styleProp]}
       {...props}
     >
-      <View className={cn(isActive ? 'text-primary-foreground' : 'text-muted-foreground')}>
+      <View
+        aria-hidden
+        className={cn(isActive ? 'text-primary-foreground' : 'text-muted-foreground')}
+      >
         {icon}
       </View>
       {isActive && (

@@ -40,4 +40,36 @@ describe('ToastProvider', () => {
     expect(screen.queryByText('First')).toBeNull();
     expect(screen.getByText('Second')).toBeOnTheScreen();
   });
+
+  it('announces a toast without moving focus and names its dismiss control', async () => {
+    function Notify() {
+      const { toast } = useToast();
+      return (
+        <>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Notify"
+            onPress={() => toast({ title: 'Saved', description: 'All changes stored.' })}
+          />
+          <ToastContainer />
+        </>
+      );
+    }
+    await render(
+      <ToastProvider>
+        <Notify />
+      </ToastProvider>
+    );
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Notify' }));
+
+    // The toast stays a non-accessible container so its buttons remain reachable on
+    // iOS, which rules out a role query; read the region's props from its text instead.
+    let notice = screen.getByText('All changes stored.').parent;
+    while (notice && notice.props.accessibilityRole !== 'alert') notice = notice.parent;
+    expect(notice?.props.accessibilityLiveRegion).toBe('polite');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Dismiss' }));
+    expect(screen.queryByText('All changes stored.')).toBeNull();
+  });
 });

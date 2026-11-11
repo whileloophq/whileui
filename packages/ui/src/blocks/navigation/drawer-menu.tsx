@@ -89,7 +89,7 @@ function DrawerItemRow({ item, active, onSelect, interaction, visual }: DrawerIt
       )}
       style={pressStyle}
     >
-      {item.icon}
+      <View aria-hidden>{item.icon}</View>
       <Text
         className={cn(
           'flex-1 font-semibold tracking-tight',

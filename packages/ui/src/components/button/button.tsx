@@ -210,8 +210,9 @@ function ButtonText({
 
 ButtonText.displayName = 'ButtonText';
 
+/** Decorative: the button is named by its text, so an icon glyph must not join that name. */
 function ButtonIcon({ className, ...props }: ButtonIconProps) {
-  return <View className={cn('items-center justify-center', className)} {...props} />;
+  return <View aria-hidden className={cn('items-center justify-center', className)} {...props} />;
 }
 
 ButtonIcon.displayName = 'ButtonIcon';

@@ -94,7 +94,11 @@ export function ListItem({
       }}
       {...props}
     >
-      {icon && <View className="mr-3 text-muted-foreground">{icon}</View>}
+      {icon && (
+        <View aria-hidden className="mr-3 text-muted-foreground">
+          {icon}
+        </View>
+      )}
 
       <View className="flex-1">
         <Text className="text-foreground" style={typographyStyle(visual, 'body')}>
@@ -121,7 +125,11 @@ export function ListItem({
           {rightText}
         </Text>
       )}
-      {rightIcon && <View className="text-muted-foreground">{rightIcon}</View>}
+      {rightIcon && (
+        <View aria-hidden className="text-muted-foreground">
+          {rightIcon}
+        </View>
+      )}
       {action}
       {!action && !rightIcon && (
         <Text className="text-muted-foreground" style={typographyStyle(visual, 'emphasis')}>

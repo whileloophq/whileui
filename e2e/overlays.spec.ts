@@ -45,7 +45,12 @@ test.describe('AlertDialog', () => {
     // The backdrop carries `importantForAccessibility="no"`, and in several overlays the
     // backdrop *wraps* the panel. If React Native Web ever maps that to `aria-hidden`,
     // the whole dialog disappears from the accessibility tree and this catches it.
-    await expect(page.locator('[aria-hidden="true"]')).toHaveCount(0);
+    // Decorative icons are aria-hidden on purpose, so assert on the dialog's ancestry.
+    const panel = page.locator('[role="alert"]', { hasText: 'Delete workspace?' });
+    await expect(panel).toHaveCount(1);
+    await expect(page.locator('[aria-hidden="true"]', { has: panel })).toHaveCount(0);
+    // Role queries skip hidden subtrees, so this also fails if the panel is hidden.
+    await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
   });
 });
 

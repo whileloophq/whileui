@@ -1,9 +1,26 @@
 import React, { createRef } from 'react';
 import { View } from 'react-native';
 import { render, screen, userEvent } from '../../test/render';
-import { Button, ButtonText } from './button';
+import { Text } from '../text';
+import { Button, ButtonIcon, ButtonText } from './button';
 
 describe('Button', () => {
+  it('names itself by its text, not by its icon glyph', async () => {
+    await render(
+      <Button>
+        <ButtonIcon>
+          <Text>★</Text>
+        </ButtonIcon>
+        <ButtonText>Download</ButtonText>
+      </Button>
+    );
+
+    // iOS reads an unhidden icon font glyph into the label: ", Download".
+    expect(screen.queryByText('★')).toBeNull();
+    expect(screen.getByText('★', { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: /Download/ })).toBeOnTheScreen();
+  });
+
   it('renders its label', async () => {
     await render(
       <Button>

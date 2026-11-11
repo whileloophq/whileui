@@ -1,8 +1,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Pressable, View, type ViewProps } from 'react-native';
-import Animated, { SlideInUp, SlideOutUp } from 'react-native-reanimated';
+import Animated, { FadeOut, SlideInUp } from 'react-native-reanimated';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
+import { focusRing } from '../../lib/focus-ring';
+import { useMotionPolicy } from '../../lib/motion-policy';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { useThemeColors } from '../../lib/theme-colors';
@@ -43,16 +45,11 @@ export interface ToastProviderProps {
 
 let toastId = 0;
 
-const TEXT_COLOR_BY_VARIANT = {
-  default: 'text-foreground',
-  destructive: 'text-destructive-foreground',
-  success: 'text-success-foreground',
-} as const;
-
-const DESCRIPTION_COLOR_BY_VARIANT = {
-  default: 'text-muted-foreground',
-  destructive: 'text-destructive-foreground-muted',
-  success: 'text-success-foreground-muted',
+/** Status variants carry a small dot, not a fill, so every toast sits on the theme's surface. */
+const ACCENT_BY_VARIANT = {
+  default: undefined,
+  destructive: 'bg-destructive',
+  success: 'bg-success',
 } as const;
 
 export function ToastProvider({ children }: ToastProviderProps) {
@@ -81,12 +78,12 @@ export function ToastProvider({ children }: ToastProviderProps) {
 }
 
 const toastVariants = tv({
-  base: 'w-full flex-row items-center justify-between border',
+  base: 'w-full flex-row items-center gap-3 border bg-popover',
   variants: {
     variant: {
-      default: 'border-border bg-background',
-      destructive: 'border-destructive bg-destructive',
-      success: 'border-success bg-success',
+      default: 'border-border',
+      destructive: 'border-destructive-soft-border',
+      success: 'border-success-soft-border',
     },
   },
   defaultVariants: {
@@ -103,6 +100,8 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
   const { title, description, variant = 'default', duration = 4000, action } = toastData;
   const visual = useVisualTokens();
   const colors = useThemeColors();
+  const motion = useMotionPolicy();
+  const accent = ACCENT_BY_VARIANT[variant];
 
   useEffect(() => {
     if (duration > 0) {
@@ -111,46 +110,54 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
     }
   }, [duration, onDismiss]);
 
-  const textColor = TEXT_COLOR_BY_VARIANT[variant];
-  const descColor = DESCRIPTION_COLOR_BY_VARIANT[variant];
-
   return (
     <Animated.View
-      entering={SlideInUp.duration(300)}
-      exiting={SlideOutUp.duration(200)}
-      className={cn(toastVariants({ variant }), className)}
-      style={[
-        {
-          borderRadius: surfaceRadius(visual, 'lg'),
-          borderWidth: visual.borderWidthHairline,
-          padding: surfacePadding(visual, 'sm'),
-        },
-        shadowStyle(visual, colors, 'lg'),
-        style,
-      ]}
-      {...props}
+      entering={motion.animationsEnabled ? SlideInUp.duration(motion.durations.normal) : undefined}
+      exiting={motion.animationsEnabled ? FadeOut.duration(motion.durations.fast) : undefined}
     >
-      <View className="flex-1 gap-1">
-        {title && (
-          <Text className={cn('font-semibold', textColor)} style={typographyStyle(visual, 'label')}>
-            {title}
-          </Text>
-        )}
-        {description && (
-          <Text className={cn(descColor)} style={typographyStyle(visual, 'label')}>
-            {description}
-          </Text>
-        )}
-      </View>
-      <View className="flex-row items-center gap-2">
-        {action && (
+      <View
+        // Announced where it appears, without moving focus. Set before the spread so a
+        // caller can still override.
+        accessibilityRole="alert"
+        accessibilityLiveRegion="polite"
+        className={cn(toastVariants({ variant }), className)}
+        style={[
+          {
+            borderRadius: surfaceRadius(visual, 'lg'),
+            borderWidth: visual.borderWidthHairline,
+            padding: surfacePadding(visual, 'sm'),
+          },
+          shadowStyle(visual, colors, 'lg'),
+          style,
+        ]}
+        {...props}
+      >
+        <View className="flex-1 gap-0.5">
+          {title ? (
+            <View className="flex-row items-center gap-2">
+              {accent ? <View className={cn('h-2 w-2 rounded-full', accent)} /> : null}
+              <Text
+                className="font-semibold text-popover-foreground"
+                style={typographyStyle(visual, 'label')}
+              >
+                {title}
+              </Text>
+            </View>
+          ) : null}
+          {description ? (
+            <Text className="text-muted-foreground" style={typographyStyle(visual, 'label')}>
+              {description}
+            </Text>
+          ) : null}
+        </View>
+        {action ? (
           <Pressable
             accessibilityRole="button"
             onPress={() => {
               action.onPress();
               onDismiss();
             }}
-            className="border border-border"
+            className={cn('border border-border active:bg-state-pressed', focusRing)}
             style={{
               borderRadius: visual.radiusMd,
               borderWidth: visual.borderWidthControl,
@@ -158,18 +165,25 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
               paddingVertical: visual.controlPaddingYSm,
             }}
           >
-            <Text className={cn('font-medium', textColor)} style={typographyStyle(visual, 'label')}>
+            <Text
+              className="font-medium text-popover-foreground"
+              style={typographyStyle(visual, 'label')}
+            >
               {action.label}
             </Text>
           </Pressable>
-        )}
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Dismiss"
           onPress={onDismiss}
-          className="p-1"
+          hitSlop={12}
+          className={cn(
+            'h-8 w-8 items-center justify-center rounded-full active:bg-state-pressed',
+            focusRing
+          )}
         >
-          <Text className={cn(textColor)} style={typographyStyle(visual, 'emphasis')}>
+          <Text className="text-muted-foreground" style={typographyStyle(visual, 'emphasis')}>
             ×
           </Text>
         </Pressable>
@@ -215,9 +229,13 @@ export function ToastContainer({
       pointerEvents="box-none"
       {...props}
     >
-      {toasts.map((toast) => (
-        <ToastContainerItem key={toast.id} toast={toast} dismiss={dismiss} />
-      ))}
+      {/* A notice is a sentence, not a banner. The cap is wider than any phone, so it
+          only engages on tablets and the web. */}
+      <View className="w-full max-w-md self-center" pointerEvents="box-none">
+        {toasts.map((toast) => (
+          <ToastContainerItem key={toast.id} toast={toast} dismiss={dismiss} />
+        ))}
+      </View>
     </View>
   );
 }

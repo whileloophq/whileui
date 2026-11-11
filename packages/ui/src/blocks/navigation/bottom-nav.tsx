@@ -51,7 +51,7 @@ function BottomNavItemComponent({
         className="relative"
         style={!isActive ? { opacity: interaction.inactiveOpacity } : undefined}
       >
-        {icon}
+        <View aria-hidden>{icon}</View>
         {badge !== undefined && badge > 0 && (
           <View className="absolute -right-2 -top-1 h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1">
             <Text

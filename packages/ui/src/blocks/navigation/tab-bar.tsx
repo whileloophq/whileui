@@ -75,7 +75,10 @@ function TabBarItemComponent({
       {...props}
     >
       {icon && (
-        <View className={isActive && variant === 'pills' ? 'text-primary-foreground' : ''}>
+        <View
+          aria-hidden
+          className={isActive && variant === 'pills' ? 'text-primary-foreground' : ''}
+        >
           {icon}
         </View>
       )}
