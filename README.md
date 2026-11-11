@@ -1,15 +1,17 @@
 # WhileUI Native
 
-> Copy-paste components for React Native. You own the code.
+> Accessible, themeable React Native components for iOS, Android and the web.
 
-Beautiful, accessible, themeable components built with [Uniwind](https://uniwind.dev) + Tailwind CSS v4.
+Components and blocks built with [Uniwind](https://uniwind.dev) + Tailwind CSS v4. Every
+one takes `className` and exports its `tv()` variants for extension, and the look comes
+from design tokens in your `global.css`, so a new theme needs no component changes. Auth
+and profile screens are copy-paste templates in
+[`apps/showcase/catalog/templates`](apps/showcase/catalog/templates) rather than package
+exports: copy them and make them yours.
 
-**Requirements:** React 19.3+, React Native 0.88+, Expo 58+ (if using Expo). Supports React Native Web.
-
-WhileUI has one renderer: React Native. iOS, Android and React Native Web are all
-production targets — iOS and Android set the interaction baseline. See
-[ROADMAP.md](./ROADMAP.md) for the product boundary and extraction rules, and
-[PLAN.md](./PLAN.md) for the supported stack and production contracts.
+**Requirements:** React 19.3+, React Native 0.88+, Expo 58+ (if using Expo). See
+[ROADMAP.md](./ROADMAP.md) for what the package owns and [PLAN.md](./PLAN.md) for the
+supported stack.
 
 ## See it in action
 
@@ -66,73 +68,17 @@ module.exports = withWhileUIMetro(config, {
 > renders fine. Pass `exemptFromUniwindRewrite: ['pkg']` for any other package that
 > imports a `react-native` export Uniwind's wrapper lacks. It must be the outermost wrapper.
 
-2. **global.css** at app root:
+2. **global.css** at app root, imported from `App.tsx`:
 
 ```css
 @import 'tailwindcss';
 @import 'uniwind';
 
-/* Required when WhileUI is installed from npm. Tailwind does not scan
-   node_modules, so without this its class names are never detected and every
-   component renders unstyled. */
+/* Required when installed from npm: Tailwind does not scan node_modules, so without
+   this line every component renders unstyled. */
 @source './node_modules/@thewhileloop/whileui/dist';
 
-/* WhileUI Noir theme - copy this or create your own */
-@layer theme {
-  :root {
-    @variant light {
-      --color-background: oklch(1 0 0);
-      --color-foreground: oklch(0.1316 0.0041 17.69);
-      --color-card: oklch(1 0 0);
-      --color-card-foreground: oklch(0.1316 0.0041 17.69);
-      --color-primary: oklch(0.1316 0.0041 17.69);
-      --color-primary-foreground: oklch(0.98 0 0);
-      --color-secondary: oklch(0.9598 0.0017 17.69);
-      --color-secondary-foreground: oklch(0.1316 0.0041 17.69);
-      --color-muted: oklch(0.9598 0.0017 17.69);
-      --color-muted-foreground: oklch(0.5415 0.0135 17.69);
-      --color-accent: oklch(0.9598 0.0017 17.69);
-      --color-accent-foreground: oklch(0.1316 0.0041 17.69);
-      --color-destructive: oklch(0.5 0.19 27);
-      --color-destructive-foreground: oklch(0.98 0 0);
-      --color-border: oklch(0.9039 0.0034 17.69);
-      --color-input: oklch(0.9039 0.0034 17.69);
-      --color-ring: oklch(0.1316 0.0041 17.69);
-      --color-success: oklch(0.59 0.16 145);
-      --color-success-foreground: oklch(0.98 0 0);
-      --color-warning: oklch(0.75 0.18 85);
-      --color-warning-foreground: oklch(0.1316 0.0041 17.69);
-      --color-info: oklch(0.65 0.15 245);
-      --color-info-foreground: oklch(0.98 0 0);
-    }
-
-    @variant dark {
-      --color-background: oklch(0.1316 0.0041 17.69);
-      --color-foreground: oklch(0.98 0 0);
-      --color-card: oklch(0.1316 0.0041 17.69);
-      --color-card-foreground: oklch(0.98 0 0);
-      --color-primary: oklch(0.98 0 0);
-      --color-primary-foreground: oklch(0.1316 0.0041 17.69);
-      --color-secondary: oklch(0.2104 0.0084 17.69);
-      --color-secondary-foreground: oklch(0.98 0 0);
-      --color-muted: oklch(0.2104 0.0084 17.69);
-      --color-muted-foreground: oklch(0.6961 0.0174 17.69);
-      --color-accent: oklch(0.2104 0.0084 17.69);
-      --color-accent-foreground: oklch(0.98 0 0);
-      --color-destructive: oklch(0.45 0.18 27);
-      --color-destructive-foreground: oklch(0.98 0 0);
-      --color-border: oklch(0.2104 0.0084 17.69);
-      --color-input: oklch(0.2104 0.0084 17.69);
-      --color-ring: oklch(0.8267 0.0206 17.69);
-      --color-success: oklch(0.59 0.16 145);
-      --color-success-foreground: oklch(0.98 0 0);
-      --color-warning: oklch(0.75 0.18 85);
-      --color-warning-foreground: oklch(0.1316 0.0041 17.69);
-      --color-info: oklch(0.65 0.15 245);
-      --color-info-foreground: oklch(0.98 0 0);
-    }
-  }
-}
+/* Then your theme: generate it (Theming, below) rather than writing tokens by hand. */
 ```
 
 3. **App.tsx**:
@@ -152,13 +98,11 @@ export default function App() {
 }
 ```
 
-> **Note:** If you use Select, Popover, Tooltip, or HoverCard, add `<PortalHost />` at the root of your app (as the last child).
-
-Inside a Dialog, AlertDialog, Sheet, ConfirmActionSheet, DrawerMenu, menu or picker, those
-four render into that overlay's own layer automatically, so a Select in a sheet opens above
-the sheet. Android back and Escape on web close the innermost open layer first. Pass
-`portalHost` on their content only to target a `PortalHost` you placed yourself, such as
-inside a navigation-presented modal screen that WhileUI does not host.
+`PortalHost` (last child of the root) is where Select, Popover, Tooltip and HoverCard
+render. Inside a Dialog, Sheet, menu or picker they use that overlay's own layer
+automatically, and Android back or Escape closes the innermost layer first. Pass
+`portalHost` only to target a host you placed yourself, such as in a modal screen your
+navigator presents.
 
 ### Vite + React Native Web + WhileUI setup
 
@@ -221,30 +165,6 @@ function MyScreen() {
   );
 }
 ```
-
-## Blocks Strategy: Core vs Templates
-
-**Core package** exports:
-
-- **Primitives** — Button, Input, Card, Text, etc.
-- **Generic layout blocks** — EmptyState, ErrorState, LoadingScreen, ContentSkeleton, PageSkeleton, ScreenSkeleton
-- **Layout infrastructure** — FormModalScreen, ConfirmActionSheet, SmartInput, ActionBar
-- **Navigation, Chat, Lists, Commerce, Media, DatePicker** — Blocks that rarely need app-specific customization
-
-**Opinionated blocks** (auth, profile) are **copy-paste templates** in the showcase app:
-
-- **Auth:** `apps/showcase/catalog/templates/auth/` — SignInForm, SignUpForm, ForgotPasswordForm, ResetPasswordForm, VerifyEmailForm, SocialConnections, UserMenu
-- **Profile:** `apps/showcase/catalog/templates/profile/` — ProfileHeader, SettingsSection, SettingsItem, AccountCard
-
-**To use auth or profile blocks:** Copy the template file(s) from `apps/showcase/catalog/templates/` into your app. Customize as needed (error handling, loading state, social auth slot, branding). Each template imports primitives from `@thewhileloop/whileui`.
-
-## Philosophy
-
-- **Copy-Paste Ownership** — Components live in _your_ project. No `node_modules` lock-in.
-- **Beautiful by Default** — OKLCH color system, light/dark themes, polished out of the box.
-- **Fully Customizable** — Every component uses `tv()` variants and accepts `className` overrides.
-- **Accessible** — Proper ARIA roles, keyboard support, controlled/uncontrolled state.
-- **Tree-Shakeable** — Only imports what you use. `sideEffects: false`.
 
 ## AI agents
 
@@ -673,84 +593,17 @@ Blocks with `loading` support: ProductCard, ListItem, NotificationItem, MetricCa
 
 Block props: see TypeScript interfaces in `packages/ui/src/blocks`.
 
-## Quick Start
-
-```bash
-bun install
-bun run build                     # the apps resolve the library from packages/ui/dist
-cd apps/showcase/catalog && bun run dev     # every component and block, port 8082
-cd apps/showcase/clayhouse && bun run dev   # a made-up app built from them, port 8084
-```
-
-The showcase is two independent Expo apps. `catalog` demonstrates each component on its
-own. `clayhouse` is a made-up ceramics studio app that puts the same components to work on
-one believable job, with its own theme and fonts; it shows what a consumer builds, not new
-API.
-
-## Project Structure
-
-```
-whileui/
-├── packages/
-│   └── ui/
-│       └── src/
-│           ├── components/    # All components (copy these!)
-│           │   ├── button/
-│           │   ├── card/
-│           │   ├── form-field/
-│           │   ├── numeric-input/
-│           │   ├── segmented-control/
-│           │   ├── data-row/
-│           │   ├── dialog/
-│           │   └── ...
-│           ├── blocks/        # Pre-built screens (core only)
-│           │   ├── chat/
-│           │   ├── navigation/
-│           │   ├── layout/
-│           │   ├── lists/
-│           │   ├── commerce/
-│           │   ├── splash/
-│           │   └── media/
-│           ├── lib/           # Utilities
-│           │   ├── cn.ts      # clsx + tailwind-merge
-│           │   ├── tv.ts      # tailwind-variants re-export
-│           │   ├── font-context.ts
-│           │   └── theme-bridge.ts
-│           └── index.ts       # Barrel export
-├── apps/
-│   └── showcase/
-│       ├── catalog/           # Expo app: every component and block
-│       │   ├── templates/     # Copy-paste templates (auth, profile)
-│       │   ├── App.tsx
-│       │   ├── global.css     # Theme variables (OKLCH) — at app root!
-│       │   └── metro.config.js
-│       └── clayhouse/         # Expo app: a made-up studio app built on WhileUI
-└── package.json               # bun monorepo root
-```
-
 ## Theming
 
-Themes are defined in `global.css` using CSS variables with OKLCH colors:
+A theme is a set of CSS variables in `global.css`, in OKLCH, with a `light` and a `dark`
+variant. Every component reads the same contract, so a theme must define **every** token
+in both modes: a missing one silently falls back to an unstyled value at runtime.
 
-```css
-@variant light {
-  --color-primary: oklch(0.6 0.2 160);
-  --color-background: oklch(1 0 0);
-  /* ... */
-}
+### Generate a theme
 
-@variant dark {
-  --color-primary: oklch(0.6 0.2 160);
-  --color-background: oklch(0.145 0 0);
-  /* ... */
-}
-```
-
-### Theme from seed colours
-
-`themeFromSeeds` builds a complete light and dark theme from three colours and checks
-nothing it derives is hard to read. Seeds are kept as given; muted text, the text on each
-filled colour and the status colours are tuned to WCAG AA.
+`themeFromSeeds` builds a complete light and dark theme from three colours, and
+`themePresetToCss` writes every token, including the hex fallbacks React Native APIs need,
+ready to paste into `global.css`:
 
 ```ts
 import { checkThemeContrast, themeFromSeeds, themePresetToCss } from '@thewhileloop/whileui/tokens';
@@ -768,79 +621,23 @@ checkThemeContrast(theme.light).filter((c) => !c.pass);
 const css = themePresetToCss(theme); // paste into global.css
 ```
 
-`checkThemeContrast` works on any palette, including a hand-written one: it checks every
-text pairing the components render at 4.5:1 and the focus ring at 3:1, with translucent
-colours blended onto the page first. A failing seed is reported, never changed — a brand
-colour is a brand decision.
+Seeds are kept as given; the colours it derives (muted text, text on each fill, status
+colours) are tuned to WCAG AA. `checkThemeContrast` checks any palette, hand-written ones
+included: every text pairing at 4.5:1 and the focus ring at 3:1. A failing seed is
+reported, never changed, because a brand colour is a brand decision. The built-in presets,
+`WHILEUI_PRESET_SOFT` and `WHILEUI_PRESET_ATELIER`, go through `themePresetToCss` the same
+way.
 
-### Strict Theme Token Contract
+Switch at runtime with `Uniwind.setTheme('dark')` (or `'light'`, `'system'`). A named
+extra theme is registered with `extraThemes: ['name']` in `metro.config.js` and defined
+with `@variant name`. The full token list, with each default, is in `theme-contract.ts`,
+and agents can read it from the MCP server's `get_theme_tokens`.
 
-The WhileUI token contract is strict for cross-app reuse. Define these in **every** theme variant (`@variant light`, `@variant dark`, and custom variants):
+### Frosted surfaces
 
-- Required core tokens: `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `destructive-foreground`, `border`, `input`, `ring`
-- Optional status tokens: `success`, `success-foreground`, `warning`, `warning-foreground`, `info`, `info-foreground`
-- Optional effect tokens: `overlay`, `overlay-strong`, `surface-elevated`, `surface-border`, `surface-highlight`, `surface-translucent`, `surface-translucent-border`, `state-hover`, `state-pressed`, `state-disabled`
-- Optional visual tokens, generated from a preset: `--ui-blur-intensity-subtle`, `--ui-blur-intensity-medium`, `--ui-blur-intensity-strong`, `--ui-blur-saturation-pct`, `--ui-frosted-highlight-height`, `--ui-frosted-backdrop-blur-intensity`, `--ui-frosted-backdrop-blur-scale`, `--ui-frosted-android-tint-alpha-scale`, `--ui-frosted-android-experimental-blur`, `--ui-drawer-frosted-inset`, `--ui-drawer-frosted-radius`, `--ui-drawer-content-top-padding`
-- Optional scale tokens: spacing (`--spacing`, `--spacing-*`), typography (`--text-*`, `--leading-*`, `--tracking-*`), radius (`--radius-*`), elevation (`--shadow-*`)
-
-Minimal contract example:
-
-```css
-@layer theme {
-  :root {
-    @variant light {
-      --color-background: oklch(1 0 0);
-      --color-foreground: oklch(0.15 0 0);
-      --color-card: oklch(1 0 0);
-      --color-card-foreground: oklch(0.15 0 0);
-      --color-popover: oklch(1 0 0);
-      --color-popover-foreground: oklch(0.15 0 0);
-      --color-primary: oklch(0.2 0 0);
-      --color-primary-foreground: oklch(0.98 0 0);
-      --color-secondary: oklch(0.95 0 0);
-      --color-secondary-foreground: oklch(0.15 0 0);
-      --color-muted: oklch(0.95 0 0);
-      --color-muted-foreground: oklch(0.45 0 0);
-      --color-accent: oklch(0.9 0.05 180);
-      --color-accent-foreground: oklch(0.15 0 0);
-      --color-destructive: oklch(0.58 0.2 26);
-      --color-destructive-foreground: oklch(0.98 0 0);
-      --color-border: oklch(0.9 0 0);
-      --color-input: oklch(0.92 0 0);
-      --color-ring: oklch(0.22 0 0);
-    }
-  }
-}
-```
-
-Switch themes at runtime via Uniwind:
-
-```tsx
-import { Uniwind } from 'uniwind';
-
-Uniwind.setTheme('dark'); // or 'light' or 'system'
-```
-
-### Frosted / Translucent Theme
-
-Some apps want a frosted or translucent look for floating panels (modals, sheets, toolbars). WhileUI stays neutral — no "glass" in core token names. Apps that want this effect opt in by overriding surface tokens in their theme.
-
-**Option A — Override in existing light/dark:** In your `@variant light` and `@variant dark` blocks, set surface tokens to semi-transparent values:
-
-```css
-@variant light {
-  /* ... other tokens ... */
-  --color-surface-elevated: oklch(0.98 0.01 95 / 0.4);
-  --color-surface-border: oklch(1 0 0 / 0.25);
-  --color-surface-highlight: oklch(1 0 0 / 0.4);
-}
-```
-
-**Option B — Separate frosted theme:** Register `extraThemes: ['frosted']` and define `:root.frosted` with the same structure as your base theme, but with translucent surface values. Then `Uniwind.setTheme('frosted')` when desired.
-
-**Optional:** Add `expo-blur` and register its `BlurView` once at app startup for full frosted blur. For tint-only (no blur), translucent surface tokens are sufficient.
-
-**Android note:** frosted panels usually need denser tint than iOS/web. WhileUI now scales frosted tint alpha on Android with `--ui-frosted-android-tint-alpha-scale` (default `1.18`). Set it to `1` to match other platforms exactly, or raise it if your Android surfaces still feel washed out.
+Cards and overlays take `frosted`, `blurIntensity` and `blurTintToken`
+(`'surfaceElevated' | 'surfaceTranslucent' | 'card' | 'popover'`). Without a blur view
+they tint only; register `expo-blur` once for real blur:
 
 ```tsx
 import { BlurView } from 'expo-blur';
@@ -849,62 +646,40 @@ import { registerFrostedBlurView } from '@thewhileloop/whileui';
 registerFrostedBlurView(BlurView);
 ```
 
-Optional generic tokens: `surface-translucent`, `surface-translucent-border` — use them if you need a distinct token from `surface-elevated` for overlay panels.
+For a frosted look across a whole theme, make `surface-elevated`, `surface-border` and
+`surface-highlight` translucent, in your light and dark variants or in a separate theme.
+The tuning tokens:
 
-Built-in overlays and cards support opt-in frosted mode via:
+| Token                                                                     | Default      | Effect                                                         |
+| ------------------------------------------------------------------------- | ------------ | -------------------------------------------------------------- |
+| `--ui-blur-intensity-subtle` / `-medium` / `-strong`                      | 18 / 26 / 34 | The three blur presets                                         |
+| `--ui-frosted-android-tint-alpha-scale`                                   | 1.18         | Android needs denser tint; `1` matches iOS and web             |
+| `--ui-frosted-android-experimental-blur`                                  | 1            | Uses `expo-blur`'s experimental Android blur; `0` turns it off |
+| `--ui-frosted-highlight-height`                                           | 2            | Top sheen in px; `0` removes it                                |
+| `--ui-blur-saturation-pct`                                                | 145          | Web saturation multiplier                                      |
+| `--ui-frosted-backdrop-blur-intensity`, `-scale`                          | 22, 0.72     | Backdrop blur, and its ratio when a component overrides blur   |
+| `--ui-drawer-frosted-inset`, `-radius`, `--ui-drawer-content-top-padding` | 10, 34, 0    | Frosted drawer shell                                           |
 
-- `frosted?: boolean`
-- `blurIntensity?: number`
-- `blurTintToken?: 'surfaceElevated' | 'surfaceTranslucent' | 'card' | 'popover'`
+### Colours for React Native APIs
 
-Default blur presets map to CSS visual tokens:
-
-- subtle: `--ui-blur-intensity-subtle` (default `18`)
-- medium: `--ui-blur-intensity-medium` (default `22`)
-- strong: `--ui-blur-intensity-strong` (default `28`)
-
-Additional frosted tuning tokens:
-
-- `--ui-blur-saturation-pct` (web fallback saturation multiplier)
-- `--ui-frosted-highlight-height` (top highlight strip height in px, set `0` to disable hard top sheen)
-- `--ui-frosted-backdrop-blur-intensity` (default backdrop blur amount)
-- `--ui-frosted-backdrop-blur-scale` (ratio used when component blur is overridden)
-- `--ui-frosted-android-tint-alpha-scale` (Android-only alpha multiplier applied to frosted tint and backdrop layers)
-- `--ui-frosted-android-experimental-blur` (`1` enables `expo-blur` Android experimental path)
-- `--ui-drawer-frosted-inset` (floating inset for frosted drawer shells)
-- `--ui-drawer-frosted-radius` (drawer corner radius in px)
-- `--ui-drawer-content-top-padding` (drawer content top spacing baseline)
-
-### Theme Colors for RN Primitives
-
-Some React Native APIs require native color strings (hex/rgb/hsl/rgba/named). Use `useThemeColors` or `useIconColors` to read from your `global.css` theme. If your theme uses `oklch(...)`, add `--app-color-*` fallbacks — `useThemeColors` will use them when `--color-*` is not RN-native.
+Icons, `ActivityIndicator` and other native APIs need hex or rgb, not OKLCH.
+`useThemeColors()` returns the whole palette as React Native colours, falling back to the
+`--app-color-*` tokens a generated theme includes; `useIconColors()` is the subset icons
+use, with `muted` mapped to `mutedForeground`.
 
 ```tsx
-import { useThemeColors, useIconColors } from '@thewhileloop/whileui';
-import { Feather } from '@expo/vector-icons';
-
-// Full palette (core semantic colors + status + overlay/effect tokens)
-const colors = useThemeColors();
-
-// Shorthand for icons: foreground, muted, primary, primaryForeground, accent, destructive
-const iconColors = useIconColors();
-
-<Feather name="heart" size={20} color={iconColors.muted} />
-<Spinner color={colors.foreground} />  // Spinner defaults to this when color not passed
+const icons = useIconColors();
+<Feather name="heart" size={20} color={icons.muted} />;
 ```
 
-- **useThemeColors** / **useThemeTokens** — Returns RN-safe color strings (hex/rgb/rgba) for semantic tokens (`background`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent`, `destructive`, status colors) plus effect tokens (`overlay`, `overlayStrong`, `surfaceElevated`, `surfaceTranslucent`, `surfaceTranslucentBorder`, etc.). Falls back to `--app-color-*` when `--color-*` is missing/non-RN-native.
-- **useIconColors** — Subset for icons. Maps `muted` → `mutedForeground` (readable on backgrounds).
-
-Input, Textarea, NumericInput, SmartInput, Spinner, and LoadingScreen default to theme colors when you omit `placeholderTextColor` or `spinnerColor`.
+Input, Textarea, NumericInput, SmartInput, Spinner and LoadingScreen pick theme colours
+when you omit `placeholderTextColor` or `spinnerColor`.
 
 ### Interaction and motion
 
 Press opacity, disabled opacity, motion durations, the responsive spring, and the drawer
 open and close durations are package constants on `INTERACTION_TOKENS`. They are not CSS
-variables and they do not change with a preset. Delete any `--ui-press-*`,
-`--ui-disabled-*`, `--ui-inactive-opacity`, `--ui-motion-*`, or `--ui-drawer-open-duration`
-/ `--ui-drawer-close-duration` declarations from a theme: nothing reads them.
+variables, so a theme does not change them.
 
 For a custom control, read that table:
 
@@ -926,118 +701,6 @@ import { MotionProvider, useMotionPolicy } from '@thewhileloop/whileui';
 const motion = useMotionPolicy();
 motion.durations.normal;
 motion.springs.responsive;
-```
-
-Optional RN fallback tokens (hex/rgb/hsl/named):
-
-```css
-@layer theme {
-  :root {
-    @variant light {
-      --app-color-primary: #000000;
-      --app-color-primary-foreground: #ffffff;
-      --app-color-foreground: #000000;
-      --app-color-background: #ffffff;
-      --app-color-card: #ffffff;
-      --app-color-card-foreground: #000000;
-      --app-color-popover: #ffffff;
-      --app-color-popover-foreground: #000000;
-      --app-color-secondary: #f5f5f5;
-      --app-color-secondary-foreground: #171717;
-      --app-color-muted: #f5f5f5;
-      --app-color-muted-foreground: #737373;
-      --app-color-border: #e5e5e5;
-      --app-color-input: #e5e5e5;
-      --app-color-ring: #94a3b8;
-      --app-color-accent: #22c55e;
-      --app-color-accent-foreground: #0a0a0a;
-      --app-color-destructive: #dc2626;
-      --app-color-destructive-foreground: #ffffff;
-      --app-color-success: #16a34a;
-      --app-color-success-foreground: #ffffff;
-      --app-color-warning: #f59e0b;
-      --app-color-warning-foreground: #111827;
-      --app-color-info: #3b82f6;
-      --app-color-info-foreground: #ffffff;
-      --app-color-overlay: rgba(0, 0, 0, 0.4);
-      --app-color-overlay-strong: rgba(0, 0, 0, 0.55);
-      --app-color-surface-elevated: #ffffff;
-      --app-color-surface-translucent: rgba(255, 255, 255, 0.5);
-      --app-color-surface-translucent-border: rgba(255, 255, 255, 0.18);
-      --app-color-surface-border: rgba(255, 255, 255, 0.3);
-      --app-color-surface-highlight: rgba(255, 255, 255, 0.3);
-      --app-color-state-hover: rgba(0, 0, 0, 0.05);
-      --app-color-state-pressed: rgba(0, 0, 0, 0.12);
-      --app-color-state-disabled: rgba(0, 0, 0, 0.4);
-    }
-    @variant dark {
-      --app-color-primary: #ffffff;
-      --app-color-primary-foreground: #000000;
-      --app-color-foreground: #ffffff;
-      --app-color-background: #000000;
-      --app-color-card: #0f0f10;
-      --app-color-card-foreground: #ffffff;
-      --app-color-popover: #121214;
-      --app-color-popover-foreground: #ffffff;
-      --app-color-secondary: #2e2e2e;
-      --app-color-secondary-foreground: #ffffff;
-      --app-color-muted: #2e2e2e;
-      --app-color-muted-foreground: #999999;
-      --app-color-border: #3d3d3d;
-      --app-color-input: #3d3d3d;
-      --app-color-ring: #7c889a;
-      --app-color-accent: #22c55e;
-      --app-color-accent-foreground: #0a0a0a;
-      --app-color-destructive: #dc2626;
-      --app-color-destructive-foreground: #ffffff;
-      --app-color-success: #22c55e;
-      --app-color-success-foreground: #0a0a0a;
-      --app-color-warning: #fbbf24;
-      --app-color-warning-foreground: #111827;
-      --app-color-info: #60a5fa;
-      --app-color-info-foreground: #111827;
-      --app-color-overlay: rgba(0, 0, 0, 0.5);
-      --app-color-overlay-strong: rgba(0, 0, 0, 0.7);
-      --app-color-surface-elevated: #111315;
-      --app-color-surface-translucent: rgba(17, 19, 21, 0.45);
-      --app-color-surface-translucent-border: rgba(255, 255, 255, 0.18);
-      --app-color-surface-border: rgba(255, 255, 255, 0.18);
-      --app-color-surface-highlight: rgba(255, 255, 255, 0.18);
-      --app-color-state-hover: rgba(255, 255, 255, 0.08);
-      --app-color-state-pressed: rgba(255, 255, 255, 0.15);
-      --app-color-state-disabled: rgba(255, 255, 255, 0.4);
-    }
-  }
-}
-```
-
-Or use the first-party theme bridge with optional persistence. The hook owns theme
-state and exposes event-driven setters:
-
-```tsx
-import { useThemeBridge, type ThemeBridgeAdapter } from '@thewhileloop/whileui';
-
-const adapter: ThemeBridgeAdapter = {
-  loadThemeMode: async () => 'system',
-  saveThemeMode: async (mode) => {
-    await storage.setItem('theme-mode', mode);
-  },
-};
-
-const { mode, resolvedTheme, setMode, cycleMode } = useThemeBridge({ adapter });
-```
-
-The bridge loads a new adapter before saving into it. If a user changes the mode while
-storage is still loading, that explicit choice wins over the late persisted value.
-
-When another store already owns the mode, mount the controlled bridge once near the
-application root. Change `mode` in the owning event handler; the bridge applies and
-persists it without mirroring state back through a callback effect.
-
-```tsx
-import { ThemeBridge } from '@thewhileloop/whileui';
-
-<ThemeBridge mode={mode} adapter={adapter} />;
 ```
 
 ## Focus rings
@@ -1066,14 +729,6 @@ keyboard users with nothing, which fails WCAG 2.4.7. `focusRing` removes the def
 supplies a themed replacement in the same class. The one exemption is a visually hidden
 input, where a visible proxy shows the focus instead — `OTPInput` does this with its
 blinking cursor.
-
-## Tech Stack
-
-- **Styling**: [Uniwind](https://uniwind.dev) (free tier) + Tailwind CSS v4
-- **Variants**: [tailwind-variants](https://www.tailwind-variants.org/) (`tv()`)
-- **Merging**: [clsx](https://github.com/lukeed/clsx) + [tailwind-merge](https://github.com/dcastil/tailwind-merge)
-- **Expo**: SDK 54
-- **Monorepo**: bun + Turborepo
 
 # API Reference
 
@@ -3433,40 +3088,6 @@ import { MetricCard } from '@thewhileloop/whileui';
 
 Also accepts the props of `ViewProps`.
 <!-- /api:MetricCard -->
-
-## Roadmap
-
-Tracked work items for future releases.
-
-### New Components
-
-- [ ] **Chip / Tag** — selectable, dismissible, multi-select with `tv()` variants, loading skeleton
-- [ ] **Rating / Stars** — interactive + read-only, half-star precision, swipe gesture, pairs with ProductCard
-- [ ] **Slider** — single + range (two thumbs), step marks, labels, Reanimated gesture, haptic on snap
-- [ ] **Carousel** — Reanimated-powered, auto-play, pagination dots, snap-to-item
-- [ ] **FAB (Floating Action Button)** — expandable action menu, Reanimated spring, auto-hide on scroll
-- [ ] **Combobox** — searchable select with keyboard navigation, empty state, async loading
-- [ ] **Data Table** — sortable headers, skeleton loading rows, row actions, responsive stacking
-- [ ] **Banner** — dismissible info/warning/success/destructive bar with icon + action, auto-dismiss timer
-- [ ] **Pagination** — compact (dots) + expanded (numbers) variants, edge-aware ellipsis, 44px touch targets
-- [ ] **Inline Calendar** — standalone calendar view reusing DatePicker logic, range selection
-
-### Component-Level Loading (`loading` prop)
-
-- [x] ProductCard, ListItem, NotificationItem, MetricCard, SubscriptionCard, PricingCard
-- [x] AppShell, Chat, FormModalScreen, CheckoutSummary (already had `loading`)
-- [ ] Add `loading` to remaining blocks: Header, BottomNav, DrawerMenu, TimelineFeed
-
-### Documentation Gaps
-
-- [ ] Add `## API` sections for: Textarea, Toggle, ToggleGroup, Label, Separator, Skeleton, AspectRatio, Collapsible, Text, View
-- [ ] Add `## API` sections for blocks: FloatingBottomNav, TabBar, FormModalScreen, ErrorState, LoadingScreen, ListItem, NotificationItem, MetricCard, TimelineFeed
-
-### Infrastructure
-
-- [ ] Publish to npm (`@thewhileloop/whileui`)
-- [ ] CI: typecheck + format check on PR
-- [ ] Automated visual regression tests (screenshot comparison)
 
 ## License
 
