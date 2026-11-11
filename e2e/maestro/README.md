@@ -17,6 +17,11 @@ What the layers below cannot prove, from `PLAN.md` > Evidence model:
   platform, and nothing below this can observe the result. `keyboard-dock.yaml` is that
   check. `otp.yaml` is the code entry check. `keyboard-orientation.yaml` repeats the dock
   in landscape, which requires the showcase orientation to be `default`.
+  Two traps: `assertVisible` passes for a field the keyboard covers, because the keyboard
+  is another window and the field is still in the hierarchy; and with the simulator's
+  hardware keyboard connected no software keyboard appears at all. Turn it off (I/O >
+  Keyboard > Toggle Software Keyboard) and judge a keyboard change by a `takeScreenshot`
+  that shows the keyboard.
 - **Android hardware back** dismissing the topmost overlay.
 - **`RefreshControl`**, which React Native Web does not implement at all.
 

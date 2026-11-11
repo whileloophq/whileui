@@ -127,6 +127,7 @@ function FormModalScreen({
           }}
           scrollEnabled={!saving && scrollEnabled}
           keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets
         >
           {children}
         </ScrollView>

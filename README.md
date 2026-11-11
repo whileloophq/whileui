@@ -353,6 +353,7 @@ Copy from `apps/showcase/catalog/templates/auth/`:
 | **LoadingScreen**           | Full-screen loading indicator                                         |
 | **PullToRefreshScrollView** | Themed ScrollView with RefreshControl (useThemeTokens for colors)     |
 | **KeyboardAwareScreen**     | One screen-level keyboard policy for bottom-docked controls           |
+| **KeyboardAwareScrollView** | Form scroll root that keeps the focused field above the keyboard      |
 | **DockedInput**             | Safe-area-aware bottom dock that reports its complete height          |
 | **SmartInput**              | Compose input with slots, variants, and optional rotating examples    |
 | **SplashScreen**            | Branded splash (fade/scale/slide variants)                            |
@@ -1753,9 +1754,8 @@ import { ActionBar, Button, ButtonText } from '@thewhileloop/whileui';
 
 Use one keyboard-aware root for the screen, then place the composer in a bottom dock. Feed the dock height into the scroll content inset so the last item remains visible.
 
-`KeyboardAwareScreen` does not scroll. A form or list inside it goes in a `ScrollView` with
-`keyboardShouldPersistTaps="handled"`; without one, anything taller than the screen, or
-pushed below the keyboard, cannot be reached.
+`KeyboardAwareScreen` is for a screen with controls docked to its bottom edge. It does
+not scroll, and it is the wrong root for a form: use `KeyboardAwareScrollView` below.
 
 ```tsx
 import { DockedInput, KeyboardAwareScreen, SmartInput } from '@thewhileloop/whileui';
@@ -1767,6 +1767,40 @@ import { DockedInput, KeyboardAwareScreen, SmartInput } from '@thewhileloop/whil
   </DockedInput>
 </KeyboardAwareScreen>;
 ```
+
+## KeyboardAwareScrollView
+
+The scroll root for a form. On iOS the native scroll view insets its content by whatever
+the keyboard covers and scrolls the focused field above it. `FormModalScreen`,
+`SheetContent` and `PullToRefreshScrollView` do the same by default.
+
+Use it instead of a `ScrollView` inside `KeyboardAwareScreen`. `KeyboardAvoidingView`,
+which `KeyboardAwareScreen` wraps, misjudges the keyboard inside a native iOS sheet (a
+`pageSheet` modal, or a stack screen presented as a modal): nothing it can measure
+includes where iOS placed the sheet, so the lower fields stay under the keyboard. Do not
+nest the two; both would avoid the keyboard. The inset is iOS only; on Android this is a
+plain `ScrollView` and relies on the window resizing for the keyboard.
+
+```tsx
+import { Input, KeyboardAwareScrollView } from '@thewhileloop/whileui';
+
+<KeyboardAwareScrollView contentContainerClassName="gap-4 p-4">
+  <Input placeholder="Name" />
+  <Input placeholder="Delivery note" />
+</KeyboardAwareScrollView>;
+```
+
+<!-- api:KeyboardAwareScrollView -->
+
+| Prop                              | Type                                           | Default     | Description                                                                                                                   |
+| --------------------------------- | ---------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| className                         | `string`                                       | —           | Classes for the scroll view itself. `flex-1 bg-background` is always applied first.                                           |
+| contentContainerClassName         | `string`                                       | —           | Classes for the content container: padding and gaps between fields go here.                                                   |
+| automaticallyAdjustKeyboardInsets | `boolean`                                      | `true`      | iOS only. Inset the content by whatever the keyboard covers and scroll the focused field above it.                            |
+| keyboardShouldPersistTaps         | `ScrollViewProps['keyboardShouldPersistTaps']` | `'handled'` | `handled` lets a tap on a button or picker in the form act while the keyboard is up, instead of only dismissing the keyboard. |
+
+Also accepts the props of `ScrollViewProps`.
+<!-- /api:KeyboardAwareScrollView -->
 
 ## SmartInput
 
@@ -2262,12 +2296,13 @@ import { PullToRefreshScrollView } from '@thewhileloop/whileui';
 
 <!-- api:PullToRefreshScrollView -->
 
-| Prop                  | Type                          | Default | Description                                                                                                                                                                                                     |
-| --------------------- | ----------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| refreshing (required) | `boolean`                     | —       | Whether refresh is in progress.                                                                                                                                                                                 |
-| onRefresh (required)  | `() => void \| Promise<void>` | —       | Refreshing is almost always async, so the signature says so. Nothing here awaits it — the spinner is driven by `refreshing`, which the owner controls — so a handler that can reject must catch its own errors. |
-| refreshColor          | `string`                      | —       | Override tint/colors. Defaults to theme primary.                                                                                                                                                                |
-| className             | `string`                      | —       |                                                                                                                                                                                                                 |
+| Prop                              | Type                          | Default | Description                                                                                                                                                                                                     |
+| --------------------------------- | ----------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| refreshing (required)             | `boolean`                     | —       | Whether refresh is in progress.                                                                                                                                                                                 |
+| onRefresh (required)              | `() => void \| Promise<void>` | —       | Refreshing is almost always async, so the signature says so. Nothing here awaits it — the spinner is driven by `refreshing`, which the owner controls — so a handler that can reject must catch its own errors. |
+| refreshColor                      | `string`                      | —       | Override tint/colors. Defaults to theme primary.                                                                                                                                                                |
+| automaticallyAdjustKeyboardInsets | `boolean`                     | `true`  | iOS only. Inset the content by whatever the keyboard covers and scroll a focused field above it, so a search box or an inline form in the list stays reachable.                                                 |
+| className                         | `string`                      | —       |                                                                                                                                                                                                                 |
 
 Also accepts the props of `ScrollViewProps`.
 <!-- /api:PullToRefreshScrollView -->

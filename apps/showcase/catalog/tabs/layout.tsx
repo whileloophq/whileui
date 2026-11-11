@@ -30,6 +30,7 @@ import {
   useIconColors,
   useToast,
 } from '@thewhileloop/whileui';
+import { KeyboardFormSheet } from '../keyboard-form-sheet';
 import { Section, SectionGroup, triggerHaptic } from '../ui';
 
 function CrashableChild() {
@@ -156,6 +157,13 @@ export function LayoutBlocksTab({ onOpenKeyboardScreen }: { onOpenKeyboardScreen
             />
           </DockedInput>
         </KeyboardAwareScreen>
+      </Section>
+
+      <Section
+        title="Keyboard Aware Scroll View"
+        subtitle="A form that keeps the focused field above the keyboard, in a native sheet too"
+      >
+        <KeyboardFormSheet />
       </Section>
 
       <Section

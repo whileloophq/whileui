@@ -1,5 +1,9 @@
 export { AppShell, type AppShellProps } from './app-shell';
 export { KeyboardAwareScreen, type KeyboardAwareScreenProps } from './keyboard-aware-screen';
+export {
+  KeyboardAwareScrollView,
+  type KeyboardAwareScrollViewProps,
+} from './keyboard-aware-scroll-view';
 export { DockedInput, type DockedInputProps } from './docked-input';
 export { ActionBar, type ActionBarProps } from './action-bar';
 export {

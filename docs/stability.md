@@ -12,9 +12,9 @@ an export.
 
 | Measure                             | Count |
 | ----------------------------------- | ----- |
-| Component and block families        | 87    |
+| Component and block families        | 88    |
 | Shipped in a production application | 30    |
-| Showcase demo only, never shipped   | 57    |
+| Showcase demo only, never shipped   | 58    |
 | Neither shipped nor demonstrated    | 0     |
 | Covered by a contract test          | 27    |
 | Qualifying as `stable`              | **0** |
@@ -26,7 +26,7 @@ an export.
 `DatePickerModal`, `FAB`, and `Text` each have a contract suite and a production call site.
 `Sheet`, `MotionProvider`, `ChatConversation`, `TimePickerModal`, `Surface`, `Markdown`,
 `CodeBlock`, `Avatar`, `Toast`, and `SmartImage` have suites but no production call site,
-so they stay `experimental` with the other 70. `candidate` requires passing contract tests;
+so they stay `experimental` with the other 71. `candidate` requires passing contract tests;
 `stable` requires the full definition of done, which no family meets until the
 accessibility matrix and E2E layers exist. The 30 shipped families are the ones on the shortest
 path — they already have the production call site that `stable` demands, and need the
@@ -72,13 +72,13 @@ Phase 1 exit list is drawn from this tier.
 | `SmartInput`              | layout     |
 | `DrawerMenu`              | navigation |
 
-## Tier 2 — showcase demo only (57)
+## Tier 2 — showcase demo only (58)
 
 Rendered in the showcase, never used in a shipping screen. A demo proves a component
 renders; only a consumer proves it is useful. These stay `experimental` until a
 product pulls them, and they should not receive hardening work ahead of Tier 1.
 
-`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `CodeBlock`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Markdown`, `Menubar`, `MotionProvider`, `Popover`, `RadioGroup`, `Select`, `Surface`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatConversation`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `TimePickerModal`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `LoadingScreen`, `LoadingState`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
+`Accordion`, `AspectRatio`, `Avatar`, `Checkbox`, `CodeBlock`, `Collapsible`, `Container`, `ContextMenu`, `Dialog`, `DropdownMenu`, `HoverCard`, `Label`, `LabeledField`, `Markdown`, `Menubar`, `MotionProvider`, `Popover`, `RadioGroup`, `Select`, `Surface`, `Tabs`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `View`, `ChatConversation`, `ChatMessageBubble`, `CheckoutSummary`, `FeatureGate`, `MetricCard`, `PlanToggle`, `PricingCard`, `ProductCard`, `SubscriptionCard`, `UpgradeBanner`, `UsageBar`, `DateRangePickerModal`, `DatePickerInline`, `TimePickerModal`, `ActionBar`, `AppShell`, `ConfirmActionSheet`, `ContentSkeleton`, `ErrorState`, `KeyboardAwareScrollView`, `LoadingScreen`, `LoadingState`, `ScreenSkeleton`, `Sheet`, `ListItem`, `NotificationItem`, `TimelineFeed`, `SmartImage`, `BottomNav`, `FloatingBottomNav`, `Header`, `TabBar`, `SplashScreen`
 
 ## Tier 3 — neither shipped nor demonstrated (0)
 
@@ -370,6 +370,36 @@ a full-screen dock instead.
 Large text, RTL, IME composition, autofill, and a VoiceOver/TalkBack pass are still
 open. Device results belong in this section once a build that contains the screen has
 been run. The browser result belongs here once `keyboard-dock.spec.ts` has been run.
+
+## Keyboard in a native sheet — 2026-11-11
+
+A form in an iOS page sheet kept its focused lower field under the keyboard. The screen
+used `KeyboardAwareScreen` around a `ScrollView`, as the README then advised.
+
+`KeyboardAvoidingView` takes the overlap as its layout bottom minus the keyboard's screen
+position. Inside the sheet, a probe on the iPhone 17 Pro simulator read `layoutY 61` and
+`measureInWindow` `pageY 61`: under the new architecture neither includes the sheet's
+distance from the top of the screen, so the padding falls short by that distance.
+Measuring the window offset in JavaScript therefore cannot fix it. The native scroll view
+can: with `automaticallyAdjustKeyboardInsets` it converts its own frame to window
+coordinates when the keyboard frame changes, then scrolls the focused field into view.
+
+- `KeyboardAwareScrollView` is a `ScrollView` with that inset on. `FormModalScreen`,
+  `SheetContent` and `PullToRefreshScrollView` turn it on too; `ChatConversation` does
+  not, because `Chat` already wraps it in `KeyboardAvoidingView`.
+- `keyboard-aware-scroll-view.test.tsx` holds the prop on all four; it fails with the
+  old `FormModalScreen` and `SheetContent`.
+- Device: the proving product's add sheet, Note field focused, before and after. The
+  catalog's Layout tab has "Open form sheet", an eleven-field `pageSheet` form: with the
+  inset off its last field is under the keyboard, with it on the field sits on the
+  keyboard's top edge (Release build, iPhone 17 Pro simulator).
+- Not verified: Android, where the inset prop does nothing and the window is expected
+  to resize; `KeyboardAwareScreen` with a docked bar inside a native sheet, which keeps
+  the same shortfall.
+
+With the simulator's hardware keyboard connected, focusing a field shows no software
+keyboard, so a keyboard flow passes with nothing covered. Check a keyboard result on a
+screenshot that shows the keyboard.
 
 ## Nested overlay layering — 2026-11-10
 

@@ -15,6 +15,12 @@ export interface PullToRefreshScrollViewProps extends Omit<ScrollViewProps, 'ref
   onRefresh: () => void | Promise<void>;
   /** Override tint/colors. Defaults to theme primary. */
   refreshColor?: string;
+  /**
+   * iOS only. Inset the content by whatever the keyboard covers and scroll a focused
+   * field above it, so a search box or an inline form in the list stays reachable.
+   * @default true
+   */
+  automaticallyAdjustKeyboardInsets?: boolean;
 }
 
 export function PullToRefreshScrollView({
@@ -24,6 +30,7 @@ export function PullToRefreshScrollView({
   className,
   children,
   alwaysBounceVertical = true,
+  automaticallyAdjustKeyboardInsets = true,
   accessibilityActions,
   onAccessibilityAction,
   ...props
@@ -49,6 +56,7 @@ export function PullToRefreshScrollView({
     <ScrollView
       className={cn('flex-1', className)}
       alwaysBounceVertical={alwaysBounceVertical}
+      automaticallyAdjustKeyboardInsets={automaticallyAdjustKeyboardInsets}
       accessibilityActions={actions}
       onAccessibilityAction={handleAccessibilityAction}
       refreshControl={

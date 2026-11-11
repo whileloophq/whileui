@@ -255,6 +255,7 @@ export function SheetContent({
   style,
   contentContainerStyle,
   keyboardShouldPersistTaps = 'handled',
+  automaticallyAdjustKeyboardInsets = true,
   nestedScrollEnabled = true,
   ...props
 }: SheetContentProps) {
@@ -268,6 +269,7 @@ export function SheetContent({
         style={style}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+        automaticallyAdjustKeyboardInsets={automaticallyAdjustKeyboardInsets}
         nestedScrollEnabled={nestedScrollEnabled}
         contentContainerStyle={[{ padding: contentPadding }, contentContainerStyle]}
         {...props}
