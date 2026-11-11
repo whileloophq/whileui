@@ -1753,6 +1753,10 @@ import { ActionBar, Button, ButtonText } from '@thewhileloop/whileui';
 
 Use one keyboard-aware root for the screen, then place the composer in a bottom dock. Feed the dock height into the scroll content inset so the last item remains visible.
 
+`KeyboardAwareScreen` does not scroll. A form or list inside it goes in a `ScrollView` with
+`keyboardShouldPersistTaps="handled"`; without one, anything taller than the screen, or
+pushed below the keyboard, cannot be reached.
+
 ```tsx
 import { DockedInput, KeyboardAwareScreen, SmartInput } from '@thewhileloop/whileui';
 
