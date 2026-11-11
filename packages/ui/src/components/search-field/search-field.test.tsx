@@ -20,3 +20,11 @@ describe('SearchField', () => {
     expect(screen.queryByRole('button', { name: 'Clear search' })).toBeNull();
   });
 });
+
+describe('the clear cross', () => {
+  it('is drawn, not a "×" glyph that each font sets off-centre', async () => {
+    await render(<SearchField value="kyoto" onChangeText={jest.fn()} />);
+    expect(screen.queryByText('×')).toBeNull();
+    expect(screen.getByTestId('cross-glyph', { includeHiddenElements: true })).toBeOnTheScreen();
+  });
+});

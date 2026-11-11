@@ -9,11 +9,9 @@ import {
   ConfirmActionSheet,
   Container,
   ContentSkeleton,
-  DockedInput,
   EmptyState,
   ErrorBoundary,
   ErrorState,
-  KeyboardAwareScreen,
   LoadingScreen,
   LoadingState,
   PageSkeleton,
@@ -112,7 +110,7 @@ export function LayoutBlocksTab({ onOpenKeyboardScreen }: { onOpenKeyboardScreen
         subtitle="Screen-owned keyboard handling, a safe-area dock, and rotating examples"
       >
         <Text className="mb-3 text-sm text-muted-foreground">
-          The box below is a clip for browsing. The full screen is what the keyboard flows drive.
+          The card on its own. Open the keyboard screen to see it docked above the keyboard.
         </Text>
         <Button
           variant="outline"
@@ -123,40 +121,36 @@ export function LayoutBlocksTab({ onOpenKeyboardScreen }: { onOpenKeyboardScreen
         >
           <ButtonText>Open keyboard screen</ButtonText>
         </Button>
-        <KeyboardAwareScreen className="relative h-36 overflow-hidden rounded-xl border border-border">
-          <DockedInput safeArea={false}>
-            <SmartInput
-              variant="card"
-              value={smartInputValue}
-              onChangeText={setSmartInputValue}
-              placeholderExamples={['Plan a morning walk', 'Log two glasses of water']}
-              safeArea={false}
-              leftSlot={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  accessibilityLabel="Attach"
-                  onPress={() => triggerHaptic('light')}
-                >
-                  <Feather name="plus" size={20} color={colors.foreground} />
-                </Button>
-              }
-              rightSlot={
-                <Button
-                  size="icon"
-                  accessibilityLabel="Send"
-                  onPress={() => {
-                    triggerHaptic('medium');
-                    toast({ title: 'Sent', description: smartInputValue || '(empty)' });
-                    setSmartInputValue('');
-                  }}
-                >
-                  <Feather name="send" size={18} color={colors.primaryForeground} />
-                </Button>
-              }
-            />
-          </DockedInput>
-        </KeyboardAwareScreen>
+        <SmartInput
+          variant="card"
+          value={smartInputValue}
+          onChangeText={setSmartInputValue}
+          placeholderExamples={['Plan a morning walk', 'Log two glasses of water']}
+          safeArea={false}
+          leftSlot={
+            <Button
+              variant="ghost"
+              size="icon"
+              accessibilityLabel="Attach"
+              onPress={() => triggerHaptic('light')}
+            >
+              <Feather name="plus" size={20} color={colors.foreground} />
+            </Button>
+          }
+          rightSlot={
+            <Button
+              size="icon"
+              accessibilityLabel="Send"
+              onPress={() => {
+                triggerHaptic('medium');
+                toast({ title: 'Sent', description: smartInputValue || '(empty)' });
+                setSmartInputValue('');
+              }}
+            >
+              <Feather name="send" size={18} color={colors.primaryForeground} />
+            </Button>
+          }
+        />
       </Section>
 
       <Section

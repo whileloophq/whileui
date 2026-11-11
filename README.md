@@ -486,13 +486,21 @@ const icons = useIconColors();
 | `variant`   | `default \| secondary \| destructive \| surface` | `default`  |                                         |
 | `size`      | `sm \| default \| lg`                            | `default`  | 48 / 56 / 64 — all clear touch minimums |
 | `placement` | `floating \| floating-left \| inline`            | `floating` | `inline` lets the caller position it    |
+| `safeArea`  | `boolean`                                        | `false`    | Add the safe-area insets when floating  |
 
-`FABGroup` stacks secondary actions above one. Sizes start at 48dp, so a FAB never
-needs `hitSlop`.
+`FABGroup` stacks secondary actions above one, bottom-right. The group floats and lays out
+the FABs inside it in a column, whatever their `placement`. Sizes start at 48dp, so a FAB
+never needs `hitSlop`.
+
+A floating FAB sits 24pt from the bottom and side of its positioned ancestor. Above a tab
+bar that is right as it is. Over a full-screen view, pass `safeArea` (to the FAB, or to the
+`FABGroup`) so it clears the home indicator and the screen's curved corner. Leave it off
+above a tab bar: the tab bar already clears the inset, though the screen still reports it.
 
 A floating FAB covers whatever scrolls under it, so a list behind one ends with room for
 it: `contentContainerStyle={{ paddingBottom: fabClearance() }}`, passing the FAB's `size`
-when it is not the default.
+when it is not the default. For a `safeArea` FAB pass the bottom inset too:
+`fabClearance('default', useSafeAreaInsets().bottom)`.
 
 ## Layout Primitives (Stack, Row)
 

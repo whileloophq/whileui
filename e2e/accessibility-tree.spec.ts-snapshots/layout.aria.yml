@@ -15,7 +15,7 @@
 - text: "Container — size=\"sm\" Caps content width and centres it. Resize the window: on a phone this is a plain full-width View, because every size is wider than any phone. On a wide screen it stops the line length running away. Container — size=\"lg\" Wider column for dashboards and multi-column content. Bars & Overlays Action Bar Sticky bottom action row with safe-area support"
 - button "Cancel"
 - button "Save Changes"
-- text: Smart Input Screen-owned keyboard handling, a safe-area dock, and rotating examples The box below is a clip for browsing. The full screen is what the keyboard flows drive.
+- text: Smart Input Screen-owned keyboard handling, a safe-area dock, and rotating examples The card on its own. Open the keyboard screen to see it docked above the keyboard.
 - button "Open keyboard screen"
 - button "Attach": 
 - textbox /e\.g\..*/

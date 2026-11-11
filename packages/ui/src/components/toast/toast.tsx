@@ -4,6 +4,7 @@ import Animated, { FadeOut, SlideInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
+import { CrossGlyph } from '../../lib/cross-glyph';
 import { focusRing } from '../../lib/focus-ring';
 import { useMotionPolicy } from '../../lib/motion-policy';
 import { tv, type VariantProps } from '../../lib/tv';
@@ -196,9 +197,7 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
             focusRing
           )}
         >
-          <Text className="text-muted-foreground" style={typographyStyle(visual, 'emphasis')}>
-            ×
-          </Text>
+          <CrossGlyph size={12} />
         </Pressable>
       </View>
     </Animated.View>

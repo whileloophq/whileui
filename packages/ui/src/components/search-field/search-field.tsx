@@ -4,7 +4,7 @@ import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 import { Input, type InputProps } from '../input';
-import { Text } from '../text';
+import { CrossGlyph } from '../../lib/cross-glyph';
 
 export interface SearchFieldProps extends Omit<InputProps, 'prefix' | 'suffix'> {
   /** Shown in the empty field and used as its accessible name. @default 'Search' */
@@ -73,13 +73,7 @@ export const SearchField: ForwardRefComponent<TextInputInstance, SearchFieldProp
               onPress={() => onChangeText('')}
               className={cn('h-6 w-6 items-center justify-center rounded-full bg-muted', focusRing)}
             >
-              <Text
-                aria-hidden
-                className="text-muted-foreground"
-                style={{ fontSize: 16, lineHeight: 18 }}
-              >
-                ×
-              </Text>
+              <CrossGlyph size={9} />
             </Pressable>
           ) : null
         }
