@@ -9,7 +9,7 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 import { webAutofillField } from '../../lib/web-autofill';
-import { useFormFieldState } from '../form-field/form-field';
+import { fieldAccessibilityProps, useFormFieldState } from '../form-field/form-field';
 
 const inputVariants = tv({
   base: 'w-full border-border bg-muted text-foreground',
@@ -88,12 +88,7 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
         )}
         <TextInput
           ref={ref}
-          // Named by the FormField's label on web and Android unless the caller names it; iOS
-          // reads the label beside it.
-          aria-labelledby={
-            (props.accessibilityLabel ?? props['aria-label']) ? undefined : field.labelId
-          }
-          aria-required={field.required || undefined}
+          {...fieldAccessibilityProps(field, props)}
           className={cn(
             'flex-1 text-foreground placeholder:text-muted-foreground web:outline-none',
             !plain && webAutofillField,

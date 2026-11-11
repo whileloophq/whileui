@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
@@ -157,7 +157,8 @@ function GlazeSheet({ glaze, onClose }: { glaze: Glaze | null; onClose: () => vo
   );
 }
 
-export function GlazesScreen() {
+// Memoised: it takes no props, so the kiln's once-a-second tick never re-renders it.
+export const GlazesScreen = memo(function GlazesScreen() {
   const colors = useIconColors();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
@@ -240,4 +241,4 @@ export function GlazesScreen() {
       <GlazeSheet glaze={selected} onClose={() => setSelected(null)} />
     </View>
   );
-}
+});

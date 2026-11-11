@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Pressable, View, type ViewProps } from 'react-native';
+import { AccessibilityInfo, Platform, Pressable, View, type ViewProps } from 'react-native';
 import Animated, { FadeOut, SlideInUp } from 'react-native-reanimated';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
@@ -110,6 +110,16 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
     }
   }, [duration, onDismiss]);
 
+  // Android and the web announce through the live region below; iOS has no live
+  // regions, so it is told once, when the toast appears.
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    const message = [title, description].filter(Boolean).join('. ');
+    if (message) AccessibilityInfo.announceForAccessibility(message);
+    // Announce on appearance only; a re-render must not repeat it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per toast, by design
+  }, []);
+
   return (
     <Animated.View
       entering={motion.animationsEnabled ? SlideInUp.duration(motion.durations.normal) : undefined}
@@ -177,9 +187,11 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
           accessibilityRole="button"
           accessibilityLabel="Dismiss"
           onPress={onDismiss}
-          hitSlop={12}
+          // 44 px everywhere, since hitSlop does nothing on the web; the negative margin
+          // keeps the toast as compact as the old 32 px button left it.
+          hitSlop={2}
           className={cn(
-            'h-8 w-8 items-center justify-center rounded-full active:bg-state-pressed',
+            '-my-1.5 -mr-1.5 h-11 w-11 items-center justify-center rounded-full active:bg-state-pressed',
             focusRing
           )}
         >

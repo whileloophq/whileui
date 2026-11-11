@@ -1,0 +1,16 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/README.md",
+        "$TURBO_ROOT$/skills/**",
+        "$TURBO_ROOT$/packages/mcp/src/server.ts",
+        "$TURBO_ROOT$/apps/showcase/catalog/templates/*/index.ts"
+      ],
+      "outputs": ["dist/**"]
+    }
+  }
+}

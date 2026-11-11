@@ -21,6 +21,11 @@ import {
   VISUAL_TOKEN_SPECS,
   WHILEUI_DARK_THEME_COLORS,
 } from '../src/tokens.ts';
+import {
+  findPhantomComponents,
+  findStaleSkillNames,
+  findUnnamedIconButtons,
+} from './agent-docs-guards.mjs';
 
 const PKG = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = join(PKG, '../..');
@@ -99,40 +104,29 @@ const packageExports = exportedSource(join(PKG, 'src/index.ts'));
 const templateExports = ['auth', 'profile']
   .map((dir) => exportedSource(join(TEMPLATES, dir, 'index.ts')))
   .join('\n');
-const phantom = components.filter(
-  ({ name, kind }) =>
-    !new RegExp(`\\b${name}\\b`).test(kind === 'package' ? packageExports : templateExports)
-);
+const phantom = findPhantomComponents(components, { packageExports, templateExports });
 if (phantom.length > 0) {
-  throw new Error(
-    `README lists components that are not exported: ${phantom.map((c) => c.name).join(', ')}`
-  );
+  throw new Error(`README lists components that are not exported: ${phantom.join(', ')}`);
+}
+
+// Agents copy the examples exactly, so an example must not teach an unnamed control.
+const unnamed = findUnnamedIconButtons(readme);
+if (unnamed.length > 0) {
+  throw new Error(`README shows icon buttons with no name:\n  ${unnamed.join('\n  ')}`);
 }
 
 // The skill (skills/whileui/SKILL.md) is hand-written and installed into consumers'
 // agents; every API, MCP tool, subpath and agent file it names must still exist.
-const SKILL = join(ROOT, 'skills/whileui/SKILL.md');
-const mcpServer = readFileSync(join(ROOT, 'packages/mcp/src/server.ts'), 'utf8');
-const subpaths = Object.keys(JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8')).exports);
-const agentFiles = ['llms.txt', 'llms-components.txt', 'llms-full.txt', 'catalog.json'];
-const publicApi = [
-  packageExports,
-  exportedSource(join(PKG, 'src/tokens.ts')),
-  readFileSync(join(PKG, 'src/metro.cjs'), 'utf8'),
-].join('\n');
-const stale = [...readFileSync(SKILL, 'utf8').matchAll(/`([^`\n]+)`/g)]
-  .map(([, token]) => token)
-  .filter((token) => {
-    if (/^[a-z]+(?:_[a-z]+)+$/.test(token)) return !mcpServer.includes(`'${token}'`);
-    if (/^[A-Za-z]+$/.test(token) && /[A-Z]/.test(token)) {
-      return !new RegExp(`\\b${token}\\b`).test(publicApi);
-    }
-    if (token.startsWith('@thewhileloop/whileui/')) {
-      return !subpaths.includes(`./${token.slice('@thewhileloop/whileui/'.length)}`);
-    }
-    const file = /dist\/agent\/([\w.-]+)$/.exec(token)?.[1];
-    return file !== undefined && !agentFiles.includes(file);
-  });
+const stale = findStaleSkillNames(readFileSync(join(ROOT, 'skills/whileui/SKILL.md'), 'utf8'), {
+  publicApi: [
+    packageExports,
+    exportedSource(join(PKG, 'src/tokens.ts')),
+    readFileSync(join(PKG, 'src/metro.cjs'), 'utf8'),
+  ].join('\n'),
+  mcpServer: readFileSync(join(ROOT, 'packages/mcp/src/server.ts'), 'utf8'),
+  subpaths: Object.keys(JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8')).exports),
+  agentFiles: ['llms.txt', 'llms-components.txt', 'llms-full.txt', 'catalog.json'],
+});
 if (stale.length > 0) {
   throw new Error(`skills/whileui/SKILL.md names things that no longer exist: ${stale.join(', ')}`);
 }

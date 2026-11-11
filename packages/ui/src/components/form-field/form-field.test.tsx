@@ -1,3 +1,4 @@
+import { Text } from 'react-native';
 import { render, screen } from '../../test/render';
 import { INTERACTION_TOKENS } from '../../lib/interaction-tokens';
 import { FormControl, FormField, FormHint, FormLabel, FormMessage } from './form-field';
@@ -111,8 +112,8 @@ describe('FormField', () => {
   });
 
   it('names each text control by its FormLabel', async () => {
-    // 2026-11-11: NumericInput in a FormField had no accessible name on web; Input only
-    // looked named because the browser fell back to its placeholder.
+    // Without the link a NumericInput has no name at all, and an Input is named only by
+    // its placeholder, which disappears once the user types.
     await render(
       <>
         <FormField>
@@ -144,8 +145,27 @@ describe('FormField', () => {
     );
 
     expect(screen.queryByText('*', { exact: false })).toBeNull();
-    // RNTL joins hidden children into the label text ("Email *"); browsers do not.
-    expect(screen.getByLabelText('Email', { exact: false }).props['aria-required']).toBe(true);
+    // RNTL resolves labelled-by from the label's raw text ("Email *"), so match loosely
+    // and pick the field out from the label itself.
+    const field = screen
+      .getAllByLabelText('Email', { exact: false })
+      .find((node) => node.props['aria-required']);
+    expect(field).toBeDefined();
+    // iOS reads the label's whole string, nested asterisk included, unless it is named.
+    expect(screen.getByText('Email', { exact: false }).props.accessibilityLabel).toBe('Email');
+  });
+
+  it("keeps a caller's own label link, in React Native's older form too", async () => {
+    await render(
+      <FormField>
+        <FormLabel>Amount</FormLabel>
+        <Text nativeID="own-label">Amount in dollars</Text>
+        <NumericInput value={5} accessibilityLabelledBy="own-label" />
+      </FormField>
+    );
+
+    expect(screen.getByLabelText('Amount in dollars')).toBeOnTheScreen();
+    expect(screen.queryAllByLabelText('Amount', { exact: true })).toHaveLength(0);
   });
 
   it("keeps the caller's own label", async () => {

@@ -25,7 +25,7 @@ export interface ThemeSeeds {
 const toOklch = converter('oklch');
 
 /** WCAG 2.x contrast ratio between two CSS colours, 1–21. */
-export function contrastRatio(a: string, b: string): number {
+function contrastRatio(a: string, b: string): number {
   return wcagContrast(a, b);
 }
 
@@ -68,7 +68,7 @@ function onFill(fill: string, seeds: Pick<ThemeSeeds, 'background' | 'foreground
 const STATUS_HUES = { destructive: 27, success: 150, warning: 75, info: 240 } as const;
 
 /** The 25 base colours a theme needs, derived from its seeds. */
-export function themeBaseFromSeeds(seeds: ThemeSeeds): ThemeBaseColors {
+function themeBaseFromSeeds(seeds: ThemeSeeds): ThemeBaseColors {
   const { background, foreground, primary } = seeds;
   const dark = oklch(background).l < 0.5;
   const accent = seeds.accent ?? toward(primary, background, 0.82);

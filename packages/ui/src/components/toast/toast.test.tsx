@@ -1,4 +1,4 @@
-import { Pressable } from 'react-native';
+import { AccessibilityInfo, Platform, Pressable } from 'react-native';
 import { act, fireEvent, render, screen } from '../../test/render';
 import { ToastContainer, ToastProvider, useToast } from './toast';
 
@@ -71,5 +71,38 @@ describe('ToastProvider', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'Dismiss' }));
     expect(screen.queryByText('All changes stored.')).toBeNull();
+  });
+
+  it('announces a toast on iOS, which has no live regions', async () => {
+    const original = Platform.OS;
+    Platform.OS = 'ios';
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
+    try {
+      function Notify() {
+        const { toast } = useToast();
+        return (
+          <>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Notify"
+              onPress={() => toast({ title: 'Saved', description: 'All changes stored.' })}
+            />
+            <ToastContainer />
+          </>
+        );
+      }
+      await render(
+        <ToastProvider>
+          <Notify />
+        </ToastProvider>
+      );
+      await fireEvent.press(screen.getByRole('button', { name: 'Notify' }));
+
+      expect(announce).toHaveBeenCalledTimes(1);
+      expect(announce).toHaveBeenCalledWith('Saved. All changes stored.');
+    } finally {
+      Platform.OS = original;
+      announce.mockRestore();
+    }
   });
 });

@@ -4,8 +4,7 @@ import { CATEGORIES, openCategory, openShowcase } from './showcase';
 /**
  * What a screen reader is told about every catalog screen: each element's role, name
  * and state, compared against a reviewed baseline. Styling never changes it, so it only
- * fails when an announcement changes. 2026-11-11: an icon glyph inside every icon button
- * read as ", Download" on iOS and nothing caught it; a changed name now fails here.
+ * fails when an announcement changes, such as an icon glyph leaking into a button's name.
  *
  * A deliberate change: `bun run test:web -- --update-snapshots`, then review the
  * .aria.yml diff like code. The clock is fixed so dates never change on their own.

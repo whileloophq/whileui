@@ -273,6 +273,26 @@ try {
   rmSync(tarball, { force: true });
 }
 
+// ---------------------------------------------------------------------------
+step('@thewhileloop/whileui-mcp ships a runnable server');
+
+const MCP = join(ROOT, 'packages/mcp');
+const mcpManifest = JSON.parse(readFileSync(join(MCP, 'package.json'), 'utf8'));
+const [mcpPack] = JSON.parse(
+  run('npm', ['pack', '--dry-run', '--json', '--cache', NPM_CACHE], { cwd: MCP })
+);
+const mcpFiles = new Set(mcpPack.files.map((file) => file.path));
+const bin = mcpManifest.bin['whileui-mcp'];
+for (const file of [bin, 'dist/server.js', 'dist/catalog.js', 'README.md']) {
+  if (mcpFiles.has(file)) pass(file);
+  else fail(`${file} is missing from the MCP package`);
+}
+if (readFileSync(join(MCP, bin), 'utf8').startsWith('#!/usr/bin/env node\n')) pass(`${bin} has a node shebang`);
+else fail(`${bin} has no shebang, so npx cannot run it`);
+const stray = [...mcpFiles].filter((file) => /\.test\.|^src\/|^test\//.test(file));
+if (stray.length === 0) pass('no sources or tests in the package');
+else fail('sources or tests ship in the MCP package', stray.join(', '));
+
 console.log('');
 if (failures > 0) {
   console.log(`${failures} problem${failures === 1 ? '' : 's'} with the published package.`);

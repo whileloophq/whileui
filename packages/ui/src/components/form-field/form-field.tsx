@@ -67,6 +67,31 @@ export function useFormFieldState(): FormFieldState {
   return useContext(FormFieldContext);
 }
 
+interface CallerNaming {
+  accessibilityLabel?: string;
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
+  accessibilityLabelledBy?: string | string[];
+}
+
+/**
+ * Accessibility props that tie a text control to its FormField: named by the FormLabel
+ * unless the caller names or links it any of the four ways React Native allows, and
+ * required when the field is. Spread before the caller's props. iOS has no labelled-by;
+ * VoiceOver reads the visible label just before the field.
+ */
+export function fieldAccessibilityProps(field: FormFieldState, props: CallerNaming) {
+  const named =
+    props.accessibilityLabel ??
+    props['aria-label'] ??
+    props['aria-labelledby'] ??
+    props.accessibilityLabelledBy;
+  return {
+    'aria-labelledby': named ? undefined : field.labelId,
+    'aria-required': field.required || undefined,
+  };
+}
+
 export interface FormFieldProps extends ViewProps, VariantProps<typeof formFieldVariants> {
   invalid?: boolean;
   disabled?: boolean;
@@ -120,11 +145,15 @@ const FormLabel: ForwardRefComponent<TextInstance, FormLabelProps> = React.forwa
   ({ className, showRequiredIndicator = true, children, style, ...props }, ref) => {
     const { invalid, disabled, required, labelId } = useContext(FormFieldContext);
     const visual = useVisualTokens();
+    const indicator = required && showRequiredIndicator;
 
     return (
       <Text
         ref={ref}
         nativeID={labelId}
+        // iOS reads nested Text as one string, so hiding the asterisk alone still says
+        // "star"; a plain-text label names it once. The control announces "required".
+        accessibilityLabel={indicator && typeof children === 'string' ? children : undefined}
         className={cn(
           'font-medium text-foreground',
           invalid && 'text-destructive',
@@ -135,8 +164,7 @@ const FormLabel: ForwardRefComponent<TextInstance, FormLabelProps> = React.forwa
         {...props}
       >
         {children}
-        {required && showRequiredIndicator ? (
-          // The control announces "required" itself; a spoken "star" adds nothing.
+        {indicator ? (
           <Text aria-hidden className="text-destructive">
             {' *'}
           </Text>

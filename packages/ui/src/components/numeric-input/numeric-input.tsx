@@ -17,7 +17,7 @@ import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 import { webAutofillField } from '../../lib/web-autofill';
-import { useFormFieldState } from '../form-field/form-field';
+import { fieldAccessibilityProps, useFormFieldState } from '../form-field/form-field';
 
 const numericInputVariants = tv({
   base: 'w-full flex-row items-center border-border bg-muted',
@@ -389,10 +389,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
         >
           <TextInput
             ref={ref}
-            aria-labelledby={
-              (props.accessibilityLabel ?? props['aria-label']) ? undefined : field.labelId
-            }
-            aria-required={field.required || undefined}
+            {...fieldAccessibilityProps(field, props)}
             className={cn(
               numericInputTextVariants({ size }),
               'w-full web:outline-none',

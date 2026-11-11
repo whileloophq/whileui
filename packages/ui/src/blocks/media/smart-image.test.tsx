@@ -19,6 +19,15 @@ function skeletonIn(result: Rendered) {
 }
 
 describe('SmartImage', () => {
+  it('exposes its image to screen readers under its alt text', async () => {
+    const result = await render(<SmartImage source={{ uri: 'a.png' }} alt="Celadon bowl" />);
+    const image = imageIn(result);
+    // On iOS and Android expo-image skips an image that is not `accessible`.
+    expect(image.props.accessible).toBe(true);
+    expect(image.props.accessibilityRole).toBe('image');
+    expect(image.props.accessibilityLabel).toBe('Celadon bowl');
+  });
+
   it('returns to its loading phase when the rendered image starts another load', async () => {
     const result = await render(
       <SmartImage source={{ uri: 'first.png' }} alt="Preview" className="h-20 w-20" />

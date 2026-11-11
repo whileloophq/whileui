@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { Image, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -80,7 +80,8 @@ function StudioPass() {
   );
 }
 
-export function MemberScreen() {
+// Memoised: it takes no props, so the kiln's once-a-second tick never re-renders it.
+export const MemberScreen = memo(function MemberScreen() {
   const insets = useSafeAreaInsets();
   const icons = useIconColors();
   const { toast } = useToast();
@@ -183,4 +184,4 @@ export function MemberScreen() {
       </Reveal>
     </View>
   );
-}
+});

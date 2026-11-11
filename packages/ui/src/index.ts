@@ -100,8 +100,6 @@ export {
 export { deriveThemeColors, THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './lib/theme-derive';
 export {
   checkThemeContrast,
-  contrastRatio,
-  themeBaseFromSeeds,
   themeFromSeeds,
   type ContrastCheck,
   type ThemeSeeds,

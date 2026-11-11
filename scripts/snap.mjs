@@ -10,6 +10,8 @@
  * matches a button, tab or link by its accessible name, falling back to visible text.
  */
 import { chromium } from '@playwright/test';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({
@@ -19,7 +21,8 @@ const { values } = parseArgs({
     theme: { type: 'string', default: 'light' },
     width: { type: 'string', default: '390' },
     height: { type: 'string', default: '844' },
-    out: { type: 'string', default: 'snap.png' },
+    // Outside the repo, so a screenshot is never committed by accident.
+    out: { type: 'string', default: join(tmpdir(), 'whileui-snap.png') },
   },
 });
 

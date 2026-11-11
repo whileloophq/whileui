@@ -1913,7 +1913,7 @@ import { SmartInput, Button, ButtonText } from '@thewhileloop/whileui';
   onChangeText={setMessage}
   placeholderExamples={['Log breakfast', 'Add a 30 minute walk', 'Set weight to 72 kg']}
   leftSlot={
-    <Button variant="ghost" size="icon">
+    <Button variant="ghost" size="icon" accessibilityLabel="Add">
       <Icon name="add" />
     </Button>
   }
@@ -1970,8 +1970,8 @@ const [value, setValue] = useState('');
   onSuggestionPress={(text) => setValue(text)}
   emptyTitle="How can I help?"
   emptyDescription="Ask anything."
-  leftSlot={<Button variant="ghost" size="icon"><Icon name="paperclip" /></Button>}
-  rightSlot={<Button size="icon" onPress={handleSend}><Icon name="send" /></Button>}
+  leftSlot={<Button variant="ghost" size="icon" accessibilityLabel="Attach"><Icon name="paperclip" /></Button>}
+  rightSlot={<Button size="icon" accessibilityLabel="Send" onPress={handleSend}><Icon name="send" /></Button>}
 />;
 ```
 

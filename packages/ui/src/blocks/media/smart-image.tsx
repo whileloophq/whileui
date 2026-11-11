@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, type ViewInstance, type ViewProps } from 'react-native';
+import { Platform, View, type ViewInstance, type ViewProps } from 'react-native';
 import { Image, type ImageProps } from 'expo-image';
 import { Skeleton } from '../../components/skeleton';
 import { cn } from '../../lib/cn';
@@ -108,8 +108,12 @@ const SmartImage: ForwardRefComponent<ViewInstance, SmartImageProps> = React.for
         )}
         <Image
           source={imageSource}
-          // expo-image documents `alt` as an alias, but its web renderer reads only
-          // `accessibilityLabel`; this is the prop that names the image everywhere.
+          // expo-image's web renderer reads only `accessibilityLabel` (its `alt` alias is
+          // dropped there). On iOS and Android an image is skipped unless `accessible`; on
+          // the web a role would wrap the <img> in a second, unnamed image.
+          {...(Platform.OS === 'web'
+            ? null
+            : { accessible: Boolean(alt), accessibilityRole: 'image' as const })}
           accessibilityLabel={alt}
           transition={transition}
           onLoadStart={() => setPhase((current) => (current === 'fallback' ? current : 'loading'))}
