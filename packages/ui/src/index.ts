@@ -98,6 +98,14 @@ export {
   type ThemePreset,
 } from './lib/theme-presets';
 export { deriveThemeColors, THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './lib/theme-derive';
+export {
+  checkThemeContrast,
+  contrastRatio,
+  themeBaseFromSeeds,
+  themeFromSeeds,
+  type ContrastCheck,
+  type ThemeSeeds,
+} from './lib/theme-seeds';
 
 export { Text, textVariants, type TextProps } from './components/text';
 export { Surface, type SurfaceLevel, type SurfaceProps } from './components/surface';

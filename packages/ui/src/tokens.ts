@@ -5,3 +5,4 @@ export * from './lib/theme-contract';
 export * from './lib/visual-token-contract';
 export * from './lib/theme-presets';
 export * from './lib/theme-derive';
+export * from './lib/theme-seeds';
