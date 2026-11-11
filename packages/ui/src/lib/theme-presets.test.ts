@@ -1,7 +1,9 @@
 import { THEME_TOKEN_SPECS, type ThemeColors } from './theme-contract';
 import { THEME_BASE_TOKEN_KEYS, type ThemeBaseColors } from './theme-derive';
+import { checkThemeContrast } from './theme-seeds';
 import {
   WHILEUI_PRESET_ATELIER,
+  WHILEUI_THEME_PRESETS,
   createThemePreset,
   themePresetToCssVariables,
 } from './theme-presets';
@@ -85,5 +87,21 @@ describe('WHILEUI_PRESET_ATELIER', () => {
     expect(css.visual['--ui-shadow-opacity-lg']).toBe('0.24');
     expect(css.visual['--ui-blur-intensity-medium']).toBe('0');
     expect(css.light['--color-surface-elevated']).toBe('#fffdf8');
+  });
+});
+
+describe('built-in presets', () => {
+  // Every consumer inherits these, and the Soft palette is also the runtime fallback, so
+  // each must pass WCAG AA for text (4.5:1) and for the focus ring (3:1) in both modes.
+  it.each(
+    WHILEUI_THEME_PRESETS.flatMap(
+      (p) =>
+        [
+          [p.name, 'light', p.light],
+          [p.name, 'dark', p.dark],
+        ] as const
+    )
+  )('%s %s passes every contrast check', (_name, _mode, colors) => {
+    expect(checkThemeContrast(colors).filter((c) => !c.pass)).toEqual([]);
   });
 });
