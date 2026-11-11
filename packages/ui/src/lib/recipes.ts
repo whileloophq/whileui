@@ -145,16 +145,34 @@ export function shadowStyle(
         offsetX: 0,
         offsetY,
         blurRadius: radius * 2,
-        color: shadowColorWithOpacity(colors.shadow, opacity),
+        color: colorWithOpacity(colors.shadow, opacity),
       },
     ],
   };
 }
 
-function shadowColorWithOpacity(color: string, opacity: number): string {
+function colorWithOpacity(color: string, opacity: number): string {
   const parsed = parse(color);
   if (!parsed) return color;
   return formatRgb({ ...parsed, alpha: opacity });
+}
+
+/**
+ * Caret and selection colours for a text field: the theme's primary, where React Native
+ * would otherwise use the platform blue. iOS tints the caret, handles and highlight from
+ * `selectionColor` alone. Android paints `selectionColor` as the highlight at full
+ * strength, which would hide the selected text, so it gets a translucent highlight and
+ * the caret and handles take the solid colour. The web keeps the browser's caret.
+ */
+export function textCursorColors(colors: ThemeColors) {
+  if (Platform.OS === 'android') {
+    return {
+      cursorColor: colors.primary,
+      selectionHandleColor: colors.primary,
+      selectionColor: colorWithOpacity(colors.primary, 0.3),
+    };
+  }
+  return Platform.OS === 'ios' ? { selectionColor: colors.primary } : {};
 }
 
 // Component-owned text sizes. Font family/weight stays on className

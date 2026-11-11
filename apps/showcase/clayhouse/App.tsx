@@ -68,7 +68,7 @@ function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }
 }
 
 function Studio() {
-  const { resolvedTheme, setMode } = useThemeBridge({ initialMode: 'system' });
+  const { resolvedTheme, toggleTheme } = useThemeBridge({ initialMode: 'system' });
   const dark = resolvedTheme === 'dark';
   const insets = useSafeAreaInsets();
   const colors = useIconColors();
@@ -133,7 +133,7 @@ function Studio() {
             <MemberScreen />
           )}
         </ScrollView>
-        <ThemeToggle dark={dark} onToggle={() => setMode(dark ? 'light' : 'dark')} />
+        <ThemeToggle dark={dark} onToggle={toggleTheme} />
       </View>
 
       <View

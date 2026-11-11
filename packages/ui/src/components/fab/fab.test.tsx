@@ -1,6 +1,6 @@
 import { Text } from 'react-native';
 import { fireEvent, render, screen } from '../../test/render';
-import { FAB } from './fab';
+import { FAB, fabClearance } from './fab';
 
 describe('FAB', () => {
   it('announces its label, because the glyph carries no name', async () => {
@@ -44,5 +44,13 @@ describe('FAB', () => {
       </FAB>
     );
     expect(style).toHaveBeenCalled();
+  });
+});
+
+describe('fabClearance', () => {
+  it('clears the floating inset, the FAB itself and a gap', () => {
+    expect(fabClearance()).toBe(24 + 56 + 16);
+    expect(fabClearance('sm')).toBe(24 + 48 + 16);
+    expect(fabClearance('lg')).toBe(24 + 64 + 16);
   });
 });

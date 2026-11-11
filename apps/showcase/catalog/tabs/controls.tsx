@@ -40,11 +40,13 @@ import {
 import { Section } from '../ui';
 
 const LONG_REGIONS = Array.from({ length: 40 }, (_, index) => `Region ${index + 1}`);
+const LEDGER_TABS = ['Overview', 'Transactions', 'Recurring', 'Statements', 'Settings'];
 
 export function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }) {
   const [radioVal, setRadioVal] = useState('option-1');
   const [massUnit, setMassUnit] = useState('kg');
   const [heightUnit, setHeightUnit] = useState('cm');
+  const [ledgerTab, setLedgerTab] = useState(LEDGER_TABS[0]);
   const [selectVal, setSelectVal] = useState<SelectOption | undefined>(undefined);
   const [regionVal, setRegionVal] = useState<SelectOption | undefined>(undefined);
   const colors = useIconColors();
@@ -100,6 +102,18 @@ export function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }
             <SegmentedControlItem value="lbs">
               <SegmentedControlItemText>lbs</SegmentedControlItemText>
             </SegmentedControlItem>
+          </SegmentedControl>
+        </View>
+        <View>
+          <Text className="mb-2 text-sm text-muted-foreground">
+            Scrolls sideways when the labels do not fit
+          </Text>
+          <SegmentedControl value={ledgerTab} onValueChange={setLedgerTab} wrap="scroll">
+            {LEDGER_TABS.map((tab) => (
+              <SegmentedControlItem key={tab} value={tab}>
+                <SegmentedControlItemText>{tab}</SegmentedControlItemText>
+              </SegmentedControlItem>
+            ))}
           </SegmentedControl>
         </View>
         <RadioGroup value={radioVal} onValueChange={setRadioVal}>

@@ -84,9 +84,13 @@ those owes evidence from Maestro, Playwright or a named showcase step. Every fix
 defect owes a regression test at the layer that found it.
 
 - **What each catalog screen announces is baselined** in `e2e/accessibility-tree.spec.ts`
-  (Chromium, fixed clock). A deliberate change: `bun run test:web -- --update-snapshots`
-  and review the `.aria.yml` diff as the accessibility review. Never update a baseline to
-  make a failure go away without reading what changed.
+  (Chromium, fixed clock), matched exactly. A deliberate change: run that spec with
+  `--update-snapshots=all` (plain `--update-snapshots` skips an addition, because the file
+  assertion matches partially), put back any regex line it rewrote as a literal — rotating
+  placeholders and timings are regexes so the baseline does not fail at random — and delete
+  `test-results/rebaselines.patch`, which would rewrite the spec. The `.aria.yml` diff is
+  the accessibility review. Never update a baseline to make a failure go away without
+  reading what changed.
 - **Check a screen before calling it done:** `bun run snap` renders it headlessly and
   prints its accessibility tree and console errors.
 

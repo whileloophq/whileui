@@ -6,7 +6,7 @@ import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
-import { typographyStyle } from '../../lib/recipes';
+import { textCursorColors, typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 import { webAutofillField } from '../../lib/web-autofill';
 import { fieldAccessibilityProps, useFormFieldState } from '../form-field/form-field';
@@ -29,7 +29,12 @@ const inputVariants = tv({
 export interface InputProps extends TextInputProps, VariantProps<typeof inputVariants> {
   'aria-invalid'?: boolean;
   className?: string;
+  /**
+   * Shown before the text. A decorative icon here needs `aria-hidden`; screen readers
+   * otherwise stop on it as a separate element and read out its glyph.
+   */
   prefix?: React.ReactNode;
+  /** Shown after the text: a unit, or a control such as a clear button. */
   suffix?: React.ReactNode;
   inputClassName?: string;
 }
@@ -102,6 +107,7 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
           editable={effectiveEditable}
           aria-invalid={ariaInvalid ?? field.invalid}
           placeholderTextColor={placeholderTextColor ?? colors.placeholder}
+          {...textCursorColors(colors)}
           onFocus={(event) => {
             setFocused(true);
             onFocus?.(event);

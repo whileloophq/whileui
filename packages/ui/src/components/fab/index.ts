@@ -1,1 +1,1 @@
-export { FAB, FABGroup, fabVariants, type FabProps, type FabGroupProps } from './fab';
+export { FAB, FABGroup, fabClearance, fabVariants, type FabProps, type FabGroupProps } from './fab';

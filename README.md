@@ -477,6 +477,10 @@ const icons = useIconColors();
 `FABGroup` stacks secondary actions above one. Sizes start at 48dp, so a FAB never
 needs `hitSlop`.
 
+A floating FAB covers whatever scrolls under it, so a list behind one ends with room for
+it: `contentContainerStyle={{ paddingBottom: fabClearance() }}`, passing the FAB's `size`
+when it is not the default.
+
 ## Layout Primitives (Stack, Row)
 
 Use `Stack` for vertical layouts, `Row` for horizontal layouts. Both support `gap`, `align`, and `justify` variants.
@@ -628,9 +632,24 @@ reported, never changed, because a brand colour is a brand decision. The built-i
 `WHILEUI_PRESET_SOFT` and `WHILEUI_PRESET_ATELIER`, go through `themePresetToCss` the same
 way.
 
-Switch at runtime with `Uniwind.setTheme('dark')` (or `'light'`, `'system'`). A named
-extra theme is registered with `extraThemes: ['name']` in `metro.config.js` and defined
-with `@variant name`. The full token list, with each default, is in `theme-contract.ts`,
+Switch at runtime with `Uniwind.setTheme('dark')` (or `'light'`, `'system'`), or let
+`useThemeBridge` hold the choice. It returns the chosen `mode`, the `resolvedTheme` on
+screen, `setMode`, `toggleTheme` and `cycleMode`. A sun/moon button calls `toggleTheme`,
+which always flips what is on screen; `cycleMode` steps light → dark → system and suits
+a control that shows all three, because a step into `system` that resolves to the
+current theme looks like a dead tap. Pass an `adapter` to keep the choice across launches:
+
+```tsx
+const { resolvedTheme, toggleTheme } = useThemeBridge({
+  adapter: {
+    loadThemeMode: () => storage.getItem('theme') as ThemeMode | null,
+    saveThemeMode: (mode) => storage.setItem('theme', mode),
+  },
+});
+```
+
+A named extra theme is registered with `extraThemes: ['name']` in `metro.config.js` and
+defined with `@variant name`. The full token list, with each default, is in `theme-contract.ts`,
 and agents can read it from the MCP server's `get_theme_tokens`.
 
 ### Frosted surfaces
@@ -816,24 +835,34 @@ Also accepts the props of React Native's `TextProps`.
 ## Input
 
 ```tsx
-import { Input } from '@thewhileloop/whileui';
+import { Input, useIconColors } from '@thewhileloop/whileui';
+import { Feather } from '@expo/vector-icons';
+
+const icons = useIconColors();
 
 <Input placeholder="Email" variant="default" value={value} onChangeText={setValue} />;
+
+<Input
+  placeholder="Search"
+  prefix={<Feather name="search" size={16} color={icons.muted} aria-hidden />}
+/>;
 ```
 
-On web, filled Input, Textarea, NumericInput, and SmartInput surfaces preserve their
-themed background, foreground, and caret when the browser autofills them.
+On iOS and Android, Input, Textarea, NumericInput and SmartInput draw the caret and
+selection in the theme's primary colour; pass `selectionColor` (and `cursorColor` on
+Android) to override it. On web, filled surfaces keep their themed background,
+foreground and caret when the browser autofills them.
 
 <!-- api:Input -->
 
-| Prop           | Type                              | Default     | Description |
-| -------------- | --------------------------------- | ----------- | ----------- |
-| aria-invalid   | `boolean`                         | —           |             |
-| className      | `string`                          | —           |             |
-| prefix         | `React.ReactNode`                 | —           |             |
-| suffix         | `React.ReactNode`                 | —           |             |
-| inputClassName | `string`                          | —           |             |
-| variant        | `'default' \| 'error' \| 'plain'` | `'default'` |             |
+| Prop           | Type                              | Default     | Description                                                                                                                                          |
+| -------------- | --------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| aria-invalid   | `boolean`                         | —           |                                                                                                                                                      |
+| className      | `string`                          | —           |                                                                                                                                                      |
+| prefix         | `React.ReactNode`                 | —           | Shown before the text. A decorative icon here needs `aria-hidden`; screen readers otherwise stop on it as a separate element and read out its glyph. |
+| suffix         | `React.ReactNode`                 | —           | Shown after the text: a unit, or a control such as a clear button.                                                                                   |
+| inputClassName | `string`                          | —           |                                                                                                                                                      |
+| variant        | `'default' \| 'error' \| 'plain'` | `'default'` |                                                                                                                                                      |
 
 Also accepts the props of `TextInputProps`.
 <!-- /api:Input -->
@@ -1007,18 +1036,21 @@ import {
 </SegmentedControl>;
 ```
 
+When the labels do not fit a phone, `wrap="scroll"` keeps them on one row at full width
+and scrolls sideways, instead of wrapping or truncating them.
+
 <!-- api:SegmentedControl -->
 
-| Prop          | Type                      | Default     | Description                |
-| ------------- | ------------------------- | ----------- | -------------------------- |
-| value         | `string`                  | —           |                            |
-| defaultValue  | `string`                  | `''`        |                            |
-| onValueChange | `(value: string) => void` | —           |                            |
-| variant       | `'default' \| 'pill'`     | `'default'` | Pill = rounded-full items. |
-| wrap          | `boolean \| 'auto'`       | `true`      |                            |
-| size          | `'default' \| 'compact'`  | `'default'` |                            |
-| disabled      | `boolean`                 | `false`     |                            |
-| className     | `string`                  | —           |                            |
+| Prop          | Type                            | Default     | Description                                                                                                                                                                                                                                                                |
+| ------------- | ------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| value         | `string`                        | —           |                                                                                                                                                                                                                                                                            |
+| defaultValue  | `string`                        | `''`        |                                                                                                                                                                                                                                                                            |
+| onValueChange | `(value: string) => void`       | —           |                                                                                                                                                                                                                                                                            |
+| variant       | `'default' \| 'pill'`           | `'default'` | Pill = rounded-full items.                                                                                                                                                                                                                                                 |
+| wrap          | `boolean \| 'auto' \| 'scroll'` | `'auto'`    | `true` wraps segments onto more rows; `false` keeps one row and shares its width. `'scroll'` keeps one row with each segment as wide as its label and scrolls sideways when they do not fit — for labels a phone cannot show in full. `'auto'` wraps above three segments. |
+| size          | `'default' \| 'compact'`        | `'default'` |                                                                                                                                                                                                                                                                            |
+| disabled      | `boolean`                       | `false`     |                                                                                                                                                                                                                                                                            |
+| className     | `string`                        | —           |                                                                                                                                                                                                                                                                            |
 
 Also accepts the props of `ViewProps`.
 <!-- /api:SegmentedControl -->
@@ -1332,6 +1364,10 @@ marks the selected indicator without replacing the option's foreground colour. L
 selected values stay on one line and truncate without displacing the trigger chevron.
 For popover presentation on web, the options panel matches the trigger width, caps
 itself to the collision-available viewport, and wraps long option labels inside it.
+
+Opening a Select, or a Popover, closes the on-screen keyboard first, so options opened
+from a form are never hidden behind it. Both draw in a portal, where the platform would
+otherwise leave the keyboard up; the Modal-hosted overlays close it on their own.
 
 `SelectContent` supports optional frosted props:
 

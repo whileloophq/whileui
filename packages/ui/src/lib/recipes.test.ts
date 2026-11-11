@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { shadowStyle } from './recipes';
+import { shadowStyle, textCursorColors } from './recipes';
 import { WHILEUI_LIGHT_THEME_COLORS } from './theme-contract';
 import { VISUAL_TOKEN_SPECS, type VisualTokens } from './visual-token-contract';
 
@@ -39,5 +39,30 @@ describe('shadowStyle', () => {
     expect(shadowStyle(DEFAULT_VISUAL_TOKENS, WHILEUI_LIGHT_THEME_COLORS, 'md')).toHaveProperty(
       'boxShadow'
     );
+  });
+});
+
+describe('textCursorColors', () => {
+  const primary = WHILEUI_LIGHT_THEME_COLORS.primary;
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('tints the iOS caret, handles and highlight with the primary colour', () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+    expect(textCursorColors(WHILEUI_LIGHT_THEME_COLORS)).toEqual({ selectionColor: primary });
+  });
+
+  it('keeps the Android highlight translucent so selected text stays readable', () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    const colors = textCursorColors(WHILEUI_LIGHT_THEME_COLORS);
+    expect(colors).toMatchObject({ cursorColor: primary, selectionHandleColor: primary });
+    expect(colors.selectionColor).toMatch(/^rgba\(.+, 0\.3\)$/);
+  });
+
+  it('leaves the web caret to the browser', () => {
+    jest.replaceProperty(Platform, 'OS', 'web');
+    expect(textCursorColors(WHILEUI_LIGHT_THEME_COLORS)).toEqual({});
   });
 });

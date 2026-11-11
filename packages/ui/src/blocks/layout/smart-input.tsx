@@ -13,7 +13,13 @@ import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { webAutofillField } from '../../lib/web-autofill';
-import { controlRecipe, shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
+import {
+  controlRecipe,
+  shadowStyle,
+  surfaceRadius,
+  textCursorColors,
+  typographyStyle,
+} from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 
 export interface SmartInputProps extends TextInputProps {
@@ -281,6 +287,7 @@ export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps>
           submitBehavior={submitBehavior}
           textAlignVertical="top"
           placeholderTextColor={placeholderTextColor ?? colors.placeholder}
+          {...textCursorColors(colors)}
           placeholder={placeholderState.placeholder}
           value={value}
           defaultValue={defaultValue}

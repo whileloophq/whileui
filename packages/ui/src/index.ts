@@ -179,7 +179,14 @@ export {
   type BadgeTextProps,
 } from './components/badge';
 
-export { FAB, FABGroup, fabVariants, type FabProps, type FabGroupProps } from './components/fab';
+export {
+  FAB,
+  FABGroup,
+  fabClearance,
+  fabVariants,
+  type FabProps,
+  type FabGroupProps,
+} from './components/fab';
 
 export {
   Alert,

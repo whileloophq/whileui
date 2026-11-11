@@ -26,6 +26,13 @@ function Segments({
   );
 }
 
+/** The host scroll view a segment sits in, if any. */
+function scrollViewAround(name: string) {
+  let node = screen.getByRole('radio', { name }).parent;
+  while (node && node.type !== 'RCTScrollView') node = node.parent;
+  return node ?? undefined;
+}
+
 describe('SegmentedControl', () => {
   it('exposes a radio group whose selected item is checked', async () => {
     await render(<Segments defaultValue="day" />);
@@ -82,5 +89,21 @@ describe('SegmentedControl', () => {
     expect(onValueChange).not.toHaveBeenCalled();
     expect(screen.getByRole('radio', { name: 'Week' })).toBeDisabled();
     expect(screen.getByRole('radio', { name: 'Day' })).toBeChecked();
+  });
+
+  it('scrolls sideways under wrap="scroll" instead of squeezing its segments', async () => {
+    const tabs = (wrap: 'scroll' | false) => (
+      <SegmentedControl defaultValue="expenses" wrap={wrap}>
+        <SegmentedControlItem value="expenses">Expenses</SegmentedControlItem>
+        <SegmentedControlItem value="balances">Balances</SegmentedControlItem>
+        <SegmentedControlItem value="people">People (3)</SegmentedControlItem>
+        <SegmentedControlItem value="payments">Payments</SegmentedControlItem>
+      </SegmentedControl>
+    );
+    const result = await render(tabs('scroll'));
+    expect(scrollViewAround('Payments')?.props.horizontal).toBe(true);
+
+    await result.rerender(tabs(false));
+    expect(scrollViewAround('Payments')).toBeUndefined();
   });
 });

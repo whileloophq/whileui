@@ -7,6 +7,7 @@ import {
   Container,
   FAB,
   FABGroup,
+  fabClearance,
   Row,
   Stack,
   Text,
@@ -31,7 +32,10 @@ export function FabScreen({ onClose }: { onClose: () => void }) {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView contentContainerClassName="w-full max-w-5xl self-center p-5">
+      <ScrollView
+        contentContainerClassName="w-full max-w-5xl self-center p-5"
+        contentContainerStyle={{ paddingBottom: fabClearance() }}
+      >
         <Container size="lg">
           <Stack className="gap-5">
             <Row className="items-center justify-between">

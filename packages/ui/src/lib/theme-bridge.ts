@@ -22,10 +22,19 @@ export interface UseThemeBridgeOptions {
 }
 
 export interface UseThemeBridgeResult {
+  /** The chosen mode, `system` included. */
   mode: ThemeMode;
+  /** The theme on screen: `light`, `dark`, or a registered custom theme. */
   resolvedTheme: string;
   setMode: (mode: ThemeMode) => void;
+  /**
+   * Steps light → dark → system. For a control that shows all three modes; a two-state
+   * sun/moon button wants `toggleTheme`, because a step into `system` that resolves to
+   * the theme already on screen looks like a tap that did nothing.
+   */
   cycleMode: () => void;
+  /** Switches to the opposite of the theme on screen: dark from light, light from anything else. */
+  toggleTheme: () => void;
 }
 
 const modeCycle: ThemeMode[] = ['light', 'dark', 'system'];
@@ -177,14 +186,20 @@ export function useThemeBridge({
 
   const cycleMode = useCallback(() => dispatch({ type: 'cycle' }), []);
 
+  const toggleTheme = useCallback(
+    () => dispatch({ type: 'select', mode: theme === 'light' ? 'dark' : 'light' }),
+    [theme]
+  );
+
   return useMemo(
     () => ({
       mode: state.mode,
       resolvedTheme: theme,
       setMode,
       cycleMode,
+      toggleTheme,
     }),
-    [cycleMode, setMode, state.mode, theme]
+    [cycleMode, setMode, state.mode, theme, toggleTheme]
   );
 }
 

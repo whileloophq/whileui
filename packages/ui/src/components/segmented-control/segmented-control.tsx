@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import {
   Pressable,
+  ScrollView,
   Text,
   View,
   type PressableProps,
@@ -27,6 +28,11 @@ const segmentedControlVariants = tv({
       true: 'flex-wrap justify-center gap-1',
       false: 'flex-nowrap gap-1',
     },
+    /** Sized to its segments inside a horizontal scroll view. */
+    scroll: {
+      true: 'w-auto',
+      false: '',
+    },
     size: {
       default: '',
       compact: '',
@@ -35,6 +41,7 @@ const segmentedControlVariants = tv({
   defaultVariants: {
     variant: 'default',
     wrap: true,
+    scroll: false,
     size: 'default',
   },
 });
@@ -62,6 +69,11 @@ const segmentedControlItemVariants = tv({
       true: 'grow-0',
       false: 'flex-1',
     },
+    /** As wide as its label, so segments overflow into the scroll view rather than shrink. */
+    scroll: {
+      true: 'flex-none',
+      false: '',
+    },
   },
   defaultVariants: {
     variant: 'default',
@@ -69,6 +81,7 @@ const segmentedControlItemVariants = tv({
     size: 'default',
     disabled: false,
     wrap: true,
+    scroll: false,
   },
 });
 
@@ -128,6 +141,7 @@ interface SegmentedControlContextValue {
   variant: 'default' | 'pill';
   size: 'default' | 'compact';
   wrap: boolean;
+  scroll: boolean;
   disabled: boolean;
 }
 
@@ -137,6 +151,7 @@ const SegmentedControlContext = createContext<SegmentedControlContextValue>({
   variant: 'default',
   size: 'default',
   wrap: true,
+  scroll: false,
   disabled: false,
 });
 
@@ -156,7 +171,14 @@ export interface SegmentedControlProps extends ViewProps {
   onValueChange?: (value: string) => void;
   /** Pill = rounded-full items. */
   variant?: 'default' | 'pill';
-  wrap?: boolean | 'auto';
+  /**
+   * `true` wraps segments onto more rows; `false` keeps one row and shares its width.
+   * `'scroll'` keeps one row with each segment as wide as its label and scrolls
+   * sideways when they do not fit — for labels a phone cannot show in full.
+   * `'auto'` wraps above three segments.
+   * @default 'auto'
+   */
+  wrap?: boolean | 'auto' | 'scroll';
   size?: 'default' | 'compact';
   disabled?: boolean;
   className?: string;
@@ -193,7 +215,8 @@ function SegmentedControl({
     () => React.Children.toArray(children).filter((child) => React.isValidElement(child)).length,
     [children]
   );
-  const shouldWrap = wrap === 'auto' ? itemCount > 3 : wrap;
+  const scroll = wrap === 'scroll';
+  const shouldWrap = wrap === 'auto' ? itemCount > 3 : wrap === true;
 
   const handleValueChange = useCallback(
     (nextValue: string) => {
@@ -207,20 +230,41 @@ function SegmentedControl({
   );
 
   const contextValue = useMemo(
-    () => ({ value, onValueChange: handleValueChange, variant, size, wrap: shouldWrap, disabled }),
-    [disabled, handleValueChange, shouldWrap, size, value, variant]
+    () => ({
+      value,
+      onValueChange: handleValueChange,
+      variant,
+      size,
+      wrap: shouldWrap,
+      scroll,
+      disabled,
+    }),
+    [disabled, handleValueChange, scroll, shouldWrap, size, value, variant]
+  );
+
+  const group = (
+    <View
+      className={cn(
+        segmentedControlVariants({ variant, wrap: shouldWrap, scroll, size }),
+        className
+      )}
+      style={[getSegmentedContainerStyle(visual, colors, variant), styleProp]}
+      accessibilityRole="radiogroup"
+      {...props}
+    >
+      {children}
+    </View>
   );
 
   return (
     <SegmentedControlContext.Provider value={contextValue}>
-      <View
-        className={cn(segmentedControlVariants({ variant, wrap: shouldWrap, size }), className)}
-        style={[getSegmentedContainerStyle(visual, colors, variant), styleProp]}
-        accessibilityRole="radiogroup"
-        {...props}
-      >
-        {children}
-      </View>
+      {scroll ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {group}
+        </ScrollView>
+      ) : (
+        group
+      )}
     </SegmentedControlContext.Provider>
   );
 }
@@ -233,7 +277,7 @@ function SegmentedControlItem({
   style: styleProp,
   ...props
 }: SegmentedControlItemProps) {
-  const { value, onValueChange, variant, size, wrap, disabled } =
+  const { value, onValueChange, variant, size, wrap, scroll, disabled } =
     useContext(SegmentedControlContext);
   const selected = value === itemValue;
   const finalDisabled = disabled || Boolean(itemDisabled);
@@ -260,6 +304,7 @@ function SegmentedControlItem({
             size,
             disabled: finalDisabled,
             wrap,
+            scroll,
           }),
           focusRingInset,
           className

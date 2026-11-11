@@ -21,6 +21,18 @@ function ThemeHarness({ adapter }: { adapter: ThemeBridgeAdapter }) {
   );
 }
 
+function ToggleHarness({ adapter }: { adapter: ThemeBridgeAdapter }) {
+  const { resolvedTheme, toggleTheme } = useThemeBridge({ adapter, initialMode: 'system' });
+  const next = resolvedTheme === 'dark' ? 'light' : 'dark';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Switch to ${next} theme`}
+      onPress={toggleTheme}
+    />
+  );
+}
+
 describe('useThemeBridge', () => {
   it('loads a replacement adapter before saving anything into it', async () => {
     const first: ThemeBridgeAdapter = {
@@ -57,5 +69,20 @@ describe('useThemeBridge', () => {
 
     await act(async () => persistedMode.resolve('light'));
     expect(adapter.saveThemeMode).not.toHaveBeenCalledWith('light');
+  });
+
+  it('flips the theme on screen with one press, starting from system', async () => {
+    const adapter: ThemeBridgeAdapter = {
+      loadThemeMode: jest.fn(async (): Promise<ThemeMode> => 'system'),
+      saveThemeMode: jest.fn(async () => undefined),
+    };
+    await render(<ToggleHarness adapter={adapter} />);
+    await waitFor(() => expect(adapter.saveThemeMode).toHaveBeenCalledWith('system'));
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Switch to dark theme' }));
+    await waitFor(() => expect(adapter.saveThemeMode).toHaveBeenLastCalledWith('dark'));
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Switch to light theme' }));
+    await waitFor(() => expect(adapter.saveThemeMode).toHaveBeenLastCalledWith('light'));
   });
 });

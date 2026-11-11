@@ -26,6 +26,13 @@
 - radiogroup:
   - radio "kg" [checked]
   - radio "lbs"
+- text: Scrolls sideways when the labels do not fit
+- radiogroup:
+  - radio "Overview" [checked]
+  - radio "Transactions"
+  - radio "Recurring"
+  - radio "Statements"
+  - radio "Settings"
 - radio "Free plan" [checked]
 - text: Free plan
 - radio "Pro plan"

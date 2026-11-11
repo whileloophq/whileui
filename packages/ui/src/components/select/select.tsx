@@ -8,10 +8,12 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { useComposedRefs } from '@rn-primitives/hooks';
 import * as SelectPrimitive from '@rn-primitives/select';
 import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
+import { useDismissKeyboardOnOpen } from '../../lib/dismiss-keyboard-on-open';
 import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
@@ -115,10 +117,14 @@ const SelectTrigger: ForwardRefComponent<SelectTriggerRef, SelectTriggerProps> =
     const visual = useVisualTokens();
     const field = useFormFieldState();
     const effectiveDisabled = disabled ?? field.disabled;
+    const { open, setTriggerPosition } = SelectPrimitive.useRootContext();
+    const triggerRef = React.useRef<SelectTriggerRef>(null);
+    const composedRef = useComposedRefs(triggerRef, ref);
+    useDismissKeyboardOnOpen(open, triggerRef, setTriggerPosition);
 
     return (
       <SelectPrimitive.Trigger
-        ref={ref}
+        ref={composedRef}
         className={cn(
           'border-border bg-muted flex w-full flex-row items-center justify-between gap-2 shadow-sm active:bg-state-pressed',
           field.invalid && 'border-destructive',

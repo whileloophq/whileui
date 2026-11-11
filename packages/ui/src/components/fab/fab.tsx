@@ -18,8 +18,8 @@ const fabVariants = tv({
       surface: 'border border-border bg-card',
     },
     size: {
-      // 56 and 40 are Material's FAB and small-FAB sizes. Both clear the iOS 44pt
-      // and Android 48dp minimums on their own, so a FAB never needs hitSlop.
+      // 56, 48 and 64pt, as FAB_SIZE below. 56 is Material's FAB size; all three clear
+      // the iOS 44pt and Android 48dp minimums on their own, so a FAB never needs hitSlop.
       default: 'h-14 w-14',
       sm: 'h-12 w-12',
       lg: 'h-16 w-16',
@@ -38,6 +38,20 @@ const fabVariants = tv({
     placement: 'floating',
   },
 });
+
+/** The `size` classes in points, and the `floating` placement's `bottom-6` inset. */
+const FAB_SIZE = { default: 56, sm: 48, lg: 64 } as const;
+const FAB_EDGE_INSET = 24;
+const FAB_CONTENT_GAP = 16;
+
+/**
+ * Bottom padding that keeps a floating FAB off the last row of a scrolling screen: its
+ * inset from the edge, its height and a gap. Nothing stops the FAB covering content, so a
+ * list under one ends with `contentContainerStyle={{ paddingBottom: fabClearance() }}`.
+ */
+export function fabClearance(size: keyof typeof FAB_SIZE = 'default') {
+  return FAB_EDGE_INSET + FAB_SIZE[size] + FAB_CONTENT_GAP;
+}
 
 export interface FabProps
   extends Omit<PressableProps, 'children'>, VariantProps<typeof fabVariants> {

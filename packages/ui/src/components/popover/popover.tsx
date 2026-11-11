@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Platform, StyleSheet, type ViewStyle } from 'react-native';
+import { useComposedRefs } from '@rn-primitives/hooks';
 import * as PopoverPrimitive from '@rn-primitives/popover';
 import { cn } from '../../lib/cn';
+import { useDismissKeyboardOnOpen } from '../../lib/dismiss-keyboard-on-open';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useNestedOverlay, useOverlayPortalTarget } from '../../lib/overlay-host';
 import { useOverlayInsets, type OverlayInsets } from '../../lib/overlay-insets';
@@ -40,9 +42,13 @@ function Popover({ onOpenChange, children }: PopoverProps) {
 }
 
 const PopoverTrigger: ForwardRefComponent<PopoverPrimitive.TriggerRef, PopoverTriggerProps> =
-  React.forwardRef(({ className, ...props }, ref) => (
-    <PopoverPrimitive.Trigger ref={ref} className={cn(className)} {...props} />
-  ));
+  React.forwardRef(({ className, ...props }, ref) => {
+    const { open, setTriggerPosition } = PopoverPrimitive.useRootContext();
+    const triggerRef = React.useRef<PopoverPrimitive.TriggerRef>(null);
+    const composedRef = useComposedRefs(triggerRef, ref);
+    useDismissKeyboardOnOpen(open, triggerRef, setTriggerPosition);
+    return <PopoverPrimitive.Trigger ref={composedRef} className={cn(className)} {...props} />;
+  });
 PopoverTrigger.displayName = 'PopoverTrigger';
 
 const PopoverContent: ForwardRefComponent<PopoverPrimitive.ContentRef, PopoverContentProps> =

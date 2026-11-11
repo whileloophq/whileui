@@ -11,7 +11,7 @@ import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
-import { typographyStyle, type TypographyRole } from '../../lib/recipes';
+import { textCursorColors, type TypographyRole, typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 import { webAutofillField } from '../../lib/web-autofill';
 import { fieldAccessibilityProps, useFormFieldState } from '../form-field/form-field';
@@ -92,6 +92,7 @@ const Textarea: ForwardRefComponent<TextInputInstance, TextareaProps> = React.fo
         multiline
         textAlignVertical="top"
         placeholderTextColor={placeholderTextColor ?? colors.placeholder}
+        {...textCursorColors(colors)}
         editable={effectiveEditable}
         aria-invalid={ariaInvalid ?? field.invalid}
         {...props}
