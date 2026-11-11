@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
+  AccessibilityInfo,
+  Platform,
   View,
   Text,
   type ViewInstance,
@@ -29,11 +31,37 @@ const alertVariants = tv({
   },
 });
 
-export interface AlertProps extends ViewProps, VariantProps<typeof alertVariants> {}
+export interface AlertProps extends ViewProps, VariantProps<typeof alertVariants> {
+  /**
+   * Speak the alert when it appears, for alerts shown in response to an action such as a
+   * failed submit. Android and the web already read it through the live region; iOS has
+   * none, so this announces its text once. Leave it off for alerts that are part of a
+   * screen's content, or every visit would read them aloud.
+   */
+  announce?: boolean;
+}
+
+/** The visible text of an alert's children, for the iOS announcement. */
+function textOf(node: React.ReactNode): string {
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(textOf).filter(Boolean).join('. ');
+  if (React.isValidElement<{ children?: React.ReactNode }>(node))
+    return textOf(node.props.children);
+  return '';
+}
 
 const Alert: ForwardRefComponent<ViewInstance, AlertProps> = React.forwardRef(
-  ({ className, variant, style, ...props }, ref) => {
+  ({ className, variant, style, announce = false, children, ...props }, ref) => {
     const visual = useVisualTokens();
+
+    useEffect(() => {
+      if (!announce || Platform.OS !== 'ios') return;
+      const message = textOf(children);
+      if (message) AccessibilityInfo.announceForAccessibility(message);
+      // Once, when the alert appears; a re-render must not repeat it.
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- once per alert, by design
+    }, []);
+
     return (
       <View
         ref={ref}
@@ -51,7 +79,9 @@ const Alert: ForwardRefComponent<ViewInstance, AlertProps> = React.forwardRef(
           style,
         ]}
         {...props}
-      />
+      >
+        {children}
+      </View>
     );
   }
 );

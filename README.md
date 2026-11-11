@@ -1469,14 +1469,21 @@ import { Alert, AlertTitle, AlertDescription } from '@thewhileloop/whileui';
   <AlertTitle>Heads up!</AlertTitle>
   <AlertDescription>Something happened.</AlertDescription>
 </Alert>;
+
+// Shown after a failed submit: also spoken on iOS when it appears.
+<Alert variant="destructive" announce>
+  <AlertTitle>Could not save</AlertTitle>
+  <AlertDescription>Check your connection and try again.</AlertDescription>
+</Alert>;
 ```
 
 <!-- api:Alert -->
 
-| Prop      | Type                                                             | Default     | Description |
-| --------- | ---------------------------------------------------------------- | ----------- | ----------- |
-| className | `string`                                                         | —           |             |
-| variant   | `'default' \| 'destructive' \| 'success' \| 'warning' \| 'info'` | `'default'` |             |
+| Prop      | Type                                                             | Default     | Description                                                                                                                                                                                                                                                                                                        |
+| --------- | ---------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| announce  | `boolean`                                                        | `false`     | Speak the alert when it appears, for alerts shown in response to an action such as a failed submit. Android and the web already read it through the live region; iOS has none, so this announces its text once. Leave it off for alerts that are part of a screen's content, or every visit would read them aloud. |
+| className | `string`                                                         | —           |                                                                                                                                                                                                                                                                                                                    |
+| variant   | `'default' \| 'destructive' \| 'success' \| 'warning' \| 'info'` | `'default'` |                                                                                                                                                                                                                                                                                                                    |
 
 Also accepts the props of `ViewProps`.
 <!-- /api:Alert -->

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { CATEGORIES, openCategory, openShowcase } from './showcase';
 
@@ -28,8 +30,13 @@ test.describe('Accessibility tree', () => {
       // control named only by an icon font glyph (private-use characters) or nothing.
       const tree = await page.locator('body').ariaSnapshot();
       expect(tree.match(UNNAMED_CONTROL) ?? []).toEqual([]);
-      const slug = category.toLowerCase().replace(/\s+/g, '-');
-      await expect(page.locator('body')).toMatchAriaSnapshot({ name: `${slug}.aria.yml` });
+      const name = `${category.toLowerCase().replace(/\s+/g, '-')}.aria.yml`;
+      const body = page.locator('body');
+      await expect(body).toMatchAriaSnapshot({ name });
+      // Snapshots match partially by default, so an added control would pass unseen, and
+      // --update-snapshots drops a directive written into the file. Apply it here.
+      const baseline = readFileSync(join(test.info().snapshotDir, name), 'utf8');
+      await expect(body).toMatchAriaSnapshot(`- /children: equal\n${baseline}`);
     });
   }
 });

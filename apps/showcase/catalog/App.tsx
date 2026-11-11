@@ -1307,6 +1307,7 @@ function OverlaysTab() {
   const [overlaySiblingDeleteOpen, setOverlaySiblingDeleteOpen] = useState(false);
   const [nestedOpen, setNestedOpen] = useState(false);
   const [nestedRegion, setNestedRegion] = useState<SelectOption | undefined>(undefined);
+  const [submitFailed, setSubmitFailed] = useState(false);
 
   return (
     <View>
@@ -1320,6 +1321,16 @@ function OverlaysTab() {
             </AlertDescription>
           </View>
         </Alert>
+        {submitFailed ? (
+          // Appears after an action, so it is announced; the alert above is not.
+          <Alert variant="destructive" announce>
+            <AlertTitle>Could not save</AlertTitle>
+            <AlertDescription>Check your connection and try again.</AlertDescription>
+          </Alert>
+        ) : null}
+        <Button variant="outline" onPress={() => setSubmitFailed((failed) => !failed)}>
+          <ButtonText>{submitFailed ? 'Clear the error' : 'Submit with an error'}</ButtonText>
+        </Button>
         <View className="flex-row flex-wrap gap-2">
           <Button
             variant="outline"
