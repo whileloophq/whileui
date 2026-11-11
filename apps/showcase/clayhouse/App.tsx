@@ -187,7 +187,7 @@ function Studio() {
         </SheetFooter>
       </Sheet>
 
-      <ToastContainer position="top" style={{ paddingTop: insets.top + 8 }} />
+      <ToastContainer position="top" />
     </View>
   );
 }

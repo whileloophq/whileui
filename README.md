@@ -1513,7 +1513,8 @@ toast({ title: 'Success', description: 'Saved!', variant: 'success' });
 | duration      | `number` (ms)                             |
 
 Each toast owns its duration from the moment it appears; adding or dismissing another
-toast does not restart timers already in progress.
+toast does not restart timers already in progress. `ToastContainer` clears the status bar
+or home indicator at its edge by itself, so mount it at the root without padding it.
 
 Every variant sits on the theme's `popover` surface; `success` and `destructive` mark the
 toast with a status dot and tinted border rather than a solid fill. The stack is capped

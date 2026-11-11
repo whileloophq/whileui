@@ -199,7 +199,7 @@ function AppContent() {
               colors={colors}
             />
           </SafeAreaView>
-          <ToastContainer position="top" className="mt-12" />
+          <ToastContainer position="top" />
           <DrawerMenu
             visible={drawerOpen}
             onClose={() => setDrawerOpen(false)}
@@ -336,7 +336,7 @@ function AppContent() {
             </ScrollView>
           </View>
         </SafeAreaView>
-        <ToastContainer position="top" className="mt-12" />
+        <ToastContainer position="top" />
 
         <DrawerMenu
           visible={drawerOpen}

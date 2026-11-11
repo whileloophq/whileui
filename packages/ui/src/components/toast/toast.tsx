@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo, Platform, Pressable, View, type ViewProps } from 'react-native';
 import Animated, { FadeOut, SlideInUp } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
 import { focusRing } from '../../lib/focus-ring';
@@ -231,13 +232,18 @@ export function ToastContainer({
 }: ToastContainerProps) {
   const { toasts, dismiss } = useToast();
   const visual = useVisualTokens();
+  const insets = useSafeAreaInsets();
 
   const positionClass = position === 'top' ? 'top-0' : 'bottom-0';
+  // The container is absolutely positioned at the screen edge, so it clears the status
+  // bar or home indicator itself; every app was padding it by hand, each by a guess.
+  const edgeInset =
+    position === 'top' ? { paddingTop: insets.top + 8 } : { paddingBottom: insets.bottom + 8 };
 
   return (
     <View
       className={cn('absolute left-0 right-0 z-50 py-2', positionClass, className)}
-      style={[{ paddingHorizontal: visual.surfacePaddingSm }, style]}
+      style={[{ paddingHorizontal: visual.surfacePaddingSm }, edgeInset, style]}
       pointerEvents="box-none"
       {...props}
     >

@@ -1,5 +1,5 @@
-import { AccessibilityInfo, Platform, Pressable } from 'react-native';
-import { act, fireEvent, render, screen } from '../../test/render';
+import { AccessibilityInfo, Platform, Pressable, StyleSheet } from 'react-native';
+import { act, fireEvent, render, screen, TEST_METRICS } from '../../test/render';
 import { ToastContainer, ToastProvider, useToast } from './toast';
 
 function ToastHarness() {
@@ -104,5 +104,24 @@ describe('ToastProvider', () => {
       Platform.OS = original;
       announce.mockRestore();
     }
+  });
+});
+
+describe('ToastContainer', () => {
+  it('clears the safe area at the edge it sits on', async () => {
+    const { rerender } = await render(
+      <ToastProvider>
+        <ToastContainer testID="toasts" position="top" />
+      </ToastProvider>
+    );
+    const style = () => StyleSheet.flatten(screen.getByTestId('toasts').props.style);
+    expect(style().paddingTop).toBe(TEST_METRICS.insets.top + 8);
+
+    await rerender(
+      <ToastProvider>
+        <ToastContainer testID="toasts" position="bottom" />
+      </ToastProvider>
+    );
+    expect(style().paddingBottom).toBe(TEST_METRICS.insets.bottom + 8);
   });
 });
