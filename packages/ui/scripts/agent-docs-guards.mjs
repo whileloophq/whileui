@@ -6,7 +6,9 @@ const word = (name) => new RegExp(`\\b${name}\\b`);
 /** README components the package (or the copy-paste templates) does not export. */
 export function findPhantomComponents(components, { packageExports, templateExports }) {
   return components
-    .filter(({ name, kind }) => !word(name).test(kind === 'package' ? packageExports : templateExports))
+    .filter(
+      ({ name, kind }) => !word(name).test(kind === 'package' ? packageExports : templateExports)
+    )
     .map(({ name }) => name);
 }
 
@@ -36,4 +38,17 @@ export function findUnnamedIconButtons(markdown) {
       return !/accessibilityLabel=|aria-label=/.test(tag) && !/<ButtonText\b/.test(body);
     })
     .map(([whole]) => whole.split('\n')[0].trim());
+}
+
+const REPO = 'https://github.com/whileloophq/whileui';
+
+/**
+ * The README as an agent outside this repo should read it: the generator's table markers
+ * removed, and repo-relative links made absolute, since they are dead in node_modules.
+ */
+export function prepareForAgents(markdown) {
+  return markdown
+    .replace(/^<!-- \/?api:\w+ -->\n/gm, '')
+    .replace(/\]\((?:\.\/)?(?!https?:|#|mailto:)([^)\s]+)\)/g, `](${REPO}/blob/main/$1)`)
+    .replace(/src="\.\/([^"]+)"/g, `src="${REPO}/raw/main/$1"`);
 }

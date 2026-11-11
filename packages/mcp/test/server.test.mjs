@@ -51,12 +51,28 @@ test('get_component_docs returns API sections and names what does not exist', as
   assert.match(docs, /^## Button$/m);
   assert.match(docs, /^## Sheet$/m);
   assert.match(docs, /## Carousel\n\nNot a WhileUI component/);
+  assert.doesNotMatch(docs, /<!--/, 'generator markers must not reach agents');
+});
+
+test('a near-miss name suggests the components it probably meant', async () => {
+  const docs = await call('get_component_docs', { names: ['TextField', 'Switches', 'Snackbar'] });
+  assert.match(docs, /## TextField\n\nNot a WhileUI component\. Did you mean [^?]*\bInput\b/);
+  assert.match(docs, /## Switches\n\nNot a WhileUI component\. Did you mean [^?]*\bSwitch\b/);
+  assert.match(docs, /## Snackbar\n\nNot a WhileUI component\. Did you mean [^?]*\bToast\b/);
+});
+
+test('a copy-paste template says where to copy it from', async () => {
+  const docs = await call('get_component_docs', { names: ['ForgotPasswordForm'] });
+  assert.match(docs, /Copy-paste template, not a package export: https:\/\/github\.com\//);
 });
 
 test('get_theme_tokens returns the whole colour contract with both modes', async () => {
   const colors = (await call('get_theme_tokens', {})).split('\n');
   assert.equal(colors.length, catalog.themeTokens.length);
-  assert.match(colors.join('\n'), /--color-primary \/ --app-color-primary {2}light #\w+ {2}dark #\w+/);
+  assert.match(
+    colors.join('\n'),
+    /--color-primary \/ --app-color-primary {2}light #\w+ {2}dark #\w+/
+  );
   const visual = await call('get_theme_tokens', { kind: 'visual' });
   assert.match(visual, /--ui-radius-sm/);
 });

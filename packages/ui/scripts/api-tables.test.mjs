@@ -20,12 +20,22 @@ test('reads own props, variant options and their defaults from the types', () =>
 test('reads frosted defaults passed to useFrostedSurface', () => {
   const rows = reader.propsOf('SelectContent').rows;
   assert.equal(rows.find((r) => r.name === 'blurTintToken').default, "'popover'");
-  assert.deepEqual(rows.find((r) => r.name === 'blurIntensity').default, { plain: 'subtle preset' });
+  assert.deepEqual(rows.find((r) => r.name === 'blurIntensity').default, {
+    plain: 'subtle preset',
+  });
 });
 
 test('renders required props and escapes pipes in types', () => {
   const table = renderTable({
-    rows: [{ name: 'value', type: "'a' | 'b'", optional: false, default: undefined, description: 'Pick one.' }],
+    rows: [
+      {
+        name: 'value',
+        type: "'a' | 'b'",
+        optional: false,
+        default: undefined,
+        description: 'Pick one.',
+      },
+    ],
     inherits: false,
   });
   assert.match(table, /\| value \(required\) \| `'a' \\\| 'b'` \| — \| Pick one\. \|/);
@@ -34,5 +44,8 @@ test('renders required props and escapes pipes in types', () => {
 test('regenerates marked tables and rejects a name with no props type', async () => {
   const stale = '<!-- api:Switch -->\nold table\n<!-- /api:Switch -->';
   assert.match(await syncApiTables(stale, reader), /\| checked +\|/);
-  await assert.rejects(syncApiTables('<!-- api:Nope -->\n<!-- /api:Nope -->', reader), /no NopeProps/);
+  await assert.rejects(
+    syncApiTables('<!-- api:Nope -->\n<!-- /api:Nope -->', reader),
+    /no NopeProps/
+  );
 });

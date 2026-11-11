@@ -16,15 +16,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  THEME_TOKEN_SPECS,
-  VISUAL_TOKEN_SPECS,
-  WHILEUI_DARK_THEME_COLORS,
-} from '../src/tokens.ts';
+import { THEME_TOKEN_SPECS, VISUAL_TOKEN_SPECS, WHILEUI_DARK_THEME_COLORS } from '../src/tokens.ts';
 import {
   findPhantomComponents,
   findStaleSkillNames,
   findUnnamedIconButtons,
+  prepareForAgents,
 } from './agent-docs-guards.mjs';
 import { syncApiTables } from './api-docs.mjs';
 
@@ -34,8 +31,12 @@ const OUT = join(PKG, 'dist/agent');
 const TEMPLATES = join(ROOT, 'apps/showcase/catalog/templates');
 
 const readme = readFileSync(join(ROOT, 'README.md'), 'utf8');
+// Guards check the README as written; everything shipped to agents reads this version.
+const agentReadme = prepareForAgents(readme);
 const { version } = JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8'));
-const lines = readme.split('\n');
+const lines = agentReadme.split('\n');
+const TEMPLATES_URL =
+  'https://github.com/whileloophq/whileui/tree/main/apps/showcase/catalog/templates';
 
 // Headings outside code fences, with the line each starts on.
 const headings = [];
@@ -83,6 +84,7 @@ for (let h = first; h < last; h++) {
       kind: category.title.includes('templates') ? 'template' : 'package',
       summary: cells[cells.length - 1],
       docs: docs ? section(docs) : null,
+      ...(category.title.includes('templates') ? { source: TEMPLATES_URL } : {}),
     });
   }
 }
@@ -164,7 +166,6 @@ const catalog = {
   })),
 };
 
-const TEMPLATE_URL = 'https://github.com/whileloophq/whileui/tree/main/apps/showcase/catalog/templates';
 const describe = (c) =>
   `- **${c.name}** (${c.category}${c.kind === 'template' ? ', copy-paste template' : ''}) — ${c.summary}`;
 
@@ -181,7 +182,7 @@ Files in this folder:
 - catalog.json — the same data, structured (served by \`@thewhileloop/whileui-mcp\`)
 
 Components import from \`@thewhileloop/whileui\`. Copy-paste templates are not in the
-package; copy them from ${TEMPLATE_URL}.
+package; copy them from ${TEMPLATES_URL}.
 
 ${catalog.guides.quickReference}
 
@@ -206,7 +207,7 @@ ${components.map((c) => `${describe(c)}\n\n${entry(c)}`).join('\n\n---\n\n')}
 mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, 'llms.txt'), index);
 writeFileSync(join(OUT, 'llms-components.txt'), componentDocs);
-writeFileSync(join(OUT, 'llms-full.txt'), readme);
+writeFileSync(join(OUT, 'llms-full.txt'), agentReadme);
 writeFileSync(join(OUT, 'catalog.json'), `${JSON.stringify(catalog, null, 2)}\n`);
 
 // stderr: `npm pack --json` runs this build and parses stdout as JSON.

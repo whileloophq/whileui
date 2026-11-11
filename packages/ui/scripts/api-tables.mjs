@@ -47,7 +47,9 @@ export function createApiReader() {
         defaults.set('blurTintToken', node.initializer.getText());
       }
       if (ts.isPropertyAssignment(node) && node.name.getText() === 'defaultBlurPreset') {
-        defaults.set('blurIntensity', { plain: `${node.initializer.getText().replace(/'/g, '')} preset` });
+        defaults.set('blurIntensity', {
+          plain: `${node.initializer.getText().replace(/'/g, '')} preset`,
+        });
       }
       if (ts.isPropertyAssignment(node) && node.name.getText() === 'defaultVariants') {
         for (const prop of node.initializer.properties ?? []) {
@@ -64,7 +66,11 @@ export function createApiReader() {
 
   // One line, no trailing `| undefined`, and single-quoted literals as the README writes them.
   const clean = (text) =>
-    text.replace(/\s+/g, ' ').replace(/\s*\| undefined$/, '').replace(/"([^"]*)"/g, "'$1'").trim();
+    text
+      .replace(/\s+/g, ' ')
+      .replace(/\s*\| undefined$/, '')
+      .replace(/"([^"]*)"/g, "'$1'")
+      .trim();
 
   /** Rows for `<Name>Props`, or null when no such interface exists. */
   function propsOf(name) {
@@ -80,7 +86,9 @@ export function createApiReader() {
     const variantOptions = new Set(
       heritage
         .filter((t) => t.expression.getText() === 'VariantProps')
-        .flatMap((t) => checker.getPropertiesOfType(checker.getTypeAtLocation(t)).map((p) => p.name))
+        .flatMap((t) =>
+          checker.getPropertiesOfType(checker.getTypeAtLocation(t)).map((p) => p.name)
+        )
     );
     for (const symbol of checker.getPropertiesOfType(type)) {
       const declaration = symbol.declarations?.[0];
@@ -95,7 +103,10 @@ export function createApiReader() {
       const tagged = tags.find((tag) => tag.name === 'default');
       const fallback = defaults.get(symbol.name);
       // The type as written ("React.ReactNode", "ShadowTier") reads better than its expansion.
-      const written = declaration && ts.isPropertySignature(declaration) ? declaration.type?.getText() : undefined;
+      const written =
+        declaration && ts.isPropertySignature(declaration)
+          ? declaration.type?.getText()
+          : undefined;
       rows.push({
         name: symbol.name,
         type: clean(written ?? checker.typeToString(checker.getNonNullableType(propType))),
@@ -104,7 +115,9 @@ export function createApiReader() {
           typeof fallback === 'object' && !tagged
             ? fallback
             : (tagged ? ts.displayPartsToString(tagged.text) : fallback)?.replace(/^`|`$/g, ''),
-        description: ts.displayPartsToString(symbol.getDocumentationComment(checker)).replace(/\s+/g, ' '),
+        description: ts
+          .displayPartsToString(symbol.getDocumentationComment(checker))
+          .replace(/\s+/g, ' '),
       });
     }
     // Name the parent that supplies the props left out of the table, not one already listed.
@@ -133,7 +146,11 @@ export function renderTable({ rows, inherits, base }) {
     ...rows.map((row) => {
       const name = row.optional ? row.name : `${row.name} (required)`;
       const fallback =
-        typeof row.default === 'object' ? row.default.plain : row.default ? `\`${cell(row.default)}\`` : '—';
+        typeof row.default === 'object'
+          ? row.default.plain
+          : row.default
+            ? `\`${cell(row.default)}\``
+            : '—';
       return `| ${name} | \`${cell(row.type)}\` | ${fallback} | ${cell(row.description)} |`;
     }),
   ];

@@ -11,6 +11,43 @@ const GUIDES = {
 
 const text = (value: string) => ({ content: [{ type: 'text' as const, text: value }] });
 
+// What other libraries call these, so an agent asking by a familiar name finds ours.
+const ALIASES: Record<string, string[]> = {
+  textfield: ['Input', 'Textarea'],
+  textinput: ['Input', 'Textarea'],
+  modal: ['Dialog', 'Sheet'],
+  bottomsheet: ['Sheet', 'ConfirmActionSheet'],
+  actionsheet: ['ConfirmActionSheet', 'Sheet'],
+  snackbar: ['Toast'],
+  dropdown: ['Select', 'DropdownMenu'],
+  picker: ['Select', 'DatePickerModal'],
+  activityindicator: ['Spinner'],
+  loader: ['Spinner', 'LoadingState'],
+  chip: ['Badge', 'Toggle'],
+  tag: ['Badge'],
+  drawer: ['DrawerMenu'],
+  navbar: ['Header', 'BottomNav'],
+  appbar: ['Header'],
+  image: ['SmartImage'],
+  radio: ['RadioGroup'],
+  divider: ['Separator'],
+};
+
+/** Edit distance, for suggesting the component a near-miss name meant. */
+function distance(a: string, b: string): number {
+  const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let diagonal = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const above = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, diagonal + (a[i - 1] === b[j - 1] ? 0 : 1));
+      diagonal = above;
+    }
+  }
+  return row[b.length];
+}
+
 export function createServer(catalog: Catalog): McpServer {
   const server = new McpServer({ name: 'whileui', version: catalog.version });
   const byName = new Map(catalog.components.map((c) => [c.name.toLowerCase(), c]));
@@ -62,12 +99,26 @@ export function createServer(catalog: Catalog): McpServer {
         names
           .map((name) => {
             const c = byName.get(name.toLowerCase());
-            if (!c)
-              return `## ${name}\n\nNot a WhileUI component. Call list_components for the list.`;
-            return (
+            if (!c) {
+              const wanted = name.toLowerCase();
+              const names = catalog.components.map((x) => x.name);
+              const lookalikes = names.filter((x) => {
+                const lower = x.toLowerCase();
+                return (
+                  lower.includes(wanted) || wanted.includes(lower) || distance(lower, wanted) <= 3
+                );
+              });
+              const known = (ALIASES[wanted] ?? []).filter((x) => names.includes(x));
+              const close = [...new Set([...known, ...lookalikes])].slice(0, 5);
+              const hint = close.length ? ` Did you mean ${close.join(', ')}?` : '';
+              return `## ${name}\n\nNot a WhileUI component.${hint} Call list_components for the list.`;
+            }
+            const body =
               c.docs ??
-              `## ${c.name}\n\n${c.summary}\n\nNo API section yet; the summary is the full description.`
-            );
+              `## ${c.name}\n\n${c.summary}\n\nNo API section yet; the summary is the full description.`;
+            return c.source
+              ? `${body}\n\nCopy-paste template, not a package export: ${c.source}`
+              : body;
           })
           .join('\n\n---\n\n')
       )

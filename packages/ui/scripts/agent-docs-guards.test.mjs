@@ -4,6 +4,7 @@ import {
   findPhantomComponents,
   findStaleSkillNames,
   findUnnamedIconButtons,
+  prepareForAgents,
 } from './agent-docs-guards.mjs';
 
 test('a README component the package does not export is caught', () => {
@@ -40,4 +41,24 @@ test('an icon button example with no name is caught; named ones pass', () => {
   assert.deepEqual(findUnnamedIconButtons(docs), [
     '<Button size="icon"><Icon name="send" /></Button>',
   ]);
+});
+
+test('agent text drops table markers and makes repo links absolute', () => {
+  const readme = [
+    '<!-- api:Button -->',
+    '| Prop | Type |',
+    '<!-- /api:Button -->',
+    'See [the plan](./PLAN.md), [the skill](skills/whileui/SKILL.md), [Uniwind](https://uniwind.dev) and [below](#theming).',
+    '<img src="./docs/assets/demo.gif" />',
+  ].join('\n');
+  assert.equal(
+    prepareForAgents(readme),
+    [
+      '| Prop | Type |',
+      'See [the plan](https://github.com/whileloophq/whileui/blob/main/PLAN.md), ' +
+        '[the skill](https://github.com/whileloophq/whileui/blob/main/skills/whileui/SKILL.md), ' +
+        '[Uniwind](https://uniwind.dev) and [below](#theming).',
+      '<img src="https://github.com/whileloophq/whileui/raw/main/docs/assets/demo.gif" />',
+    ].join('\n')
+  );
 });

@@ -13,6 +13,8 @@ export interface Catalog {
     kind: 'package' | 'template';
     summary: string;
     docs: string | null;
+    /** Where to copy a copy-paste template from. */
+    source?: string;
   }[];
   themeTokens: {
     key: string;

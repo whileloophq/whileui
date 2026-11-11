@@ -31,12 +31,12 @@ uses `"servers"` in `.vscode/mcp.json`; Codex uses `[mcp_servers.whileui]` with
 
 ## Tools
 
-| Tool                 | Returns                                                                  |
-| -------------------- | ------------------------------------------------------------------------ |
-| `list_components`    | Every component and block with a one-line summary; filter by category    |
-| `get_component_docs` | Props, examples and usage notes for one or more components               |
-| `get_theme_tokens`   | The colour token contract with light and dark defaults, or visual tokens |
-| `get_guide`          | `composition`, `quick-reference`, `installation` or `theming`            |
+| Tool                 | Returns                                                                                                                                                                                               |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `list_components`    | Every component and block with a one-line summary; filter by category                                                                                                                                 |
+| `get_component_docs` | Props, examples and usage notes for one or more components; suggests the closest names on a miss, including what other libraries call them (`TextField` → `Input`), and where to copy a template from |
+| `get_theme_tokens`   | The colour token contract with light and dark defaults, or visual tokens                                                                                                                              |
+| `get_guide`          | `composition`, `quick-reference`, `installation` or `theming`                                                                                                                                         |
 
 Agents without MCP can read the same content as text from
 `node_modules/@thewhileloop/whileui/dist/agent/llms.txt`.
