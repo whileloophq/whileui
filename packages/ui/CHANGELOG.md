@@ -1,5 +1,36 @@
 # @thewhileloop/whileui
 
+## 4.4.0
+
+### Minor Changes
+
+- 8f28463: `fabClearance(size?)` returns the bottom padding a scrolling screen needs so a floating
+  `FAB` never covers its last row: the FAB's 24pt inset, its height and a 16pt gap. Lists
+  behind a FAB had nothing to measure against, and their final amount or button sat under
+  it. Add `contentContainerStyle={{ paddingBottom: fabClearance() }}` to those lists.
+- 8f28463: `SegmentedControl` takes `wrap="scroll"`: one row, each segment as wide as its label,
+  scrolling sideways when they do not fit. Four or five word-length labels do not fit a
+  phone, and the alternatives were wrapping onto two rows or squeezing the text, so apps
+  wrapped the control in their own `ScrollView` and overrode every segment with
+  `flex-none`. Replace that with `wrap="scroll"`.
+- 8f28463: `useThemeBridge` returns `toggleTheme`, which switches to the opposite of the theme on
+  screen. A sun/moon button wired to `cycleMode` needed two taps on first use: the cycle goes
+  light → dark → system, so from `system` its first step was to `light`, the theme already
+  showing. Use `toggleTheme` for a two-state button and keep `cycleMode` for a control that
+  shows all three modes. The hook is now documented under Theming in the README.
+
+### Patch Changes
+
+- 8f28463: `Input`, `Textarea`, `NumericInput` and `SmartInput` draw the caret and text selection in
+  the theme's primary colour on iOS and Android, instead of the platform blue that ignored
+  every theme. Android keeps a translucent highlight so selected text stays readable. A
+  `selectionColor` or `cursorColor` you pass still wins.
+- 8f28463: `Select` and `Popover` close the on-screen keyboard when they open. Both draw in a portal
+  rather than a Modal, so iOS and Android left the keyboard up and it covered the lower half
+  of the options: a category picker opened while typing a description showed only the first
+  few choices. Once the keyboard has gone the trigger is measured again, so the panel stays
+  anchored on screens that move with the keyboard. Nothing to change at call sites.
+
 ## 4.3.0
 
 ### Minor Changes
