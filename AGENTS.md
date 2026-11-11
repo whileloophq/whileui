@@ -40,7 +40,7 @@ Bun workspace (`bun@1.3.9`). Never run `yarn` here.
 | `e2e/`                                     | Playwright specs, config and axe scan — browser evidence       |
 | `e2e/maestro/`                             | Native flows — the platform accessibility tree                 |
 | `scripts/verify-package.mjs`               | Packs and inspects the tarball a consumer would install        |
-| `docs/review-perspectives/`                | Per-PR review cards; `/review-perspectives` runs them          |
+| `docs/pre-pr-review/`                      | Per-PR review cards; `/pre-pr-review` runs them                |
 | `docs/stability.md`                        | Maturity of every family and the evidence behind it            |
 | `ROADMAP.md`, `PLAN.md`                    | Direction; production foundation plan and phases               |
 | `IMPLEMENTATION.md`                        | Resumable task ledger, evidence and next safe action           |

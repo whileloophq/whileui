@@ -88,7 +88,7 @@ The commit and working-tree lines are historical hints, not authority. Always ru
 
 1. Meet every acceptance criterion in the task.
 2. Run the task checks plus `bun run format`, `bun run lint` and `bun run typecheck`.
-3. Run the applicable cards in `docs/review-perspectives/`.
+3. Run the applicable cards in `docs/pre-pr-review/`.
 4. Update README, showcase, `docs/stability.md` and a changeset when the public package
    or maturity evidence changed.
 5. Replace `[~]` with `[x]`, record evidence, and advance Resume here.

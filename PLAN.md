@@ -11,7 +11,7 @@ Three tracked documents, one job each.
 | `IMPLEMENTATION.md` | Resumable task state, evidence and the next safe action          |
 | `AGENTS.md`         | How to edit this repo day to day                                 |
 
-`README.md` remains the API source of truth. `docs/review-perspectives/` holds the
+`README.md` remains the API source of truth. `docs/pre-pr-review/` holds the
 per-PR review cards that enforce this plan.
 
 **This repo is public.** Everything here is written to apply to any consuming
@@ -610,6 +610,6 @@ This is a living document tied to products, not a fixed program.
   change as the code.
 - When a rule here is discovered to be wrong, delete it. Stale rules are worse than
   missing ones.
-- `docs/review-perspectives/` is where these rules get enforced per PR. A new invariant
+- `docs/pre-pr-review/` is where these rules get enforced per PR. A new invariant
   that no review card can see will not survive; add it to a card or accept that it is
   advisory.

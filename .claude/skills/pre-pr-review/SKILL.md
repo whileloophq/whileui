@@ -1,8 +1,8 @@
 ---
-name: review-perspectives
+name: pre-pr-review
 description: >-
   Perspective-based self-review of the current branch using the repo's review cards in
-  docs/review-perspectives/. Reviews the branch diff against main from every applicable
+  docs/pre-pr-review/. Reviews the branch diff against main from every applicable
   perspective in parallel and reports only improvements (CR/QUESTION), never what is
   satisfied. Optionally takes a GitHub issue number or URL for intent context. Use before
   opening or updating a PR.
@@ -10,13 +10,13 @@ description: >-
 
 # Perspective-Based Branch Review
 
-Review the current branch from the perspectives in `docs/review-perspectives/`,
+Review the current branch from the perspectives in `docs/pre-pr-review/`,
 reporting only what could be improved. This is the author's self-review; it does not
 replace a human one.
 
 ## 1. Guard
 
-If `docs/review-perspectives/` does not exist, say so and stop.
+If `docs/pre-pr-review/` does not exist, say so and stop.
 
 ## 2. Diff scope
 
@@ -26,7 +26,7 @@ If `docs/review-perspectives/` does not exist, say so and stop.
 
 ## 3. Intent (optional)
 
-- If invoked with an argument (`/review-perspectives 12` or an issue URL), fetch it:
+- If invoked with an argument (`/pre-pr-review 12` or an issue URL), fetch it:
   `gh issue view <n> --json number,title,body`.
 - Otherwise take the first standalone number in the branch name; if the fetched title
   is clearly unrelated to the diff, drop it and say the review ran without intent.
