@@ -37,7 +37,6 @@
 - button "Pick a time"
 - text: Date Picker Inline Embedded calendar for forms or dashboards
 - slider: /< June \d+ > Sun Mon Tue Wed Thu Fri Sat/
-- text: /\d+/
 - button /Monday 1 June \d+/
 - button /Tuesday 2 June \d+/
 - button /Wednesday 3 June \d+/
@@ -68,7 +67,7 @@
 - button /Sunday \d+ June \d+/
 - button /Monday \d+ June \d+/
 - button /Tuesday \d+ June \d+/
-- text: 1 2 3 4 Date Range Picker Modal Select start and end dates with period marking
+- text: Date Range Picker Modal Select start and end dates with period marking
 - button "Pick date range"
 - text: Form Modal Screen Modal scaffold for forms with header, loading, and saving states
 - button "Open Form Modal"

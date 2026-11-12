@@ -34,6 +34,7 @@ export function ProfileBlocksTab() {
           email="sarah@whileui.dev"
           avatarFallback="SM"
           badge="Pro"
+          onPress={() => {}}
         />
       </Section>
 
@@ -57,11 +58,13 @@ export function ProfileBlocksTab() {
             icon={<Feather name="lock" size={20} color={colors.muted} />}
             label="Privacy"
             value="Public"
+            onPress={() => {}}
           />
           <SettingsItem
             icon={<Feather name="log-out" size={20} color={colors.muted} />}
             label="Sign Out"
             type="action"
+            onPress={() => {}}
             destructive
             showBorder={false}
           />

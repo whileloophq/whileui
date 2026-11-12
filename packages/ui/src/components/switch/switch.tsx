@@ -34,6 +34,7 @@ function Switch({
   label,
   description,
   className,
+  style,
   ...props
 }: SwitchProps) {
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
@@ -70,6 +71,9 @@ function Switch({
       accessibilityRole="switch"
       accessibilityState={{ checked: isChecked, disabled }}
       aria-checked={isChecked}
+      // The pressable is the control, so names, test IDs and layout handlers belong on it.
+      // Spread on the inner view, a caller's `accessibilityLabel` named nothing on web.
+      {...props}
     >
       {label ? <ControlLabel label={label} description={description} /> : null}
       <View
@@ -78,14 +82,16 @@ function Switch({
           isChecked ? 'border-primary bg-primary' : 'border-input bg-muted',
           className
         )}
-        style={{
-          width: trackWidth,
-          height: trackHeight,
-          borderWidth: visual.borderWidthEmphasis,
-          borderRadius: trackHeight / 2,
-          padding: inset,
-        }}
-        {...props}
+        style={[
+          {
+            width: trackWidth,
+            height: trackHeight,
+            borderWidth: visual.borderWidthEmphasis,
+            borderRadius: trackHeight / 2,
+            padding: inset,
+          },
+          style,
+        ]}
       >
         <View
           className="border-border bg-background shadow-sm"

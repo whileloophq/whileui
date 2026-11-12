@@ -58,6 +58,9 @@ function RadioGroup({
   );
 }
 
+/** The smallest target WCAG 2.5.8 accepts, and the one web gets, since it ignores hitSlop. */
+const MIN_TARGET = 24;
+
 function RadioGroupItem({ value: itemValue, className, ...props }: RadioGroupItemProps) {
   const { value, onValueChange } = useContext(RadioGroupContext);
   const visual = useVisualTokens();
@@ -66,32 +69,37 @@ function RadioGroupItem({ value: itemValue, className, ...props }: RadioGroupIte
   const dotSize = Math.max(8, Math.round(size * 0.5));
 
   return (
+    // The pressable is a 24px target (WCAG 2.5.8) with the circle drawn inside it:
+    // `hitSlop` enlarges the target on native only, so web was left with the 20px circle.
     <Pressable
       accessibilityRole="radio"
       accessibilityState={{ checked: isSelected }}
       aria-checked={isSelected}
-      className={cn(
-        'items-center justify-center',
-        isSelected ? 'border-primary' : 'border-border',
-        focusRing,
-        className
-      )}
-      style={{
-        width: size,
-        height: size,
-        borderWidth: visual.borderWidthEmphasis,
-        borderRadius: size / 2,
-      }}
+      className={cn('items-center justify-center', focusRing, className)}
+      style={{ minWidth: MIN_TARGET, minHeight: MIN_TARGET, borderRadius: MIN_TARGET / 2 }}
       onPress={() => onValueChange(itemValue)}
-      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       {...props}
     >
-      {isSelected && (
-        <View
-          className="bg-primary"
-          style={{ width: dotSize, height: dotSize, borderRadius: dotSize / 2 }}
-        />
-      )}
+      <View
+        className={cn(
+          'items-center justify-center',
+          isSelected ? 'border-primary' : 'border-border'
+        )}
+        style={{
+          width: size,
+          height: size,
+          borderWidth: visual.borderWidthEmphasis,
+          borderRadius: size / 2,
+        }}
+      >
+        {isSelected && (
+          <View
+            className="bg-primary"
+            style={{ width: dotSize, height: dotSize, borderRadius: dotSize / 2 }}
+          />
+        )}
+      </View>
     </Pressable>
   );
 }

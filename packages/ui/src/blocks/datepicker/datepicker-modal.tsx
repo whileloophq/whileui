@@ -197,6 +197,8 @@ function DatePickerModalSession({
                   theme={calendarTheme as Record<string, unknown>}
                   renderArrow={renderArrow}
                   enableSwipeMonths
+                  // Days from the next month were disabled yet still Tab stops, with no role.
+                  hideExtraDays
                 />
               </View>
             </View>

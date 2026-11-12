@@ -24,11 +24,19 @@ export function AccountCard({
   className,
   ...props
 }: AccountCardProps) {
+  // A button only when it does something; React Native Web makes every Pressable a Tab
+  // stop unless `tabIndex` says otherwise.
+  const pressable = Boolean(props.onPress);
+
   return (
     <Pressable
+      accessibilityRole={pressable ? 'button' : undefined}
+      focusable={pressable}
+      tabIndex={pressable ? 0 : -1}
       className={cn(
-        'flex-row items-center rounded-xl bg-card p-4 active:opacity-90',
-        focusRing,
+        'flex-row items-center rounded-xl bg-card p-4',
+        pressable && 'active:opacity-90',
+        pressable && focusRing,
         className
       )}
       {...props}
@@ -52,7 +60,12 @@ export function AccountCard({
         {email && <Text className="text-sm text-muted-foreground">{email}</Text>}
       </View>
 
-      {rightElement || <Text className="text-xl text-muted-foreground">›</Text>}
+      {rightElement ||
+        (pressable ? (
+          <Text aria-hidden className="text-xl text-muted-foreground">
+            ›
+          </Text>
+        ) : null)}
     </Pressable>
   );
 }

@@ -32,14 +32,22 @@ export function SettingsItem({
   ...props
 }: SettingsItemProps) {
   const isToggle = type === 'toggle';
+  // A toggle row's control is its Switch; any other row is a button only if it does
+  // something. A Pressable is a Tab stop on web either way, so a row with no handler was
+  // focusable with no role.
+  const pressable = !isToggle && Boolean(props.onPress);
 
   return (
     <Pressable
+      accessibilityRole={pressable ? 'button' : undefined}
+      focusable={pressable}
+      // React Native Web ignores `focusable` on a Pressable; only `tabIndex` removes the Tab stop.
+      tabIndex={pressable ? 0 : -1}
       className={cn(
         'flex-row items-center px-4 py-3',
         showBorder && 'border-b border-border',
-        !isToggle && 'active:bg-muted',
-        focusRing,
+        pressable && 'active:bg-muted',
+        pressable && focusRing,
         className
       )}
       disabled={isToggle}
@@ -70,7 +78,9 @@ export function SettingsItem({
       {type === 'navigate' && (
         <View className="flex-row items-center">
           {value && <Text className="mr-2 text-muted-foreground">{value}</Text>}
-          <Text className="text-lg text-muted-foreground">›</Text>
+          <Text aria-hidden className="text-lg text-muted-foreground">
+            ›
+          </Text>
         </View>
       )}
     </Pressable>

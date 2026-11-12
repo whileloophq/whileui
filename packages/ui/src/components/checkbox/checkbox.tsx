@@ -34,6 +34,7 @@ function Checkbox({
   label,
   description,
   className,
+  style,
   ...props
 }: CheckboxProps) {
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
@@ -45,7 +46,10 @@ function Checkbox({
   // The ring belongs on the pressable, which is what takes keyboard focus. On the inner
   // box it never matched `:focus-visible`, so the checkbox showed no focus on web.
   const interactiveStyle = withInteractivePressableStyle(
-    { borderRadius: label ? visual.radiusSm : boxRadius },
+    // 24px around the box (WCAG 2.5.8): web ignores hitSlop, so the box alone was the target.
+    label
+      ? { borderRadius: visual.radiusSm }
+      : { borderRadius: boxRadius, minWidth: 24, minHeight: 24 },
     interaction,
     { disabled, pressedVariant: 'default' }
   );
@@ -63,7 +67,10 @@ function Checkbox({
       onPress={handleToggle}
       disabled={disabled}
       style={interactiveStyle}
-      className={cn(focusRing, label && 'flex-row items-start gap-3')}
+      className={cn(
+        focusRing,
+        label ? 'flex-row items-start gap-3' : 'items-center justify-center'
+      )}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: isChecked, disabled }}
@@ -71,6 +78,9 @@ function Checkbox({
       // ARIA requires it on this role — without it a screen reader cannot tell checked
       // from unchecked. React Native maps the `aria-` form on native, so both are correct.
       aria-checked={isChecked}
+      // The pressable is the control, so names, test IDs and layout handlers belong on it.
+      // Spread on the inner view, a caller's `accessibilityLabel` named nothing on web.
+      {...props}
     >
       <View
         className={cn(
@@ -78,13 +88,15 @@ function Checkbox({
           isChecked ? 'border-primary bg-primary' : 'border-border bg-muted',
           className
         )}
-        style={{
-          width: size,
-          height: size,
-          borderWidth: visual.borderWidthControl,
-          borderRadius: boxRadius,
-        }}
-        {...props}
+        style={[
+          {
+            width: size,
+            height: size,
+            borderWidth: visual.borderWidthControl,
+            borderRadius: boxRadius,
+          },
+          style,
+        ]}
       >
         {/* A tick, drawn as the bottom and right edges of a rotated box: the package
             carries no icon set. A filled inner square, which this used to draw, reads

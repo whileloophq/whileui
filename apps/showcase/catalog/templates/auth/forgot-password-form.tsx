@@ -54,7 +54,7 @@ export function ForgotPasswordForm({ onSubmit, onBackToSignIn }: ForgotPasswordF
         </Button>
         <Pressable
           onPress={onBackToSignIn}
-          className="flex-row justify-center"
+          className="min-h-6 flex-row items-center justify-center"
           accessibilityRole="button"
         >
           <Text className="text-sm text-center text-muted-foreground">

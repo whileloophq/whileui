@@ -14,10 +14,10 @@
 - button "Commerce"
 - text: Bottom Navigation iOS/Android style tab bar
 - tablist:
-  - tab "3 Home" [selected]
+  - tab "Home, 3" [selected]
   - tab "Explore"
   - tab "Create"
-  - tab /\d+ Inbox/
+  - tab /Inbox, \d+/
   - tab "Profile"
 - text: Floating Bottom Nav Modern floating pill style
 - tablist:

@@ -106,8 +106,15 @@ export function ProfileHeader({
         <View className="mt-3 flex-row items-center gap-2">
           <Text className="text-xl font-bold text-foreground">{name}</Text>
           {verified && (
+            // An image named "Verified": a screen reader read the bare mark as "check mark".
             <View className="rounded-full bg-primary/15 px-1.5 py-0.5">
-              <Text className="text-xs text-primary font-semibold">✓</Text>
+              <Text
+                accessibilityRole="image"
+                accessibilityLabel="Verified"
+                className="text-xs text-primary font-semibold"
+              >
+                ✓
+              </Text>
             </View>
           )}
         </View>

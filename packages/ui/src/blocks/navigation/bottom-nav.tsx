@@ -41,17 +41,30 @@ function BottomNavItemComponent({
   return (
     <Pressable
       accessibilityRole="tab"
+      // Named here rather than from the children: iOS built "3, Home" from them, badge
+      // first, and on device the active tab also exposed its icon glyph on its own.
+      accessibilityLabel={badge ? `${label}, ${badge > 99 ? '99+' : badge}` : label}
       accessibilityState={{ selected: isActive }}
       aria-selected={isActive}
-      className={cn('flex-1 items-center justify-center py-2', className)}
+      className={cn('flex-1 flex-col-reverse items-center justify-center py-2', className)}
       style={interactiveStyle}
       {...props}
     >
+      {/* Label first in the document, drawn below the icon by `flex-col-reverse`: the
+          visible text then reads "Inbox 12", matching the name, where "12 Inbox" failed
+          WCAG 2.5.3 (label in name). */}
+      <Text
+        className={cn('mt-1 font-medium', isActive ? 'text-primary' : 'text-muted-foreground')}
+        style={typographyStyle(visual, 'caption')}
+      >
+        {label}
+      </Text>
       <View
+        aria-hidden
         className="relative"
         style={!isActive ? { opacity: interaction.inactiveOpacity } : undefined}
       >
-        <View aria-hidden>{icon}</View>
+        <View>{icon}</View>
         {badge !== undefined && badge > 0 && (
           <View className="absolute -right-2 -top-1 h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1">
             <Text
@@ -63,12 +76,6 @@ function BottomNavItemComponent({
           </View>
         )}
       </View>
-      <Text
-        className={cn('mt-1 font-medium', isActive ? 'text-primary' : 'text-muted-foreground')}
-        style={typographyStyle(visual, 'caption')}
-      >
-        {label}
-      </Text>
     </Pressable>
   );
 }

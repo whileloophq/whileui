@@ -14,8 +14,13 @@
 - button "Commerce"
 - text: Profile Header User profile with stats SM
 - button "Edit Profile"
-- text: /Sarah Miller ✓ @sarahmiller Product designer building beautiful interfaces\. React Native enthusiast\. \d+ Following [\d,.]+[bkmBKM]+ Followers \d+ Projects Account Card Compact user info SM Sarah Miller Pro sarah@whileui\.dev › Settings Grouped preference controls Preferences  Push Notifications/
+- text: Sarah Miller
+- img "Verified": ✓
+- text: /@sarahmiller Product designer building beautiful interfaces\. React Native enthusiast\. \d+ Following [\d,.]+[bkmBKM]+ Followers \d+ Projects Account Card Compact user info/
+- button "SM Sarah Miller Pro sarah@whileui.dev"
+- text: Settings Grouped preference controls Preferences  Push Notifications
 - switch "Push Notifications" [checked] [disabled]
 - text:  Dark Mode
 - switch "Dark Mode" [disabled]
-- text:  Privacy Public ›  Sign Out
+- button " Privacy Public"
+- button " Sign Out"

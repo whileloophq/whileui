@@ -37,3 +37,12 @@ describe('Checkbox with a label', () => {
     expect(box).toBeChecked();
   });
 });
+
+describe('naming an unlabelled checkbox', () => {
+  it('puts accessibilityLabel and testID on the element that is the checkbox', async () => {
+    await render(<Checkbox accessibilityLabel="Accept terms" testID="terms" />);
+    const control = screen.getByRole('checkbox');
+    expect(control.props.accessibilityLabel).toBe('Accept terms');
+    expect(screen.getByTestId('terms')).toBe(control);
+  });
+});

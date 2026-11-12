@@ -78,14 +78,21 @@ export function ListItem({
     return <ListItemSkeleton showBorder={showBorder} compact={compact} className={className} />;
   }
 
+  const pressable = Boolean(props.onPress || props.onLongPress);
+
   return (
     <Pressable
-      accessibilityRole={props.onPress || props.onLongPress ? 'button' : undefined}
+      // Only a row with a press handler is a control. A Pressable is a Tab stop on web
+      // whether or not it does anything, so a static row was focusable with no role.
+      accessibilityRole={pressable ? 'button' : undefined}
+      focusable={pressable}
+      // React Native Web ignores `focusable` on a Pressable; only `tabIndex` removes the Tab stop.
+      tabIndex={pressable ? 0 : -1}
       className={cn(
         'flex-row items-center bg-card',
         focusRing,
         showBorder && 'border-border',
-        'active:bg-muted',
+        pressable && 'active:bg-muted',
         className
       )}
       style={(state) => {
@@ -131,8 +138,14 @@ export function ListItem({
         </View>
       )}
       {action}
-      {!action && !rightIcon && (
-        <Text className="text-muted-foreground" style={typographyStyle(visual, 'emphasis')}>
+      {/* The chevron promises a tap, so only a pressable item draws one, and it is hidden
+          from screen readers: inside a pressable its glyph joined the spoken label. */}
+      {!action && !rightIcon && pressable && (
+        <Text
+          aria-hidden
+          className="text-muted-foreground"
+          style={typographyStyle(visual, 'emphasis')}
+        >
           ›
         </Text>
       )}

@@ -51,7 +51,9 @@ function getButtonStyleTokens(
   variant: NonNullable<VariantProps<typeof buttonVariants>['variant']>
 ) {
   if (variant === 'link') {
-    return undefined;
+    // A link is as tall as its text, 16-19px, under WCAG 2.5.8's 24px; keep its look and
+    // give it the height.
+    return { minHeight: 24, justifyContent: 'center' as const };
   }
 
   const recipe = controlRecipe(visual, size);

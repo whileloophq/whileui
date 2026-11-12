@@ -137,8 +137,20 @@ export function PricingCard({
 
       <View className="mb-6 gap-3">
         {features.map((feature) => (
-          <View key={feature.label} className="flex-row items-center gap-3">
-            <Text className={feature.included ? 'text-primary' : 'text-muted-foreground'}>
+          // The mark is an image named "Included" or "Not included": its bare symbol was read
+          // by name, and the strikethrough is visual only. On iOS the row reads as one
+          // element; web drops `aria-label` on a role-less view, so the image carries it.
+          <View
+            key={feature.label}
+            accessible
+            accessibilityLabel={`${feature.included ? 'Included' : 'Not included'}: ${feature.label}`}
+            className="flex-row items-center gap-3"
+          >
+            <Text
+              accessibilityRole="image"
+              accessibilityLabel={feature.included ? 'Included' : 'Not included'}
+              className={feature.included ? 'text-primary' : 'text-muted-foreground'}
+            >
               {feature.included ? '✓' : '✕'}
             </Text>
             <Text

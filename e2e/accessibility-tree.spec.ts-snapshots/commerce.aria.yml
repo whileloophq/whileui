@@ -15,7 +15,17 @@
 - text: /Product Cards Vertical and horizontal layouts 📦 –\d+% Wireless Earbuds ★ 4\.7 \(\d+\) \$\d+ \$\d+ 📦 Smart Watch ★ 4\.9 \(\d+\) \$\d+ 📦 Noise-Cancelling Headphones ★ 4\.8 \(\d+\) \$\d+ Loading States Component-level skeleton placeholders Pricing Subscription plans/
 - button "Monthly" [pressed]
 - button /Annual Save \d+%/
-- text: /Pro Most Popular For teams and growing products \$\d+ \/month ✓ Unlimited components ✓ Priority support ✓ Figma source files ✓ Custom themes ✕ White-label license/
+- text: /Pro Most Popular For teams and growing products \$\d+ \/month/
+- img "Included": ✓
+- text: Unlimited components
+- img "Included": ✓
+- text: Priority support
+- img "Included": ✓
+- text: Figma source files
+- img "Included": ✓
+- text: Custom themes
+- img "Not included": ✕
+- text: White-label license
 - button "Get Started"
 - text: /Subscription Card Current plan summary for settings screens Pro Active \$\d+ \/month Renews on April \d+, \d+/
 - button "Manage plan"

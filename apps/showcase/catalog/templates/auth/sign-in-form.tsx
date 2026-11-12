@@ -60,7 +60,11 @@ export function SignInForm({
         <View className="gap-2">
           <View className="flex-row items-center justify-between">
             <Label nativeID="password">Password</Label>
-            <Pressable onPress={onForgotPassword} accessibilityRole="button">
+            <Pressable
+              onPress={onForgotPassword}
+              accessibilityRole="button"
+              className="min-h-6 justify-center"
+            >
               <Text className="text-sm text-primary font-medium">Forgot?</Text>
             </Pressable>
           </View>

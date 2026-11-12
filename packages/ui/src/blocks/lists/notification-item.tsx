@@ -67,11 +67,19 @@ export function NotificationItem({
     return <NotificationItemSkeleton className={className} />;
   }
 
+  const pressable = Boolean(props.onPress || props.onLongPress);
+
   return (
     <Pressable
-      accessibilityRole={props.onPress || props.onLongPress ? 'button' : undefined}
+      // Only a row with a press handler is a control. A Pressable is a Tab stop on web
+      // whether or not it does anything, so a static row was focusable with no role.
+      accessibilityRole={pressable ? 'button' : undefined}
+      focusable={pressable}
+      // React Native Web ignores `focusable` on a Pressable; only `tabIndex` removes the Tab stop.
+      tabIndex={pressable ? 0 : -1}
       className={cn(
-        'flex-row items-start active:bg-muted',
+        'flex-row items-start',
+        pressable && 'active:bg-muted',
         focusRing,
         !read && 'bg-primary-soft-subtle',
         className

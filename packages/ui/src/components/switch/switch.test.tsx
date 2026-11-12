@@ -63,3 +63,14 @@ describe('Switch with a label', () => {
     expect(screen.getByRole('switch', { name: /Notify me/ })).toBeChecked();
   });
 });
+
+describe('naming an unlabelled control', () => {
+  it('puts accessibilityLabel and testID on the element that is the switch', async () => {
+    // They landed on the inner track, so web named nothing: a browser reads the
+    // switch's own aria-label, not one on a child.
+    await render(<Switch accessibilityLabel="Dark mode" testID="dark" />);
+    const control = screen.getByRole('switch');
+    expect(control.props.accessibilityLabel).toBe('Dark mode');
+    expect(screen.getByTestId('dark')).toBe(control);
+  });
+});
