@@ -1,6 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import {
-  Pressable as RNPressable,
   ScrollView,
   type ScrollViewProps,
   type StyleProp,
@@ -19,9 +18,9 @@ import { cn } from '../../lib/cn';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
+import { OverlayBackdrop } from '../../lib/overlay-backdrop';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useOverlayPresence } from '../../lib/overlay-presence';
-import { useTapOnly } from '../../lib/tap-only';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
 import {
@@ -78,7 +77,6 @@ export function Sheet({
   const visual = useVisualTokens();
   const interaction = useInteractionTokens();
   const onClose = useCallback(() => onOpenChange(false), [onOpenChange]);
-  const backdropPress = useTapOnly(onClose);
   const contextValue = useMemo(() => ({ onClose }), [onClose]);
   const frostedSurface = useFrostedSurface({
     frosted,
@@ -160,14 +158,8 @@ export function Sheet({
         >
           {frostedBackdrop}
         </Animated.View>
-        {/* Tap-to-dismiss only, and a tap only: a drag across it must not close the sheet.
-            Not an accessibility element; screen reader users close from inside. */}
-        <RNPressable
-          accessible={false}
-          importantForAccessibility="no"
-          className="flex-1"
-          {...backdropPress}
-        />
+        {/* In the layout, above the panel: it is what holds the panel at the bottom. */}
+        <OverlayBackdrop onDismiss={onClose} className="relative flex-1" />
         <Animated.View
           className={cn(
             'border-border overflow-hidden relative',

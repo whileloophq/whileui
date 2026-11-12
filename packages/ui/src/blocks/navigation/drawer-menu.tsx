@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  Pressable as RNPressable,
   Platform,
   I18nManager,
   SectionList,
@@ -19,9 +18,9 @@ import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, surfaceRadius } from '../../lib/recipes';
+import { OverlayBackdrop } from '../../lib/overlay-backdrop';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useOverlayPresence } from '../../lib/overlay-presence';
-import { useTapOnly } from '../../lib/tap-only';
 import {
   useFrostedSurface,
   useFrostedBackdrop,
@@ -250,7 +249,6 @@ export function DrawerMenu({
   const colors = useThemeColors();
   const interaction = useInteractionTokens();
   const visual = useVisualTokens();
-  const backdropPress = useTapOnly(onClose);
   const frostedSurface = useFrostedSurface({
     frosted,
     blurIntensity,
@@ -291,13 +289,7 @@ export function DrawerMenu({
         ]}
       >
         {frostedBackdrop}
-        {/* Backdrop: tap-to-dismiss only, not a control, and a drag across it is not a tap. */}
-        <RNPressable
-          accessible={false}
-          importantForAccessibility="no"
-          style={StyleSheet.absoluteFill}
-          {...backdropPress}
-        />
+        <OverlayBackdrop onDismiss={onClose} />
       </Animated.View>
 
       <Animated.View

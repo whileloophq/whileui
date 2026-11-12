@@ -361,16 +361,16 @@ export function OverlaysTab() {
             <DropdownMenuContent>
               <DropdownMenuLabel>Workspace</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onPress={() => toast({ title: 'Settings' })}>
                 <Text className="text-foreground">Settings</Text>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onPress={() => toast({ title: 'Members' })}>
                 <Text className="text-foreground">Members</Text>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onPress={() => toast({ title: 'Billing' })}>
                 <Text className="text-foreground">Billing</Text>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onPress={() => toast({ title: 'API Keys' })}>
                 <Text className="text-foreground">API Keys</Text>
               </DropdownMenuItem>
             </DropdownMenuContent>

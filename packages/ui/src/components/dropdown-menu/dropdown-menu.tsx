@@ -1,23 +1,20 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
-import { type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
-import { View, Pressable, Text, type ViewProps, type PressableProps } from 'react-native';
-import { OverlayHost } from '../../lib/overlay-host';
+import React from 'react';
+import type { GestureResponderEvent } from 'react-native';
 import { cn } from '../../lib/cn';
-import type { AsChildElement } from '../../lib/compose-event-handlers';
-import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
-import { useVisualTokens } from '../../lib/visual-tokens';
-import { useThemeColors } from '../../lib/theme-colors';
-import { shadowStyle, surfaceRadius, typographyStyle } from '../../lib/recipes';
-
-interface DropdownMenuContextValue {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}
-
-const DropdownMenuContext = createContext<DropdownMenuContextValue>({
-  open: false,
-  setOpen: () => {},
-});
+import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
+import {
+  MenuSheetContent,
+  MenuSheetItem,
+  MenuSheetLabel,
+  MenuSheetRoot,
+  MenuSheetSeparator,
+  useMenuSheet,
+  type MenuSheetContentProps,
+  type MenuSheetItemProps,
+  type MenuSheetLabelProps,
+  type MenuSheetSeparatorProps,
+} from '../../lib/menu-sheet';
+import { Pressable, type PressableProps } from '../pressable';
 
 export interface DropdownMenuProps {
   children: React.ReactNode;
@@ -25,178 +22,62 @@ export interface DropdownMenuProps {
 
 export interface DropdownMenuTriggerProps extends PressableProps {
   className?: string;
+  /** Give the press to the single child instead of wrapping it in another pressable. */
   asChild?: boolean;
 }
 
-export interface DropdownMenuContentProps extends ViewProps, FrostedSurfaceProps {
-  className?: string;
-}
-
-export interface DropdownMenuItemProps extends PressableProps {
-  className?: string;
-}
-
-export interface DropdownMenuLabelProps extends ViewProps {
-  className?: string;
-  children?: React.ReactNode;
-}
-
-export interface DropdownMenuSeparatorProps extends ViewProps {
-  className?: string;
-}
+export type DropdownMenuContentProps = MenuSheetContentProps;
+export type DropdownMenuItemProps = MenuSheetItemProps;
+export type DropdownMenuLabelProps = MenuSheetLabelProps;
+export type DropdownMenuSeparatorProps = MenuSheetSeparatorProps;
 
 function DropdownMenu({ children }: DropdownMenuProps) {
-  const [open, setOpen] = useState(false);
-  const contextValue = useMemo(() => ({ open, setOpen }), [open]);
-  return (
-    <DropdownMenuContext.Provider value={contextValue}>{children}</DropdownMenuContext.Provider>
-  );
+  return <MenuSheetRoot>{children}</MenuSheetRoot>;
 }
 
-function DropdownMenuTrigger({ className, children, asChild, ...props }: DropdownMenuTriggerProps) {
-  const { setOpen } = useContext(DropdownMenuContext);
+function DropdownMenuTrigger({
+  className,
+  children,
+  asChild,
+  onPress,
+  ...props
+}: DropdownMenuTriggerProps) {
+  const { open, setOpen } = useMenuSheet();
+  const openMenu = composeEventHandlers<GestureResponderEvent>(onPress ?? undefined, () =>
+    setOpen(true)
+  );
 
   if (asChild && React.isValidElement(children)) {
     const child = children as AsChildElement;
     return React.cloneElement(child, {
-      onPress: (e: GestureResponderEvent) => {
-        child.props.onPress?.(e);
-        setOpen(true);
-      },
       ...props,
-    });
+      className: cn(child.props.className, className),
+      onPress: composeEventHandlers(child.props.onPress, openMenu),
+      'aria-expanded': open,
+    } as Partial<PressableProps>);
   }
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      className={cn(className)}
-      onPress={() => setOpen(true)}
-      {...props}
-    >
+    <Pressable className={className} aria-expanded={open} {...props} onPress={openMenu}>
       {children}
     </Pressable>
   );
 }
 
-function DropdownMenuContent({
-  className,
-  children,
-  frosted = false,
-  blurIntensity,
-  blurTintToken,
-  style,
-  ...props
-}: DropdownMenuContentProps) {
-  const { open, setOpen } = useContext(DropdownMenuContext);
-  const visual = useVisualTokens();
-  const colors = useThemeColors();
-  const frostedSurface = useFrostedSurface({
-    frosted,
-    blurIntensity,
-    blurTintToken,
-    defaultTintToken: 'popover',
-    defaultBlurPreset: 'medium',
-  });
-  const contentStyle: StyleProp<ViewStyle> = [
-    {
-      borderTopLeftRadius: surfaceRadius(visual, 'lg'),
-      borderTopRightRadius: surfaceRadius(visual, 'lg'),
-      borderTopWidth: visual.borderWidthHairline,
-      borderLeftWidth: visual.borderWidthHairline,
-      borderRightWidth: visual.borderWidthHairline,
-    },
-    shadowStyle(visual, colors, 'md'),
-    frostedSurface.surfaceStyle,
-    style,
-  ];
-
-  return (
-    <OverlayHost open={open} animationType="slide" onRequestClose={() => setOpen(false)}>
-      {/* Both of these are containers. Pressable defaults to `accessible: true`, which on
-          iOS collapses every descendant into a single accessibility element — the menu
-          items inside would be unreachable. */}
-      <Pressable
-        accessible={false}
-        importantForAccessibility="no"
-        className="flex-1 justify-end"
-        onPress={() => setOpen(false)}
-      >
-        <Pressable
-          accessible={false}
-          // Names the container for the `menuitem` children below; without a `menu`
-          // ancestor the role is invalid ARIA and assistive tech ignores it.
-          accessibilityRole="menu"
-          className={cn(
-            'w-full border-border p-2 pb-8 relative overflow-hidden',
-            frosted ? 'bg-transparent' : 'bg-popover',
-            className
-          )}
-          style={contentStyle}
-          onPress={(e) => e.stopPropagation()}
-          {...props}
-        >
-          {frostedSurface.overlay}
-          {children}
-        </Pressable>
-      </Pressable>
-    </OverlayHost>
-  );
+function DropdownMenuContent(props: DropdownMenuContentProps) {
+  return <MenuSheetContent {...props} />;
 }
 
-function DropdownMenuItem({ className, style, ...props }: DropdownMenuItemProps) {
-  const { setOpen } = useContext(DropdownMenuContext);
-  const visual = useVisualTokens();
-  const tokenStyle: ViewStyle = {
-    borderRadius: visual.radiusSm,
-    minHeight: visual.touchTargetMinSize,
-    paddingHorizontal: visual.controlPaddingXSm,
-    paddingVertical: visual.controlPaddingYSm,
-  };
-  return (
-    <Pressable
-      accessibilityRole="menuitem"
-      className={cn('flex flex-row items-center active:bg-state-pressed', className)}
-      style={(state) => [tokenStyle, typeof style === 'function' ? style(state) : style]}
-      onPress={(e) => {
-        props.onPress?.(e);
-        setOpen(false);
-      }}
-      {...props}
-    />
-  );
+function DropdownMenuItem(props: DropdownMenuItemProps) {
+  return <MenuSheetItem {...props} />;
 }
 
-function DropdownMenuLabel({ className, children, ...props }: DropdownMenuLabelProps) {
-  const visual = useVisualTokens();
-  return (
-    <View className={cn('px-2 py-1.5', className)} {...props}>
-      {typeof children === 'string' ? (
-        <Text
-          // A menu section label is a heading — without this it announces as plain text
-          // and rotor navigation cannot find it.
-          accessibilityRole="header"
-          className="font-semibold text-foreground"
-          style={typographyStyle(visual, 'label')}
-        >
-          {children}
-        </Text>
-      ) : (
-        children
-      )}
-    </View>
-  );
+function DropdownMenuLabel(props: DropdownMenuLabelProps) {
+  return <MenuSheetLabel {...props} />;
 }
 
-function DropdownMenuSeparator({ className, style, ...props }: DropdownMenuSeparatorProps) {
-  const visual = useVisualTokens();
-  return (
-    <View
-      className={cn('-mx-1 my-1 bg-border', className)}
-      style={[{ height: visual.borderWidthHairline }, style]}
-      {...props}
-    />
-  );
+function DropdownMenuSeparator(props: DropdownMenuSeparatorProps) {
+  return <MenuSheetSeparator {...props} />;
 }
 
 DropdownMenu.displayName = 'DropdownMenu';

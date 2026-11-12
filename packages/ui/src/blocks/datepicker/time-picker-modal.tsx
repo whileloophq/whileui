@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Platform,
-  Pressable as RNPressable,
   ScrollView,
   View,
   type NativeScrollEvent,
@@ -16,6 +15,7 @@ import { Text } from '../../components/text';
 import { Button, ButtonText } from '../../components/button';
 import { cn } from '../../lib/cn';
 import { focusRingInset } from '../../lib/focus-ring';
+import { OverlayBackdrop } from '../../lib/overlay-backdrop';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -296,17 +296,9 @@ function TimePickerModalSession({
       ) : null}
 
       <OverlayHost open={open} animationType="slide" onRequestClose={handleDismiss}>
-        {/* Containers only. Pressable defaults to `accessible: true`, which on iOS
-            collapses the wheels and their controls into one accessibility element. */}
-        <RNPressable
-          accessible={false}
-          importantForAccessibility="no"
-          className="flex-1 justify-end"
-          style={{ backgroundColor: colors.overlay }}
-          onPress={handleDismiss}
-        >
-          <RNPressable
-            accessible={false}
+        <View className="flex-1 justify-end" style={{ backgroundColor: colors.overlay }}>
+          <OverlayBackdrop onDismiss={handleDismiss} />
+          <View
             className={cn(
               'border border-border relative overflow-hidden',
               frosted ? 'bg-transparent' : 'bg-background'
@@ -321,7 +313,6 @@ function TimePickerModalSession({
                 frostedSurface.surfaceStyle,
               ] as StyleProp<ViewStyle>
             }
-            onPress={(e) => e.stopPropagation()}
           >
             {frostedSurface.overlay}
             <View
@@ -372,8 +363,8 @@ function TimePickerModalSession({
                 />
               ) : null}
             </View>
-          </RNPressable>
-        </RNPressable>
+          </View>
+        </View>
       </OverlayHost>
     </>
   );

@@ -36,18 +36,15 @@ of an error or missing decision.
 
 ```text
 Current phase: Phase 2C — One control foundation
-Current task: C-03 — Menus and containers (starting)
-Status: C-01 committed (a8b146f); C-02 committed, blocked only on the device run that is
-  batched with C-03's
+Current task: C-04 — Enforcement and gates
+Status: C-01 to C-03 committed; C-02 and C-03 blocked only on the batched device run
 Branch: main (not pushed, on the owner's instruction)
-Last verified commit: the C-02 commit — `bun run verify` passed on its tree
-Working tree at handoff: clean after the C-02 commit
-Last command run: bun run verify
-Last command result: passed — 233 unit tests, 293 kB tarball, iOS and Android exports,
-  166 Chromium/WebKit tests
-Next safe action: C-03 — one shared menu sheet for DropdownMenu, ContextMenu and Menubar
-  (all three never close when an item has its own `onPress`, because `{...props}`
-  follows the closing handler), then one backdrop and panel for every overlay container
+Last verified commit: the C-03 commit — browser suite 172 passed, 234 unit tests
+Working tree at handoff: clean after the C-03 commit
+Last command run: bun run test:web
+Last command result: passed — 172 Chromium/WebKit tests
+Next safe action: C-04 — the lint bans, the sweep opening overlays and checking arrow
+  keys, and the iOS Maestro sweep flow; then the device run for C-02 to C-04
 Blockers: none. The Android emulator is unusable while the host load average is above
   roughly 12; see AGENTS.md > Tooling gotchas before rerunning its flows
 ```
@@ -592,7 +589,7 @@ device run, batched with C-03's because both change native semantics.
 - Owed: the Android half of the C-01 spike and the Maestro flows on iOS and Android
   release builds.
 
-### [~] C-03 — Menus and containers
+### [!] C-03 — Menus and containers
 
 **Goal:** DropdownMenu, ContextMenu and Menubar on their primitives inside the overlay
 host; one backdrop and panel for every container.
@@ -618,9 +615,25 @@ in a Dialog; the iOS and Android nested Maestro flow; baseline diff reviewed.
 
 **Review cards:** 02, 05, 07, 09, 10, 11.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** Code and browser evidence complete 2026-11-12; blocked only on the
+batched device run (and the navigator-presented modal check moved here from D-03).
 
-### [ ] C-04 — Enforcement and gates
+- Decided against the plan, with reasons: the menus stay sheets on `OverlayHost`
+  rather than move to `@rn-primitives/dropdown-menu`. The primitive presents an
+  anchored popover, a different design; the sheet host is proven on both devices; the
+  behaviour gap was arrow keys and initial focus, which `lib/menu-sheet` covers in a
+  few lines, while the Modal already traps and restores focus.
+- The three menus were copies of one 215-line file sharing a defect: an item spread the
+  caller's props after its closing `onPress`, so an item with a handler never closed
+  its menu. Now one `lib/menu-sheet` with three triggers; `dropdown-menu.test.tsx` pins
+  the close. `ContextMenuTrigger` had no keyboard or mouse path at all.
+- Nineteen backdrop and panel Pressables became `View` panels beside
+  `lib/overlay-backdrop`. On web the old backdrops were Tab stops ahead of the overlay.
+  Outside the control base, only the backdrop imports React Native's `Pressable`.
+- Evidence: 234 unit tests; `e2e/menus.spec.ts` (3 checks) and the full browser suite,
+  172 tests, pass in Chromium and WebKit with no accessibility-tree change.
+
+### [~] C-04 — Enforcement and gates
 
 **Goal:** a contract violation fails a command instead of waiting for a consumer to see
 it.

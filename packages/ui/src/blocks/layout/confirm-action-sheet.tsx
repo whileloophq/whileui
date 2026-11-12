@@ -1,15 +1,10 @@
 import { useMemo } from 'react';
-import {
-  Pressable as RNPressable,
-  View,
-  type StyleProp,
-  type ViewProps,
-  type ViewStyle,
-} from 'react-native';
+import { View, type StyleProp, type ViewProps, type ViewStyle } from 'react-native';
 import { Pressable } from '../../components/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
+import { OverlayBackdrop } from '../../lib/overlay-backdrop';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -102,13 +97,8 @@ export function ConfirmActionSheet({
   return (
     <OverlayHost open={open} animationType="fade" onRequestClose={handleClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: colors.overlay }}>
-        {/* Backdrop: tap-to-dismiss only, not a control. */}
-        <RNPressable
-          accessible={false}
-          importantForAccessibility="no"
-          className="flex-1"
-          onPress={handleClose}
-        />
+        {/* In the layout, above the panel: it is what holds the panel at the bottom. */}
+        <OverlayBackdrop onDismiss={handleClose} className="relative flex-1" />
         <View
           className={cn(
             'border-border relative overflow-hidden',

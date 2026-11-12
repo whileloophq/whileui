@@ -1,7 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import {
   View,
-  Pressable as RNPressable,
   Text,
   type StyleProp,
   type ViewProps,
@@ -13,6 +12,7 @@ import { Pressable, type PressableProps } from '../pressable';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import { OverlayBackdrop } from '../../lib/overlay-backdrop';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, typographyStyle } from '../../lib/recipes';
@@ -139,19 +139,12 @@ function DialogContent({
 
   return (
     <OverlayHost open={open} animationType="fade" onRequestClose={() => setOpen(false)}>
-      <RNPressable
-        // Tap-to-dismiss is a pointer affordance. Left accessible it would swallow the
-        // whole panel into one element; screen reader users close from inside.
-        accessible={false}
-        importantForAccessibility="no"
+      <View
         className="flex-1 justify-center items-center px-4"
         style={{ backgroundColor: colors.overlayStrong }}
-        onPress={() => setOpen(false)}
       >
-        <RNPressable
-          // Container, not a control — Pressable defaults to `accessible: true`, which
-          // on iOS collapses every descendant into one accessibility element.
-          accessible={false}
+        <OverlayBackdrop onDismiss={() => setOpen(false)} />
+        <View
           className={cn(
             'w-full border-border relative overflow-hidden',
             frosted ? 'bg-transparent' : 'bg-background',
@@ -167,13 +160,12 @@ function DialogContent({
             shadowStyle(visual, colors, 'lg'),
             contentStyle,
           ]}
-          onPress={(e) => e.stopPropagation()}
           {...props}
         >
           {frostedSurface.overlay}
           {children}
-        </RNPressable>
-      </RNPressable>
+        </View>
+      </View>
     </OverlayHost>
   );
 }

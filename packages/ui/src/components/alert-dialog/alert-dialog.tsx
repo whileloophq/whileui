@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import {
   View,
-  Pressable as RNPressable,
   Text,
   Alert,
   Platform,
@@ -25,6 +24,7 @@ import { composeEventHandlers, type AsChildElement } from '../../lib/compose-eve
 import { Pressable, type PressableProps } from '../pressable';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
+import { OverlayBackdrop } from '../../lib/overlay-backdrop';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, typographyStyle } from '../../lib/recipes';
@@ -330,23 +330,12 @@ function AlertDialogContent({
   }, [open, useNativeAlert, setOpen, nativeCopyRef]);
 
   const themedBody = (
-    <RNPressable
-      // Tap-to-dismiss is a pointer affordance. Left accessible, this Pressable would be
-      // a single accessibility element wrapping the entire dialog, so VoiceOver would
-      // reach one "dismiss" target and none of the buttons inside it. Screen reader users
-      // dismiss with Cancel.
-      accessible={false}
-      importantForAccessibility="no"
+    <View
       className="flex-1 justify-center items-center px-4"
       style={{ backgroundColor: colors.overlayStrong }}
-      onPress={() => setOpen(false)}
     >
-      <RNPressable
-        // This Pressable is a container: its only `onPress` stops the backdrop from
-        // dismissing. `accessible={false}` is what keeps it that way — Pressable defaults
-        // to `accessible: true`, which on iOS collapses every descendant into one element
-        // and makes the confirm and cancel buttons unreachable.
-        accessible={false}
+      <OverlayBackdrop onDismiss={() => setOpen(false)} />
+      <View
         // A destructive confirmation is the worst place for a screen reader to wander
         // out of. `accessibilityViewIsModal` keeps VoiceOver inside the panel; Android
         // gets the same containment from the host Modal.
@@ -371,13 +360,12 @@ function AlertDialogContent({
           shadowStyle(visual, colors, 'lg'),
           contentStyle,
         ]}
-        onPress={(event) => event.stopPropagation()}
         {...props}
       >
         {frostedSurface.overlay}
         {children}
-      </RNPressable>
-    </RNPressable>
+      </View>
+    </View>
   );
 
   if (useNativeAlert) {

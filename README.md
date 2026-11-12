@@ -1765,15 +1765,24 @@ import {
   <DropdownMenuContent>
     <DropdownMenuLabel>Actions</DropdownMenuLabel>
     <DropdownMenuSeparator />
-    <DropdownMenuItem>
+    <DropdownMenuItem onPress={onEdit}>
       <Text>Edit</Text>
     </DropdownMenuItem>
-    <DropdownMenuItem>
+    <DropdownMenuItem onPress={onDelete}>
       <Text>Delete</Text>
     </DropdownMenuItem>
   </DropdownMenuContent>
 </DropdownMenu>;
 ```
+
+`DropdownMenu`, `ContextMenu` and `Menubar` are one menu that rises from the bottom edge,
+opened three ways: a press, a long press, or a menubar button. Choosing an item runs its
+`onPress` and closes the menu; call `event.preventDefault()` in the handler to keep it
+open. The trigger says whether the menu is open (`aria-expanded`). On web, opening from
+the keyboard puts focus on the first item, the arrow keys, Home and End move between
+items, and Escape closes the menu and returns focus to the trigger. A long press has no
+keyboard or mouse equivalent, so on web `ContextMenuTrigger` also opens on right-click,
+the context-menu key, Shift+F10, Enter and Space.
 
 `DropdownMenuContent`, `ContextMenuContent`, and `MenubarContent` support the same frosted props as `PopoverContent` (default blur preset: medium).
 

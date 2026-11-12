@@ -515,6 +515,17 @@ checks failed; only `Toggle` passed.
 | `Accordion`, `Collapsible`       | no `aria-expanded`                                                      | `aria-expanded` on every trigger                  |
 | `CollapsibleTrigger asChild`     | wrapped the child in a second pressable                                 | clones the child                                  |
 
+**Menus — `e2e/menus.spec.ts`.** `DropdownMenu`, `ContextMenu` and `Menubar` were three
+copies of one 215-line file, and every item spread the caller's props after its own
+`onPress`, so an item with a handler never closed its menu. They are now one menu sheet
+with three triggers. Opening from the keyboard focuses the first item, arrows, Home and
+End move, Escape returns focus to the trigger, and the long-press-only `ContextMenu`
+trigger opens from the keyboard and on right-click on web.
+
+**Overlay backdrops.** Nineteen backdrop and panel Pressables became `View` panels beside
+one `OverlayBackdrop`, which on web also stopped being a Tab stop ahead of the overlay's
+contents.
+
 The four composites take behaviour from `@rn-primitives/radio-group`, `toggle-group` and
 `tabs` (Radix on web), pinned to 1.5.2 as dependencies. The single controls stay on the
 control base; why is recorded in `AGENTS.md`.
