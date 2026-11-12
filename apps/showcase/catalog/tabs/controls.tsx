@@ -217,6 +217,13 @@ export function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }
               <DataRowValue>Owner</DataRowValue>
             </DataRowRight>
           </DataRow>
+          {/* `disabled` keeps it a button but stops it firing — for a row whose action is busy. */}
+          <DataRow className="border-b border-border px-1 pb-3" onPress={() => {}} disabled>
+            <DataRowCenter>
+              <DataRowLabel>Export history</DataRowLabel>
+              <DataRowDescription>Preparing the file…</DataRowDescription>
+            </DataRowCenter>
+          </DataRow>
           <View className="w-64">
             <DataRow size="compact" className="px-1">
               <DataRowLeft>

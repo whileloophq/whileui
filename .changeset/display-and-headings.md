@@ -13,3 +13,5 @@
 - The date pickers draw their own month header: "Previous month" and "Next month" are real
   buttons, and the month is announced when it changes. The calendar library's arrows were
   role-less views on web, which Tab reached and Enter could not press.
+- `SearchField` hides an `icon` you pass from screen readers, as it does its drawn
+  magnifier; the caller's glyph joined the field's name.

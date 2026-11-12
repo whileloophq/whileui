@@ -1485,7 +1485,7 @@ differently. `icon` replaces the drawn magnifier.
 | placeholder             | `string`                 | `'Search'`       | Shown in the empty field and used as its accessible name.                                                                  |
 | value (required)        | `string`                 | —                | The text in the field.                                                                                                     |
 | onChangeText (required) | `(text: string) => void` | —                | Callback that is called when the text input's text changes. Changed text is passed as an argument to the callback handler. |
-| icon                    | `React.ReactNode`        | —                | Replaces the drawn magnifier, for an app with its own icon set.                                                            |
+| icon                    | `React.ReactNode`        | —                | Replaces the drawn magnifier, for an app with its own icon set. Hidden from screen readers.                                |
 | clearLabel              | `string`                 | `'Clear search'` |                                                                                                                            |
 | className               | `string`                 | —                |                                                                                                                            |
 | aria-invalid            | `boolean`                | —                |                                                                                                                            |

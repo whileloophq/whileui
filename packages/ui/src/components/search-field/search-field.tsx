@@ -12,7 +12,7 @@ export interface SearchFieldProps extends Omit<InputProps, 'prefix' | 'suffix'> 
   /** The text in the field. */
   value: string;
   onChangeText: (text: string) => void;
-  /** Replaces the drawn magnifier, for an app with its own icon set. */
+  /** Replaces the drawn magnifier, for an app with its own icon set. Hidden from screen readers. */
   icon?: React.ReactNode;
   /** @default 'Clear search' */
   clearLabel?: string;
@@ -63,7 +63,8 @@ export const SearchField: ForwardRefComponent<TextInputInstance, SearchFieldProp
         autoCapitalize="none"
         autoCorrect={false}
         clearButtonMode="never"
-        prefix={icon ?? <Magnifier />}
+        // A caller's icon is decoration too; unhidden, its glyph joined the field's name.
+        prefix={icon ? <View aria-hidden>{icon}</View> : <Magnifier />}
         suffix={
           value ? (
             <Pressable

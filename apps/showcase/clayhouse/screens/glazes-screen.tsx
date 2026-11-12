@@ -6,7 +6,9 @@ import {
   BadgeText,
   Button,
   ButtonText,
-  Input,
+  cn,
+  focusRing,
+  SearchField,
   Sheet,
   SheetContent,
   SheetFooter,
@@ -16,8 +18,6 @@ import {
   ToggleGroupItem,
   ToggleGroupItemText,
   UsageBar,
-  cn,
-  focusRing,
   useIconColors,
   useToast,
 } from '@thewhileloop/whileui';
@@ -175,12 +175,11 @@ export const GlazesScreen = memo(function GlazesScreen() {
 
       <Reveal order={0}>
         <View className="mt-6 gap-3" style={{ paddingHorizontal: GUTTER }}>
-          <Input
+          <SearchField
             value={query}
             onChangeText={setQuery}
             placeholder="Search glazes"
-            accessibilityLabel="Search glazes"
-            prefix={<Feather name="search" size={16} color={colors.muted} />}
+            icon={<Feather name="search" size={16} color={colors.muted} />}
           />
           <ToggleGroup
             type="single"

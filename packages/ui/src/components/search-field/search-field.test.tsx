@@ -28,3 +28,12 @@ describe('the clear cross', () => {
     expect(screen.getByTestId('cross-glyph', { includeHiddenElements: true })).toBeOnTheScreen();
   });
 });
+
+describe('a custom icon', () => {
+  it('is decoration, hidden from screen readers like the drawn one', async () => {
+    const { Text } = jest.requireActual('react-native');
+    await render(<SearchField value="" onChangeText={jest.fn()} icon={<Text>ICON</Text>} />);
+    expect(screen.queryByText('ICON')).toBeNull();
+    expect(screen.getByText('ICON', { includeHiddenElements: true })).toBeTruthy();
+  });
+});
