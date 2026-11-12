@@ -44,7 +44,9 @@ const toggleVariants = tv({
 
 const TOGGLE_TEXT_ROLE: Record<string, TypographyRole> = {
   default: 'label',
-  sm: 'caption',
+  // Label size: a small control is shorter, not harder to read. Caption text (11px in
+  // most presets) made the action look like a footnote.
+  sm: 'label',
   lg: 'body',
 };
 

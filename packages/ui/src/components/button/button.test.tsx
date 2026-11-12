@@ -123,3 +123,21 @@ describe('Button', () => {
     expect(screen.getByText('Delete')).toBeOnTheScreen();
   });
 });
+
+describe('small button text', () => {
+  it('is label size, not caption: an action you must read is not a footnote', async () => {
+    const { StyleSheet } = jest.requireActual('react-native');
+    await render(
+      <>
+        <Button size="sm">
+          <ButtonText>Small</ButtonText>
+        </Button>
+        <Button>
+          <ButtonText>Default</ButtonText>
+        </Button>
+      </>
+    );
+    const size = (text: string) => StyleSheet.flatten(screen.getByText(text).props.style).fontSize;
+    expect(size('Small')).toBe(size('Default'));
+  });
+});
