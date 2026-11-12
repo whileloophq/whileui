@@ -1,5 +1,110 @@
 # @thewhileloop/whileui
 
+## 4.6.0
+
+### Minor Changes
+
+- 8fe0db0: `FormModalScreen` draws the Cancel · title · Save bar itself. `onClose` is now a "Cancel"
+  text button (it was a "×" glyph; set `closeLabel` to change the word), and the new
+  `onSave`, `saveLabel` and `saveDisabled` draw a primary Save button that disables and
+  shows a spinner while `saving`. The header slots were a fixed 48px, so a Save button in
+  `rightSlot` spilled into the title and a long title crowded it; each side now takes the
+  width its content needs and the title truncates. `leftSlot` and `rightSlot` still
+  replace the buttons.
+- 51410d8: `Checkbox` and `Switch` take `label` and `description`. The whole row becomes one
+  pressable control named by the label, so pressing the text toggles it. A row composed by
+  hand — a `Pressable` with a checkbox role around a `Checkbox` and a `Text` — nests a
+  checkbox inside a checkbox, which Android and web expose as two; replace it with `label`.
+
+  Both also show a focus ring on web now. The ring was on the inner box or track, which
+  never takes focus, so keyboard users saw nothing. `className` still styles the box or
+  track.
+
+- 8fe0db0: New `PageHeader`: the heading at the top of a screen's content — a kicker over the
+  title, an optional leading mark and back button, trailing actions, and content such as
+  tabs underneath. The title is announced as a header. It is the piece every screen of an
+  app otherwise writes for itself.
+
+  `HeaderBackButton` now has a button role, is named "Back" unless given a `label`, hides
+  its chevron glyph from screen readers, shows a focus ring on web and meets the touch
+  target size. Without the role, React Native Web gave it a Tab stop that Enter and Space
+  could not press.
+
+- 51410d8: `themePresetToCss` now also writes Tailwind's `--radius-sm`, `--radius-md`, `--radius-lg`
+  and `--radius-xl`, and `--spacing-control-sm`, `--spacing-control` and
+  `--spacing-control-lg`, from the preset's visual tokens. Classes in your own markup then
+  follow the preset: `rounded-md` is the preset's medium radius rather than Tailwind's fixed
+  6px, and `h-control` is its default control height.
+
+  Regenerate your theme file to pick it up. Corners drawn with `rounded-sm` to `rounded-xl`
+  change size where your preset differs from Tailwind's defaults; that is the point, but
+  check screens that relied on the old values. To keep your own scale, define those
+  variables after importing the generated file.
+
+- 8fe0db0: `DataRow` takes `onPress` (and `onLongPress`). With it the whole row is one button: the
+  role, the shared pressed background and a focus ring are built in, and a screen reader
+  reads the row's content as its name. Without it the row stays plain content. Replace a
+  `Pressable` you wrapped around a `DataRow` with `onPress` on the row itself.
+- 8fe0db0: New `SearchField` and `useDebouncedSearch`. `SearchField` is a text field with a drawn
+  magnifier, a clear button once there is text, and a search return key; `icon` replaces
+  the magnifier. `useDebouncedSearch(value, { delay, minLength })` returns the query to
+  run: trimmed, `''` below two characters, and 300ms behind the keys.
+- 8fe0db0: New `SectionedList` and `Pagination`. `SectionedList` groups rows under a header wherever
+  `sectionOf(item)` changes, and draws none when every row is in one section; it renders
+  every item, so it is for bounded lists such as one page of results. `Pagination` is
+  "83 total · Previous · Page 2 of 4 · Next": it draws nothing for a single page, disables
+  the ends, and announces the new page after a press.
+- 8fe0db0: New `SelectField`: a labelled single choice from an `options` array of
+  `{ value, label, icon? }`, with optional `hint`, `error`, `disabled` and `required`. An
+  option may have the value `''` (for "None" or "All"), which the `Select` primitive
+  cannot hold on its own. The trigger is named by the label and the current choice, so a
+  screen reader hears both. Replace a hand-written label-plus-`Select` wrapper with it.
+
+### Patch Changes
+
+- e61f666: A `FAB` inside a `FABGroup` no longer floats a second time. Each one kept its own
+  `floating` placement inside the already-floating group, so the main FAB landed up and
+  to the left of the small ones and covered them; the group now lays out its FABs in a
+  column whatever their `placement`, and `placement="inline"` inside a group is no longer
+  needed.
+
+  `FAB` and `FABGroup` take `safeArea`, which adds the safe-area insets to the floating
+  position. Use it over a full-screen view, where a 24pt inset left the button in the home
+  indicator and the screen's curved corner; leave it off above a tab bar.
+  `fabClearance(size, bottomInset)` takes the inset to match. The floating position is now
+  a style rather than `absolute bottom-6 right-6` classes, so a `className` that set
+  `bottom-*` or `right-*` should move to `style`.
+
+  The dismiss cross on `Toast` is drawn rather than set as a "×" character, which sat low
+  and to one side of its round pressed background in most fonts.
+
+- 3b213b9: Fixes from an accessibility sweep of every catalog screen:
+
+  - `Switch` and `Checkbox` put `accessibilityLabel`, `testID` and the other props you pass
+    on the control itself. They landed on the inner box, so on web a switch or checkbox
+    named with `accessibilityLabel` had no name. `className` and `style` still style the box.
+  - `ListItem`, `NotificationItem` and `ProductCard` are buttons only when they have
+    `onPress`. Without one they were still Tab stops on web, with no role. `ProductCard`
+    had no role even with `onPress`.
+  - `ListItem` draws its chevron only when pressable, and hides it from screen readers;
+    VoiceOver read it as part of the row.
+  - `PricingCard` features say "Included" or "Not included"; a screen reader read the mark's
+    symbol name, and the strikethrough is visual only.
+  - `RadioGroupItem`, an unlabelled `Checkbox` and a `Button` with `variant="link"` are at
+    least 24px targets on web, where `hitSlop` does nothing. Their look is unchanged.
+  - The date pickers no longer show the next month's days, which were disabled yet still
+    Tab stops with no role.
+  - `BottomNav` names each tab "label, badge" ("Inbox, 12"). iOS built the name from the
+    children, badge first, and the active tab also exposed its icon glyph as an element.
+
+- 51410d8: `ToggleGroup` and `Toggle` now tell a screen reader on web which items are on. They set
+  only `accessibilityState`, which React Native Web no longer turns into ARIA, so a browser
+  announced a row of plain buttons with no state. A `type="single"` group is now a radio
+  group with each item checked or not, and `type="multiple"` items and `Toggle` are toggle
+  buttons with `aria-pressed`. On iOS and Android, single-mode items are now announced as
+  radio buttons rather than selected buttons. Add
+  `flex-wrap` to a group's `className` for chips that wrap; the README shows it.
+
 ## 4.5.0
 
 ### Minor Changes
