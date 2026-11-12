@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
+import { ChevronGlyph } from '../../lib/chevron-glyph';
 import { focusRing } from '../../lib/focus-ring';
 import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -133,18 +134,18 @@ export function HeaderBackButton({
       accessibilityRole="button"
       accessibilityLabel={label ?? 'Back'}
       hitSlop={8}
-      className={cn('flex-row items-center gap-1 rounded-full py-1', focusRing, className)}
+      className={cn(
+        'flex-row items-center justify-center gap-1 rounded-full py-1',
+        focusRing,
+        className
+      )}
       style={(state) => [
         { minHeight: visual.touchTargetMinSize, minWidth: visual.touchTargetMinSize },
         typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle,
       ]}
       {...props}
     >
-      {icon || (
-        <Text aria-hidden className="text-primary" style={typographyStyle(visual, 'title')}>
-          ‹
-        </Text>
-      )}
+      {icon || <ChevronGlyph direction="left" size={14} className="border-primary" />}
       {label && (
         <Text className="text-primary" style={typographyStyle(visual, 'body')}>
           {label}

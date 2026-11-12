@@ -1,8 +1,8 @@
 import { View } from 'react-native';
 import { LocaleConfig } from 'react-native-calendars';
-import { Button, ButtonText } from '../../components/button';
+import { Button } from '../../components/button';
 import { Text } from '../../components/text';
-import { useTypography } from '../../lib/recipes';
+import { ChevronGlyph } from '../../lib/chevron-glyph';
 
 /** What react-native-calendars hands a `customHeader`. */
 interface CalendarHeaderProps {
@@ -30,8 +30,6 @@ function dayNames(firstDay = 0): string[] {
  * come from `LocaleConfig`, as the library's own header takes them.
  */
 export function CalendarHeader({ month, addMonth, firstDay }: CalendarHeaderProps) {
-  // Arrows at the title's size: button text is label-sized, which left them tiny.
-  const arrow = useTypography('title');
   return (
     <View className="pb-2">
       <View className="flex-row items-center justify-between">
@@ -41,9 +39,7 @@ export function CalendarHeader({ month, addMonth, firstDay }: CalendarHeaderProp
           accessibilityLabel="Previous month"
           onPress={() => addMonth(-1)}
         >
-          <ButtonText aria-hidden style={arrow}>
-            ‹
-          </ButtonText>
+          <ChevronGlyph direction="left" size={14} />
         </Button>
         <Text variant="title" aria-live="polite">
           {month.toString('MMMM yyyy')}
@@ -54,9 +50,7 @@ export function CalendarHeader({ month, addMonth, firstDay }: CalendarHeaderProp
           accessibilityLabel="Next month"
           onPress={() => addMonth(1)}
         >
-          <ButtonText aria-hidden style={arrow}>
-            ›
-          </ButtonText>
+          <ChevronGlyph direction="right" size={14} />
         </Button>
       </View>
       {/* Column labels for the grid below; each day cell already says its full date. */}

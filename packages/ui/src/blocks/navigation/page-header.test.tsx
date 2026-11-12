@@ -37,3 +37,11 @@ describe('PageHeader', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('the back chevron', () => {
+  it('is drawn and hidden, not a "‹" character that each font sets small and off-centre', async () => {
+    await render(<PageHeader title="Lisbon trip" onBack={jest.fn()} />);
+    expect(screen.queryByText('‹', { includeHiddenElements: true })).toBeNull();
+    expect(screen.getByTestId('chevron-glyph', { includeHiddenElements: true })).toBeTruthy();
+  });
+});
