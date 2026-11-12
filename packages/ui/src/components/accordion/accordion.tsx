@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
+import { View, type ViewProps } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,7 +7,8 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { cn } from '../../lib/cn';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { useInteractionTokens } from '../../lib/interaction-tokens';
+import { Pressable, type PressableProps } from '../pressable';
 
 type AccordionType = 'single' | 'multiple';
 
@@ -119,21 +120,22 @@ function AccordionTrigger({
 }: AccordionTriggerProps) {
   const { onValueChange } = useContext(AccordionContext);
   const { value, isOpen } = useContext(AccordionItemContext);
-  const interaction = useInteractionTokens();
-  const interactiveStyle = withInteractivePressableStyle(styleProp, interaction, {
-    pressedVariant: 'default',
-  });
 
+  // Says whether its panel is open; without `aria-expanded` nothing told a screen reader.
+  // The pattern also wraps each header in a heading, but its level belongs to the page,
+  // which a library cannot know, and a wrong level misleads more than none.
   return (
     <Pressable
-      accessibilityRole="button"
       className={cn('flex flex-row items-center justify-between py-4', className)}
       onPress={() => onValueChange(value)}
-      style={interactiveStyle}
+      aria-expanded={isOpen}
+      feedback="default"
+      style={styleProp}
       {...props}
     >
       {children}
       <View
+        aria-hidden
         className={cn(
           'border-foreground h-2 w-2 rotate-45 border-b-2 border-r-2 transition-transform',
           isOpen && 'rotate-[225deg]'

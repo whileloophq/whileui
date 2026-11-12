@@ -1,10 +1,3 @@
-import {
-  type PressableProps,
-  type PressableStateCallbackType,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
-
 /**
  * Press, disabled, and motion timing for the whole package.
  *
@@ -59,56 +52,6 @@ export interface InteractionTokens {
 export type PressedVariant = 'default' | 'strong' | 'none';
 export type DisabledVariant = 'default' | 'soft' | 'subtle' | 'none';
 
-export interface InteractivePressableOptions {
-  disabled?: boolean;
-  pressedVariant?: PressedVariant;
-  disabledVariant?: DisabledVariant;
-}
-
 export function useInteractionTokens(): InteractionTokens {
   return INTERACTION_TOKENS;
-}
-
-type PressableStyle = PressableProps['style'];
-
-function resolveDisabledOpacity(
-  tokens: InteractionTokens,
-  variant: DisabledVariant
-): number | undefined {
-  if (variant === 'none') return undefined;
-  if (variant === 'soft') return tokens.disabledOpacitySoft;
-  if (variant === 'subtle') return tokens.disabledOpacitySubtle;
-  return tokens.disabledOpacity;
-}
-
-function resolvePressedOpacity(
-  tokens: InteractionTokens,
-  variant: PressedVariant
-): number | undefined {
-  if (variant === 'none') return undefined;
-  if (variant === 'strong') return tokens.pressOpacityStrong;
-  return tokens.pressOpacity;
-}
-
-export function withInteractivePressableStyle(
-  styleProp: PressableStyle | undefined,
-  tokens: InteractionTokens,
-  options: InteractivePressableOptions = {}
-): PressableStyle {
-  const { disabled = false, pressedVariant = 'default', disabledVariant = 'default' } = options;
-  return (state: PressableStateCallbackType) => {
-    const baseStyle =
-      typeof styleProp === 'function'
-        ? styleProp(state)
-        : (styleProp as StyleProp<ViewStyle> | undefined);
-
-    const disabledOpacity = resolveDisabledOpacity(tokens, disabledVariant);
-    const pressedOpacity = resolvePressedOpacity(tokens, pressedVariant);
-    const feedbackOpacity = disabled ? disabledOpacity : state.pressed ? pressedOpacity : undefined;
-
-    return [
-      baseStyle,
-      feedbackOpacity !== undefined ? ({ opacity: feedbackOpacity } as ViewStyle) : null,
-    ];
-  };
 }

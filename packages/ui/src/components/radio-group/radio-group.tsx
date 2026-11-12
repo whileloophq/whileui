@@ -1,36 +1,50 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
+import { StyleSheet, View, type ViewProps } from 'react-native';
+import * as RadioGroupPrimitive from '@rn-primitives/radio-group';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
 import { useVisualTokens } from '../../lib/visual-tokens';
+import { ControlLabel } from '../checkbox/control-label';
+import { Pressable, type PressableProps } from '../pressable';
 
-interface RadioGroupContextValue {
-  value: string;
-  onValueChange: (value: string) => void;
-}
-
-const RadioGroupContext = createContext<RadioGroupContextValue>({
-  value: '',
-  onValueChange: () => {},
-});
+const RadioGroupValueContext = createContext<string | undefined>(undefined);
 
 export interface RadioGroupProps extends ViewProps {
+  /** Initial selection when uncontrolled. */
   defaultValue?: string;
+  /** Controlled selection. Leave unset to let the group hold its own. */
   value?: string;
+  /** Called with the newly selected item's value. */
   onValueChange?: (value: string) => void;
+  /** Disable every item. */
+  disabled?: boolean;
   className?: string;
 }
 
-export interface RadioGroupItemProps extends PressableProps {
+export interface RadioGroupItemProps extends Omit<PressableProps, 'children'> {
+  /** The value this item selects. */
   value: string;
+  /**
+   * Text beside the circle. The row becomes one radio named by it, so do not put a
+   * separate `Label` next to a labelled item.
+   */
+  label?: string;
+  /** Secondary text under `label`. Ignored without a `label`. */
+  description?: string;
   className?: string;
 }
 
+/**
+ * A set of radios that is one Tab stop on web: the arrow keys move the selection, as
+ * the WAI-ARIA radio group pattern asks. Behaviour comes from `@rn-primitives/radio-group`
+ * (Radix on web); WhileUI draws it.
+ */
 function RadioGroup({
   defaultValue = '',
   value: controlledValue,
   onValueChange,
+  disabled,
   className,
+  style,
   children,
   ...props
 }: RadioGroupProps) {
@@ -38,69 +52,83 @@ function RadioGroup({
   const value = controlledValue ?? internalValue;
 
   const handleValueChange = useCallback(
-    (newValue: string) => {
-      setInternalValue(newValue);
-      onValueChange?.(newValue);
+    (next: string) => {
+      setInternalValue(next);
+      onValueChange?.(next);
     },
     [onValueChange]
   );
-  const contextValue = useMemo(
-    () => ({ value, onValueChange: handleValueChange }),
-    [handleValueChange, value]
-  );
 
   return (
-    <RadioGroupContext.Provider value={contextValue}>
-      <View className={cn('gap-2', className)} {...props}>
+    <RadioGroupValueContext.Provider value={value}>
+      <RadioGroupPrimitive.Root
+        value={value}
+        onValueChange={handleValueChange}
+        disabled={disabled}
+        className={cn('gap-2', className)}
+        // Flattened: on web the primitive's Radix root spreads this into an object, and a style
+        // array became numeric keys the browser rejects.
+        style={StyleSheet.flatten(style)}
+        {...props}
+      >
         {children}
-      </View>
-    </RadioGroupContext.Provider>
+      </RadioGroupPrimitive.Root>
+    </RadioGroupValueContext.Provider>
   );
 }
 
-/** The smallest target WCAG 2.5.8 accepts, and the one web gets, since it ignores hitSlop. */
-const MIN_TARGET = 24;
-
-function RadioGroupItem({ value: itemValue, className, ...props }: RadioGroupItemProps) {
-  const { value, onValueChange } = useContext(RadioGroupContext);
+function RadioGroupItem({
+  value: itemValue,
+  label,
+  description,
+  disabled,
+  className,
+  ...props
+}: RadioGroupItemProps) {
+  const selected = useContext(RadioGroupValueContext) === itemValue;
   const visual = useVisualTokens();
-  const isSelected = value === itemValue;
   const size = Math.max(18, Math.round(visual.controlHeightSm * 0.55));
   const dotSize = Math.max(8, Math.round(size * 0.5));
+  const circleStyle = useMemo(
+    () => ({
+      width: size,
+      height: size,
+      borderWidth: visual.borderWidthEmphasis,
+      borderRadius: size / 2,
+    }),
+    [size, visual.borderWidthEmphasis]
+  );
 
   return (
-    // The pressable is a 24px target (WCAG 2.5.8) with the circle drawn inside it:
-    // `hitSlop` enlarges the target on native only, so web was left with the 20px circle.
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityState={{ checked: isSelected }}
-      aria-checked={isSelected}
-      className={cn('items-center justify-center', focusRing, className)}
-      style={{ minWidth: MIN_TARGET, minHeight: MIN_TARGET, borderRadius: MIN_TARGET / 2 }}
-      onPress={() => onValueChange(itemValue)}
-      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      {...props}
-    >
-      <View
+    <RadioGroupPrimitive.Item value={itemValue} disabled={disabled} asChild>
+      <Pressable
+        disabled={disabled}
+        feedback="default"
         className={cn(
-          'items-center justify-center',
-          isSelected ? 'border-primary' : 'border-border'
+          label ? 'flex-row items-start gap-3' : 'items-center justify-center',
+          className
         )}
-        style={{
-          width: size,
-          height: size,
-          borderWidth: visual.borderWidthEmphasis,
-          borderRadius: size / 2,
-        }}
+        style={{ borderRadius: label ? visual.radiusSm : size / 2 }}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        {...props}
       >
-        {isSelected && (
-          <View
-            className="bg-primary"
-            style={{ width: dotSize, height: dotSize, borderRadius: dotSize / 2 }}
-          />
-        )}
-      </View>
-    </Pressable>
+        <View
+          className={cn(
+            'items-center justify-center',
+            selected ? 'border-primary' : 'border-border'
+          )}
+          style={circleStyle}
+        >
+          {selected && (
+            <View
+              className="bg-primary"
+              style={{ width: dotSize, height: dotSize, borderRadius: dotSize / 2 }}
+            />
+          )}
+        </View>
+        {label ? <ControlLabel label={label} description={description} /> : null}
+      </Pressable>
+    </RadioGroupPrimitive.Item>
   );
 }
 

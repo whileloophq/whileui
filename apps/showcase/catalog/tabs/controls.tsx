@@ -15,7 +15,6 @@ import {
   DataRowLeft,
   DataRowRight,
   DataRowValue,
-  Label,
   OTPInput,
   RadioGroup,
   RadioGroupItem,
@@ -118,14 +117,8 @@ export function ControlsTab({ onOpenFabScreen }: { onOpenFabScreen: () => void }
           </SegmentedControl>
         </View>
         <RadioGroup value={radioVal} onValueChange={setRadioVal}>
-          <View className="flex-row items-center gap-2">
-            <RadioGroupItem value="option-1" accessibilityLabel="Free plan" />
-            <Label onPress={() => setRadioVal('option-1')}>Free plan</Label>
-          </View>
-          <View className="flex-row items-center gap-2">
-            <RadioGroupItem value="option-2" accessibilityLabel="Pro plan" />
-            <Label onPress={() => setRadioVal('option-2')}>Pro plan</Label>
-          </View>
+          <RadioGroupItem value="option-1" label="Free plan" />
+          <RadioGroupItem value="option-2" label="Pro plan" description="Billed monthly" />
         </RadioGroup>
         <Select value={selectVal} onValueChange={(opt) => setSelectVal(opt)}>
           <SelectTrigger className="w-full">

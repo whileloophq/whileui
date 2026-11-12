@@ -36,20 +36,18 @@ of an error or missing decision.
 
 ```text
 Current phase: Phase 2C — One control foundation
-Current task: C-02 — Stateful controls on `@rn-primitives` (not started)
-Status: C-01 complete in the working tree, not committed
-Branch: main
-Last verified commit: dca0656 (`Draw the back and month chevrons`, after 4.7.1;
-  verified, not released)
-Working tree at handoff: the Phase 2C plan (IMPLEMENTATION.md, PLAN.md); C-01 — the
-  control base, 23 call sites moved onto it, AGENTS/README updates, a catalog demo, one
-  reviewed accessibility baseline, `.changeset/control-base.md`
+Current task: C-03 — Menus and containers (starting)
+Status: C-01 committed (a8b146f); C-02 committed, blocked only on the device run that is
+  batched with C-03's
+Branch: main (not pushed, on the owner's instruction)
+Last verified commit: the C-02 commit — `bun run verify` passed on its tree
+Working tree at handoff: clean after the C-02 commit
 Last command run: bun run verify
-Last command result: passed — 227 unit tests, 289 kB tarball, iOS and Android exports,
-  150 Chromium/WebKit tests
-Next safe action: commit C-01 once the owner has reviewed it; then C-02 with Checkbox —
-  pin `@rn-primitives/checkbox` exactly, boot the Android emulator for the spike's
-  missing half, and write the Space-key Playwright spec before moving the component
+Last command result: passed — 233 unit tests, 293 kB tarball, iOS and Android exports,
+  166 Chromium/WebKit tests
+Next safe action: C-03 — one shared menu sheet for DropdownMenu, ContextMenu and Menubar
+  (all three never close when an item has its own `onPress`, because `{...props}`
+  follows the closing handler), then one backdrop and panel for every overlay container
 Blockers: none. The Android emulator is unusable while the host load average is above
   roughly 12; see AGENTS.md > Tooling gotchas before rerunning its flows
 ```
@@ -525,7 +523,7 @@ sweep passes with no new allowance; the accessibility-tree baseline diff is revi
   run moves to C-02, the first task that styles from data attributes and changes native
   behaviour; the Android half of the spike goes with it.
 
-### [ ] C-02 — Stateful controls on `@rn-primitives`
+### [!] C-02 — Stateful controls on `@rn-primitives`
 
 **Goal:** Checkbox, Switch, RadioGroup, SegmentedControl, Toggle, ToggleGroup, Tabs,
 Accordion and Collapsible take behaviour from their primitive and appearance from the
@@ -546,8 +544,9 @@ toggle-group primitive.
   has no state at all. `aria-current="page"` is the web answer, and React Native has
   no such prop, so the choice is between real tab lists with arrow keys and buttons
   carrying a selected state.
-- Deprecate `withInteractivePressableStyle` once its last internal user moves; it is a
-  public export, so it is removed in C-05's major.
+- `withInteractivePressableStyle` removed once its last internal user moved (2026-11-12,
+  the owner's call: no consumer used it, and nothing is kept deprecated while the base
+  is pre-stable).
 
 **Acceptance evidence per family:** RNTL contract; once per task, before the first
 family that styles from `data-*`, the Android half of the C-01 spike and the existing
@@ -560,9 +559,40 @@ flow; `docs/stability.md` updated.
 
 **Review cards:** 02, 05, 07, 09, 11.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** Code and browser evidence complete 2026-11-12; blocked only on the
+device run, batched with C-03's because both change native semantics.
 
-### [ ] C-03 — Menus and containers
+- Spec first: `e2e/keyboard-patterns.spec.ts` checks eight WAI-ARIA patterns. Against
+  4.7.1 seven failed; only Toggle passed. All eight pass in Chromium and WebKit now.
+- Decided against the plan, with evidence: only the composites — RadioGroup,
+  SegmentedControl, ToggleGroup, Tabs — take a primitive (`radio-group`, `toggle-group`,
+  `tabs`, exact `1.5.2` dependencies, so consumers install nothing). Checkbox and
+  Switch failed only Space, which React Native Web presses for `button` alone
+  (`PressResponder.js` `isValidKeyPress`), so the base now answers Space for the
+  checkable roles. The accordion, collapsible and checkbox primitives' web builds write
+  DOM attributes in layout effects and click a hidden duplicate trigger; Accordion and
+  Collapsible got `aria-expanded` on the base instead. The four floating peers keep a
+  range — a library pinning a peer exactly forces it on every consumer; the apps pin.
+- Defects fixed: radios beside text sat outside any `radiogroup` (`RadioGroupItem` takes
+  `label` / `description`); `CollapsibleTrigger asChild` wrapped its child in a second
+  pressable. An accordion heading wrapper was tried and dropped: its level belongs to
+  the page, and the default announced every header as a level-1 heading.
+- Traps found and recorded in AGENTS: a Radix root spreads `style` into an object, so a
+  style array broke the web bundle at boot; React Native Web replaces Radix's `onClick`
+  with its own, so activation arrives once as `onPress`; Radix selects on arrow focus
+  only while the key is held, which Playwright's `press` does not do.
+- Navigation selection decided: BottomNav, FloatingBottomNav and TabBar keep the `tab`
+  role, which native tab bars announce with position; arrow keys between them wait for
+  a consumer with keyboard-heavy web navigation. DrawerMenu's active item stays visual
+  only — React Native has no `aria-current`, and `aria-selected` is invalid on a button.
+- `withInteractivePressableStyle` deleted, not deprecated (the owner's call).
+- Evidence: 233 unit tests including new RadioGroup, Tabs, Accordion and Collapsible
+  suites; `bun run verify` passed — 166 Chromium/WebKit tests, a 293 kB tarball, iOS and
+  Android exports; the Controls and Overlays accessibility-tree diffs reviewed.
+- Owed: the Android half of the C-01 spike and the Maestro flows on iOS and Android
+  release builds.
+
+### [~] C-03 — Menus and containers
 
 **Goal:** DropdownMenu, ContextMenu and Menubar on their primitives inside the overlay
 host; one backdrop and panel for every container.

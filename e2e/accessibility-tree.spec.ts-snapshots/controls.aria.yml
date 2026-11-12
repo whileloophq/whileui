@@ -33,10 +33,9 @@
   - radio "Recurring"
   - radio "Statements"
   - radio "Settings"
-- radio "Free plan" [checked]
-- text: Free plan
-- radio "Pro plan"
-- text: Pro plan
+- radiogroup:
+  - radio "Free plan" [checked]
+  - radio "Pro plan Billed monthly"
 - button "Select a framework"
 - button "Select a region (long list)"
 - button "Bold"

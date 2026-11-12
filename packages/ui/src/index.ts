@@ -40,9 +40,7 @@ export {
 export {
   INTERACTION_TOKENS,
   useInteractionTokens,
-  withInteractivePressableStyle,
   type InteractionTokens,
-  type InteractivePressableOptions,
   type PressedVariant,
   type DisabledVariant,
 } from './lib/interaction-tokens';

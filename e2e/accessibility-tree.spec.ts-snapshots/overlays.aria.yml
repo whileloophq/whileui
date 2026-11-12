@@ -40,10 +40,11 @@
 - tablist:
   - tab "Preview" [selected]
   - tab "Code"
-- heading "Welcome back" [level=1]
-- text: Your workspace is ready. Email
-- textbox "you@company.com"
-- button "Continue"
+- tabpanel "Preview":
+  - heading "Welcome back" [level=1]
+  - text: Your workspace is ready. Email
+  - textbox "you@company.com"
+  - button "Continue"
 - text: /Data Display Avatars, aspect ratios, and hover cards WU JD MK \d+:9/
 - link "@whileui (Hover/Press)"
 - button "File"

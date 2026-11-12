@@ -1,11 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import {
-  View,
-  Pressable,
-  type GestureResponderEvent,
-  type ViewProps,
-  type PressableProps,
-} from 'react-native';
+import { View, type GestureResponderEvent, type ViewProps } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -13,6 +7,8 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { cn } from '../../lib/cn';
+import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
+import { Pressable, type PressableProps } from '../pressable';
 
 interface CollapsibleContextValue {
   isOpen: boolean;
@@ -84,33 +80,33 @@ function CollapsibleTrigger({
   onPress,
   ...props
 }: CollapsibleTriggerProps) {
-  const { toggle, disabled } = useContext(CollapsibleContext);
+  const { isOpen, toggle, disabled } = useContext(CollapsibleContext);
 
   const handlePress = (e: GestureResponderEvent) => {
     onPress?.(e);
     toggle();
   };
 
+  // `asChild` gives the child the press and the state; wrapping it in another Pressable,
+  // as this once did, put one control inside another.
   if (asChild && React.isValidElement(children)) {
-    return (
-      <Pressable
-        accessibilityRole="button"
-        onPress={handlePress}
-        disabled={disabled}
-        className={cn(className)}
-        {...props}
-      >
-        {children}
-      </Pressable>
-    );
+    const child = children as AsChildElement;
+    return React.cloneElement(child, {
+      ...props,
+      className: cn(child.props.className, className),
+      onPress: composeEventHandlers(child.props.onPress, handlePress),
+      disabled,
+      'aria-expanded': isOpen,
+    } as Partial<PressableProps>);
   }
 
   return (
     <Pressable
-      accessibilityRole="button"
       className={cn(className)}
       onPress={handlePress}
       disabled={disabled}
+      aria-expanded={isOpen}
+      feedback="default"
       {...props}
     >
       {children}

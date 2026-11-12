@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Pressable, View, type ViewProps } from 'react-native';
+import { View, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
+import { Pressable } from '../pressable';
 import { ControlLabel } from '../checkbox/control-label';
 
 export interface SwitchProps extends Omit<ViewProps, 'children'> {
@@ -39,16 +38,8 @@ function Switch({
 }: SwitchProps) {
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
   const isChecked = controlledChecked ?? internalChecked;
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const trackHeight = Math.max(24, Math.round(visual.controlHeightSm * 0.9));
-  // The ring belongs on the pressable, which is what takes keyboard focus. On the inner
-  // track it never matched `:focus-visible`, so the switch showed no focus on web.
-  const interactiveStyle = withInteractivePressableStyle(
-    { borderRadius: label ? visual.radiusSm : trackHeight / 2 },
-    interaction,
-    { disabled, pressedVariant: 'default' }
-  );
   const trackWidth = Math.round(trackHeight * 1.45);
   const inset = Math.max(2, Math.round(trackHeight * 0.08));
   const thumbSize = trackHeight - inset * 2 - 2;
@@ -65,11 +56,12 @@ function Switch({
     <Pressable
       onPress={handleToggle}
       disabled={disabled}
-      style={interactiveStyle}
-      className={cn(focusRing, label && 'flex-row items-center gap-3')}
+      feedback="default"
+      // The ring sits on the pressable, which is what takes keyboard focus.
+      style={{ borderRadius: label ? visual.radiusSm : trackHeight / 2 }}
+      className={label ? 'flex-row items-center gap-3' : undefined}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       accessibilityRole="switch"
-      accessibilityState={{ checked: isChecked, disabled }}
       aria-checked={isChecked}
       // The pressable is the control, so names, test IDs and layout handlers belong on it.
       // Spread on the inner view, a caller's `accessibilityLabel` named nothing on web.

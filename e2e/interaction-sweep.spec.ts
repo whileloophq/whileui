@@ -68,7 +68,16 @@ for (const category of CATEGORIES) {
         if (text) return text;
         return (el.getAttribute('placeholder') ?? el.getAttribute('title') ?? '').trim();
       };
-      const controls = Array.from(document.querySelectorAll(selector)).filter(visible);
+      // A composite's container takes Tab and hands focus to its active item (a roving
+      // tab stop), so it is focusable without being a control of its own.
+      const composite = (el: Element | null) =>
+        !!el &&
+        ['radiogroup', 'tablist', 'group', 'toolbar', 'menu', 'menubar', 'listbox'].includes(
+          el.getAttribute('role') ?? ''
+        );
+      const controls = Array.from(document.querySelectorAll(selector))
+        .filter(visible)
+        .filter((el) => !composite(el));
       const out: string[] = [];
       for (const el of controls) {
         const role = el.getAttribute('role') ?? el.tagName.toLowerCase();
@@ -82,7 +91,9 @@ for (const category of CATEGORIES) {
           out.push(`${where}: focusable with no role, so Enter and Space do nothing`);
         }
         if (!name) out.push(`${role}: no accessible name`);
-        const parent = el.parentElement?.closest(selector);
+        let parent = el.parentElement?.closest(selector) ?? null;
+        while (parent && composite(parent))
+          parent = parent.parentElement?.closest(selector) ?? null;
         if (parent && visible(parent)) {
           out.push(
             `${where}: inside another control (${parent.getAttribute('role') ?? parent.tagName.toLowerCase()})`

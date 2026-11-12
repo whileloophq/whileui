@@ -721,11 +721,8 @@ Press opacity, disabled opacity, motion durations, the responsive spring, and th
 open and close durations are package constants on `INTERACTION_TOKENS`. They are not CSS
 variables, so a theme does not change them.
 
-For a custom control, read that table:
-
-```tsx
-import { useInteractionTokens, withInteractivePressableStyle } from '@thewhileloop/whileui';
-```
+Build a custom control on `Pressable`, whose `feedback` and `disabledFeedback` apply
+those opacities. To read the values yourself, use `useInteractionTokens()`.
 
 Wrap the application in `MotionProvider` to coordinate system reduced motion, an explicit
 preview mode, and deterministic animation-free tests. The provider is optional. Without
@@ -749,20 +746,21 @@ Every interactive component draws a themed focus ring on web. It uses `:focus-vi
 so it appears for keyboard users and not after a mouse click, and it is driven by the
 `--color-ring` token — restyle it with your theme, not with component overrides.
 
-Use the same treatment on your own controls:
-
-```tsx
-import { focusRing, focusRingInset, cn } from '@thewhileloop/whileui';
-
-<Pressable className={cn('rounded-full px-4 py-2', focusRing)} onPress={onPress}>
-  <Text>Custom control</Text>
-</Pressable>;
-```
+Your own controls get the same ring by rendering through WhileUI's `Pressable`, which
+adds it whenever the control has a press handler (`focusIndicator="inset"` inside a
+track). The classes below stay exported for the rare control that cannot be a
+`Pressable`, such as one built on a third-party primitive.
 
 | Export           | Use for                                                                         |
 | ---------------- | ------------------------------------------------------------------------------- |
 | `focusRing`      | Standalone controls — buttons, inputs, cards, nav items                         |
 | `focusRingInset` | Controls flush inside a track, where an offset ring would clip (segments, tabs) |
+
+Keyboard behaviour follows the WAI-ARIA patterns. A radio group, `SegmentedControl`,
+single-choice `ToggleGroup` and tab list are one Tab stop with the arrow keys moving
+inside; Space toggles a checkbox, switch or toggle and selects a radio or tab; Enter
+presses a button. A `Pressable` with the `checkbox`, `switch`, `radio` or `tab` role
+answers Space by itself.
 
 **Do not use a bare `outline-none`.** It removes the browser's indicator and leaves
 keyboard users with nothing, which fails WCAG 2.4.7. `focusRing` removes the default and
@@ -1403,11 +1401,45 @@ Also accepts the props of `ViewProps`.
 ```tsx
 import { RadioGroup, RadioGroupItem } from '@thewhileloop/whileui';
 
-<RadioGroup value={value} onValueChange={setValue}>
-  <RadioGroupItem value="option1" />
-  <RadioGroupItem value="option2" />
+<RadioGroup value={plan} onValueChange={setPlan}>
+  <RadioGroupItem value="free" label="Free plan" />
+  <RadioGroupItem value="pro" label="Pro plan" description="Billed monthly" />
 </RadioGroup>;
 ```
+
+With `label`, the row is one radio named by its text, so do not put a separate `Label`
+beside it. An unlabelled item needs an `accessibilityLabel`. On web the group is one Tab
+stop and the arrow keys move the selection, as in `SegmentedControl` and single-choice
+`ToggleGroup`; behaviour comes from `@rn-primitives/radio-group`.
+
+<!-- api:RadioGroup -->
+
+| Prop          | Type                      | Default | Description                                                      |
+| ------------- | ------------------------- | ------- | ---------------------------------------------------------------- |
+| defaultValue  | `string`                  | `''`    | Initial selection when uncontrolled.                             |
+| value         | `string`                  | —       | Controlled selection. Leave unset to let the group hold its own. |
+| onValueChange | `(value: string) => void` | —       | Called with the newly selected item's value.                     |
+| disabled      | `boolean`                 | —       | Disable every item.                                              |
+| className     | `string`                  | —       |                                                                  |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:RadioGroup -->
+
+<!-- api:RadioGroupItem -->
+
+| Prop             | Type              | Default  | Description                                                                                                              |
+| ---------------- | ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| value (required) | `string`          | —        | The value this item selects.                                                                                             |
+| label            | `string`          | —        | Text beside the circle. The row becomes one radio named by it, so do not put a separate `Label` next to a labelled item. |
+| description      | `string`          | —        | Secondary text under `label`. Ignored without a `label`.                                                                 |
+| className        | `string`          | —        | Additional Tailwind classes.                                                                                             |
+| feedback         | `PressedVariant`  | —        | Semantic press feedback. `none` preserves a plain React Native Pressable.                                                |
+| loading          | `boolean`         | —        | Loading controls are busy and non-interactive, just like disabled controls.                                              |
+| disabledFeedback | `DisabledVariant` | —        | Opacity used while the control is unavailable.                                                                           |
+| focusIndicator   | `FocusIndicator`  | `'ring'` | Keyboard focus on web: `inset` inside a track, `none` when a proxy draws it.                                             |
+
+Also accepts the props of `PressableProps`.
+<!-- /api:RadioGroupItem -->
 
 ## Select
 
@@ -1560,6 +1592,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@thewhileloop/whileui'
 </Tabs>;
 ```
 
+On web the tab list is one Tab stop, the arrow keys move between tabs and select them,
+and each panel is a `tabpanel` named by its tab; behaviour comes from
+`@rn-primitives/tabs`.
+
 ## Accordion
 
 ```tsx
@@ -1581,6 +1617,10 @@ import {
   </AccordionItem>
 </Accordion>;
 ```
+
+Each trigger is a button that says whether its panel is open (`aria-expanded`). It is not
+wrapped in a heading: the right level depends on your page, so wrap it yourself where the
+outline needs one.
 
 <!-- api:Accordion -->
 

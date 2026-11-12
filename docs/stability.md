@@ -499,6 +499,26 @@ pickers now pass `customHeader={CalendarHeader}`: named "Previous month" and "Ne
 buttons and a polite live-region title. `datepicker-modal.test.tsx` pages a month each
 way; `e2e/interaction-sweep.spec.ts` no longer excludes anything.
 
+## Keyboard patterns — 2026-11-12
+
+`e2e/keyboard-patterns.spec.ts` checks each stateful control against its WAI-ARIA
+Authoring Practices pattern in Chromium and WebKit. Against 4.7.1, seven of its eight
+checks failed; only `Toggle` passed.
+
+| Control                          | Before                                                                  | Now                                               |
+| -------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------- |
+| `RadioGroup`, `SegmentedControl` | every radio its own Tab stop; no arrow keys                             | one Tab stop; arrows move and select              |
+| `ToggleGroup`                    | same                                                                    | same fix; single choice keeps radio semantics     |
+| `Tabs`                           | every tab a Tab stop; panel unlabelled                                  | one Tab stop; arrows; `tabpanel` named by its tab |
+| `RadioGroup` with text beside it | radios outside any `radiogroup`, text a separate element                | `label` / `description` make each row one radio   |
+| `Checkbox`, `Switch`             | Space did nothing — React Native Web presses on Space only for `button` | Space toggles, from the control base              |
+| `Accordion`, `Collapsible`       | no `aria-expanded`                                                      | `aria-expanded` on every trigger                  |
+| `CollapsibleTrigger asChild`     | wrapped the child in a second pressable                                 | clones the child                                  |
+
+The four composites take behaviour from `@rn-primitives/radio-group`, `toggle-group` and
+`tabs` (Radix on web), pinned to 1.5.2 as dependencies. The single controls stay on the
+control base; why is recorded in `AGENTS.md`.
+
 ## Known gap — overlay edge padding on web
 
 `PopoverContent` now defaults its `insets` to safe area plus a margin, so a panel never

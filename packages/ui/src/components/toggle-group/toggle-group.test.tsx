@@ -21,9 +21,7 @@ describe('ToggleGroup', () => {
 
     // The group stays non-accessible so iOS keeps each radio reachable; RNTL only
     // queries accessible elements, so read the role off the parent.
-    expect(screen.getByRole('radio', { name: 'USD' }).parent?.props.accessibilityRole).toBe(
-      'radiogroup'
-    );
+    expect(screen.getByRole('radio', { name: 'USD' }).parent?.props.role).toBe('radiogroup');
     expect(screen.getByRole('radio', { name: 'USD' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'EUR' })).not.toBeChecked();
 
@@ -34,16 +32,19 @@ describe('ToggleGroup', () => {
     expect(screen.getByRole('radio', { name: 'USD' })).not.toBeChecked();
   });
 
-  it('multiple choice is a set of toggle buttons that say which are pressed', async () => {
+  // On native several choices are checkboxes, each checked or not; on web the primitive
+  // makes them pressed toggle buttons, which e2e/keyboard-patterns.spec.ts covers.
+  it('multiple choice is a set of independent checked items', async () => {
     const onValueChange = jest.fn();
     const user = userEvent.setup();
     await render(<Currencies type="multiple" onValueChange={onValueChange} />);
 
-    await user.press(screen.getByRole('button', { name: 'USD' }));
-    await user.press(screen.getByRole('button', { name: 'JPY' }));
+    expect(screen.getByRole('checkbox', { name: 'USD' }).parent?.props.role).toBe('group');
+    await user.press(screen.getByRole('checkbox', { name: 'USD' }));
+    await user.press(screen.getByRole('checkbox', { name: 'JPY' }));
 
     expect(onValueChange).toHaveBeenLastCalledWith(['USD', 'JPY']);
-    expect(screen.getByRole('button', { name: 'USD' })).toBeSelected();
-    expect(screen.getByRole('button', { name: 'EUR' })).not.toBeSelected();
+    expect(screen.getByRole('checkbox', { name: 'USD' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'EUR' })).not.toBeChecked();
   });
 });

@@ -1,9 +1,9 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
+import { Platform, StyleSheet, type ViewProps } from 'react-native';
+import * as TabsPrimitive from '@rn-primitives/tabs';
 import { cn } from '../../lib/cn';
-import { focusRingInset } from '../../lib/focus-ring';
 import { tv } from '../../lib/tv';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { Pressable, type PressableProps } from '../pressable';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
@@ -95,21 +95,31 @@ function Tabs({
 
   const handleValueChange = useCallback(
     (newValue: string) => {
+      // A web click reports twice — Radix selects on mousedown, the press on click — and
+      // the second finds the value already set.
+      if (newValue === value) return;
       setInternalValue(newValue);
       onValueChange?.(newValue);
     },
-    [onValueChange]
+    [onValueChange, value]
   );
   const contextValue = useMemo(
     () => ({ value, onValueChange: handleValueChange }),
     [handleValueChange, value]
   );
 
+  // One Tab stop in the list, arrow keys between tabs, and panels labelled by their tab:
+  // `@rn-primitives/tabs` (Radix on web), drawn here.
   return (
     <TabsContext.Provider value={contextValue}>
-      <View className={cn('w-full', className)} {...props}>
+      <TabsPrimitive.Root
+        value={value}
+        onValueChange={handleValueChange}
+        className={cn('w-full', className)}
+        {...props}
+      >
         {children}
-      </View>
+      </TabsPrimitive.Root>
     </TabsContext.Provider>
   );
 }
@@ -118,10 +128,11 @@ function TabsList({ className, style, ...props }: TabsListProps) {
   const visual = useVisualTokens();
   const colors = useThemeColors();
   return (
-    <View
-      accessibilityRole="tablist"
+    <TabsPrimitive.List
       className={cn('flex flex-row items-center justify-center', className)}
-      style={[getTabsListStyle(visual, colors), style]}
+      // Flattened: on web the primitive's Radix root spreads this into an object, and a style
+      // array became numeric keys the browser rejects.
+      style={StyleSheet.flatten([getTabsListStyle(visual, colors), style])}
       {...props}
     />
   );
@@ -137,48 +148,42 @@ function TabsTrigger({
 }: TabsTriggerProps) {
   const { value, onValueChange } = useContext(TabsContext);
   const isActive = value === tabValue;
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const colors = useThemeColors();
-  const interactiveStyle = withInteractivePressableStyle(styleProp, interaction, {
-    disabled: Boolean(disabled),
-    pressedVariant: 'default',
-  });
   const tokenStyle = getTabsTriggerStyle(visual, colors, isActive);
 
   return (
-    <Pressable
-      className={cn(
-        tabsTriggerVariants({ state: isActive ? 'active' : 'inactive' }),
-        'flex-1',
-        focusRingInset,
-        className
-      )}
-      style={(state) => {
-        const baseStyle =
-          typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle;
-        return [baseStyle, tokenStyle];
-      }}
-      onPress={() => onValueChange(tabValue)}
-      accessibilityRole="tab"
-      accessibilityState={{ selected: isActive, disabled: Boolean(disabled) }}
-      aria-selected={isActive}
-      disabled={disabled}
-      {...props}
-    >
-      {children}
-    </Pressable>
+    <TabsPrimitive.Trigger value={tabValue} disabled={disabled ?? undefined} asChild>
+      <Pressable
+        className={cn(
+          tabsTriggerVariants({ state: isActive ? 'active' : 'inactive' }),
+          'flex-1',
+          className
+        )}
+        style={(state) => [
+          typeof styleProp === 'function' ? styleProp(state) : styleProp,
+          tokenStyle,
+        ]}
+        // The native primitive presses the tab itself. Its web trigger selects through
+        // Radix's mouse and key handlers and passes no `onPress`, which the base needs
+        // before it treats the tab as a control (focus ring, click, Space).
+        onPress={Platform.OS === 'web' ? () => onValueChange(tabValue) : undefined}
+        focusIndicator="inset"
+        feedback="default"
+        disabled={disabled}
+        {...props}
+      >
+        {children}
+      </Pressable>
+    </TabsPrimitive.Trigger>
   );
 }
 
 function TabsContent({ value: tabValue, className, children, ...props }: TabsContentProps) {
-  const { value } = useContext(TabsContext);
-  if (value !== tabValue) return null;
-
   return (
-    <View className={cn('mt-2', className)} {...props}>
+    <TabsPrimitive.Content value={tabValue} className={cn('mt-2', className)} {...props}>
       {children}
-    </View>
+    </TabsPrimitive.Content>
   );
 }
 

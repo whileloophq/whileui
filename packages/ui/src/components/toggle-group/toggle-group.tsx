@@ -1,15 +1,9 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Pressable,
-  Text,
-  type ViewProps,
-  type PressableProps,
-  type TextProps,
-} from 'react-native';
+import { StyleSheet, Text, type TextProps, type ViewProps } from 'react-native';
+import * as ToggleGroupPrimitive from '@rn-primitives/toggle-group';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
 import { tv } from '../../lib/tv';
+import { Pressable, type PressableProps } from '../pressable';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, typographyStyle, type TypographyRole } from '../../lib/recipes';
 
@@ -18,7 +12,6 @@ type ToggleGroupType = 'single' | 'multiple';
 interface ToggleGroupContextValue {
   type: ToggleGroupType;
   value: string[];
-  onValueChange: (itemValue: string) => void;
   variant?: 'default' | 'outline';
   size?: 'default' | 'sm' | 'lg';
 }
@@ -26,7 +19,6 @@ interface ToggleGroupContextValue {
 const ToggleGroupContext = createContext<ToggleGroupContextValue>({
   type: 'single',
   value: [],
-  onValueChange: () => {},
 });
 
 interface ToggleGroupItemContextValue {
@@ -118,6 +110,7 @@ function ToggleGroup({
   variant = 'default',
   size = 'default',
   className,
+  style,
   children,
   ...props
 }: ToggleGroupProps) {
@@ -137,37 +130,44 @@ function ToggleGroup({
   );
 
   const handleValueChange = useCallback(
-    (itemValue: string) => {
-      let next: string[];
-      if (type === 'single') {
-        next = value.includes(itemValue) ? [] : [itemValue];
-      } else {
-        next = value.includes(itemValue)
-          ? value.filter((v) => v !== itemValue)
-          : [...value, itemValue];
-      }
+    (next: string[]) => {
       setInternalValue(next);
       onValueChange?.(type === 'single' ? next[0] || '' : next);
     },
-    [type, value, onValueChange]
+    [type, onValueChange]
   );
 
   const contextValue = useMemo(
-    () => ({ type, value, onValueChange: handleValueChange, variant, size }),
-    [handleValueChange, size, type, value, variant]
+    () => ({ type, value, variant, size }),
+    [size, type, value, variant]
   );
+
+  // One Tab stop, arrow keys between items: `@rn-primitives/toggle-group` (Radix on web).
+  const selection =
+    type === 'single'
+      ? {
+          type: 'single' as const,
+          value: value[0],
+          onValueChange: (next: string | undefined) => handleValueChange(next ? [next] : []),
+        }
+      : { type: 'multiple' as const, value, onValueChange: handleValueChange };
 
   return (
     <ToggleGroupContext.Provider value={contextValue}>
-      <View
-        // One choice is a radio group; several are independent checkboxes, which need no
-        // grouping role. Add `flex-wrap` to `className` for chips that wrap.
-        accessibilityRole={type === 'single' ? 'radiogroup' : undefined}
+      <ToggleGroupPrimitive.Root
+        {...selection}
+        // One choice is a radio group; several are a group of toggles. Radix calls both a
+        // `group`, which leaves single-choice radios without the group a radio belongs to.
+        // Add `flex-wrap` to `className` for chips that wrap.
+        role={type === 'single' ? 'radiogroup' : 'group'}
         className={cn('flex flex-row items-center gap-1', className)}
+        // Flattened: on web the primitive's Radix root spreads this into an object, and a style
+        // array became numeric keys the browser rejects.
+        style={StyleSheet.flatten(style)}
         {...props}
       >
         {children}
-      </View>
+      </ToggleGroupPrimitive.Root>
     </ToggleGroupContext.Provider>
   );
 }
@@ -179,7 +179,7 @@ function ToggleGroupItem({
   style: styleProp,
   ...props
 }: ToggleGroupItemProps) {
-  const { type, value, onValueChange, variant, size } = useContext(ToggleGroupContext);
+  const { type, value, variant, size } = useContext(ToggleGroupContext);
   const pressed = value.includes(itemValue);
   const visual = useVisualTokens();
   const contextValue = useMemo(() => ({ pressed, size }), [pressed, size]);
@@ -191,31 +191,23 @@ function ToggleGroupItem({
 
   return (
     <ToggleGroupItemContext.Provider value={contextValue}>
-      <Pressable
-        className={cn(toggleGroupItemVariants({ variant, size, pressed }), focusRing, className)}
-        style={(state) => [
-          tokenStyle,
-          typeof styleProp === 'function' ? styleProp(state) : styleProp,
-        ]}
-        onPress={() => onValueChange(itemValue)}
-        // React Native Web no longer derives ARIA from `accessibilityState`, so a button
-        // with only `selected` told web nothing. One choice is a radio, checked; several
-        // are toggle buttons, pressed — `selected` for native, `aria-pressed` for web.
-        {...(type === 'single'
-          ? {
-              accessibilityRole: 'radio',
-              accessibilityState: { checked: pressed },
-              'aria-checked': pressed,
-            }
-          : {
-              accessibilityRole: 'button',
-              accessibilityState: { selected: pressed },
-              'aria-pressed': pressed,
-            })}
-        {...props}
-      >
-        {children}
-      </Pressable>
+      <ToggleGroupPrimitive.Item value={itemValue} disabled={props.disabled ?? undefined} asChild>
+        <Pressable
+          className={cn(toggleGroupItemVariants({ variant, size, pressed }), className)}
+          style={(state) => [
+            tokenStyle,
+            typeof styleProp === 'function' ? styleProp(state) : styleProp,
+          ]}
+          feedback="default"
+          // One choice is a radio, checked. The primitive's web item says `button`, so the
+          // role is set here, where it wins. Several are toggles: a pressed button on web,
+          // a checked checkbox on native, both from the primitive.
+          {...(type === 'single' ? { role: 'radio' as const, 'aria-checked': pressed } : null)}
+          {...props}
+        >
+          {children}
+        </Pressable>
+      </ToggleGroupPrimitive.Item>
     </ToggleGroupItemContext.Provider>
   );
 }

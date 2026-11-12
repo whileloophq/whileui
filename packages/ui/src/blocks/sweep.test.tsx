@@ -54,6 +54,12 @@ describe('targets reach 24px without hitSlop, which web ignores', () => {
     ) as Record<string, number | undefined>;
     return Math.min(style.minWidth ?? style.width ?? 0, style.minHeight ?? style.height ?? 0);
   };
+  // The control base sets the web minimum as classes; e2e/interaction-sweep.spec.ts
+  // measures the rendered pixels.
+  const reaches24 = (el: { props: Record<string, unknown> }) =>
+    size(el) >= 24 ||
+    (String(el.props.className).includes('web:min-h-6') &&
+      String(el.props.className).includes('web:min-w-6'));
 
   it('a RadioGroupItem, an unlabelled Checkbox and a link Button', async () => {
     const { RadioGroup, RadioGroupItem } = jest.requireActual('../components/radio-group');
@@ -70,8 +76,8 @@ describe('targets reach 24px without hitSlop, which web ignores', () => {
         </Button>
       </>
     );
-    expect(size(screen.getByRole('radio'))).toBeGreaterThanOrEqual(24);
-    expect(size(screen.getByRole('checkbox'))).toBeGreaterThanOrEqual(24);
+    expect(reaches24(screen.getByRole('radio'))).toBe(true);
+    expect(reaches24(screen.getByRole('checkbox'))).toBe(true);
     // A link is as wide as its text; only its height can fall short.
     const link = screen.getByRole('link');
     const linkStyle = StyleSheet.flatten(

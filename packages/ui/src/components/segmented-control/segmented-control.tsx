@@ -1,18 +1,16 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import {
-  Pressable,
   ScrollView,
+  StyleSheet,
   Text,
-  View,
-  type PressableProps,
   type TextProps,
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
+import * as RadioGroupPrimitive from '@rn-primitives/radio-group';
 import { cn } from '../../lib/cn';
-import { focusRingInset } from '../../lib/focus-ring';
 import { tv } from '../../lib/tv';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { Pressable, type PressableProps } from '../pressable';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
@@ -137,7 +135,6 @@ function getSegmentedItemStyle(
 
 interface SegmentedControlContextValue {
   value: string;
-  onValueChange: (next: string) => void;
   variant: 'default' | 'pill';
   size: 'default' | 'compact';
   wrap: boolean;
@@ -147,7 +144,6 @@ interface SegmentedControlContextValue {
 
 const SegmentedControlContext = createContext<SegmentedControlContextValue>({
   value: '',
-  onValueChange: () => {},
   variant: 'default',
   size: 'default',
   wrap: true,
@@ -232,28 +228,33 @@ function SegmentedControl({
   const contextValue = useMemo(
     () => ({
       value,
-      onValueChange: handleValueChange,
       variant,
       size,
       wrap: shouldWrap,
       scroll,
       disabled,
     }),
-    [disabled, handleValueChange, scroll, shouldWrap, size, value, variant]
+    [disabled, scroll, shouldWrap, size, value, variant]
   );
 
+  // One Tab stop, with the arrow keys moving the selection: the radio group pattern,
+  // from `@rn-primitives/radio-group` (Radix on web).
   const group = (
-    <View
+    <RadioGroupPrimitive.Root
+      value={value}
+      onValueChange={handleValueChange}
+      disabled={disabled}
       className={cn(
         segmentedControlVariants({ variant, wrap: shouldWrap, scroll, size }),
         className
       )}
-      style={[getSegmentedContainerStyle(visual, colors, variant), styleProp]}
-      accessibilityRole="radiogroup"
+      // Flattened: on web the primitive's Radix root spreads this into an object, and a style
+      // array became numeric keys the browser rejects.
+      style={StyleSheet.flatten([getSegmentedContainerStyle(visual, colors, variant), styleProp])}
       {...props}
     >
       {children}
-    </View>
+    </RadioGroupPrimitive.Root>
   );
 
   return (
@@ -277,17 +278,11 @@ function SegmentedControlItem({
   style: styleProp,
   ...props
 }: SegmentedControlItemProps) {
-  const { value, onValueChange, variant, size, wrap, scroll, disabled } =
-    useContext(SegmentedControlContext);
+  const { value, variant, size, wrap, scroll, disabled } = useContext(SegmentedControlContext);
   const selected = value === itemValue;
   const finalDisabled = disabled || Boolean(itemDisabled);
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const colors = useThemeColors();
-  const interactiveStyle = withInteractivePressableStyle(styleProp, interaction, {
-    disabled: finalDisabled,
-    pressedVariant: 'default',
-  });
   const wrapBasisStyle: ViewStyle | undefined = wrap
     ? { flexBasis: `${visual.segmentedWrapBasisRatio * 100}%` }
     : undefined;
@@ -296,41 +291,37 @@ function SegmentedControlItem({
 
   return (
     <SegmentedControlItemContext.Provider value={contextValue}>
-      <Pressable
-        className={cn(
-          segmentedControlItemVariants({
-            variant,
-            selected,
-            size,
-            disabled: finalDisabled,
-            wrap,
-            scroll,
-          }),
-          focusRingInset,
-          className
-        )}
-        onPress={() => onValueChange(itemValue)}
-        accessibilityRole="radio"
-        // A radio is checked, not selected. `selected` maps to `aria-selected`, which is
-        // not a valid attribute on `role="radio"` — assistive technology could not tell
-        // which segment was active. `checked` also carries the state correctly on native.
-        accessibilityState={{ checked: selected, disabled: finalDisabled }}
-        aria-checked={selected}
-        disabled={finalDisabled}
-        style={(state) => {
-          const baseStyle =
-            typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle;
-          return [baseStyle, tokenStyle, wrapBasisStyle ?? null];
-        }}
-        hitSlop={4}
-        {...props}
-      >
-        {typeof children === 'string' ? (
-          <SegmentedControlItemText>{children}</SegmentedControlItemText>
-        ) : (
-          children
-        )}
-      </Pressable>
+      <RadioGroupPrimitive.Item value={itemValue} disabled={finalDisabled} asChild>
+        <Pressable
+          className={cn(
+            segmentedControlItemVariants({
+              variant,
+              selected,
+              size,
+              disabled: finalDisabled,
+              wrap,
+              scroll,
+            }),
+            className
+          )}
+          focusIndicator="inset"
+          feedback="default"
+          disabled={finalDisabled}
+          style={(state) => [
+            typeof styleProp === 'function' ? styleProp(state) : styleProp,
+            tokenStyle,
+            wrapBasisStyle ?? null,
+          ]}
+          hitSlop={4}
+          {...props}
+        >
+          {typeof children === 'string' ? (
+            <SegmentedControlItemText>{children}</SegmentedControlItemText>
+          ) : (
+            children
+          )}
+        </Pressable>
+      </RadioGroupPrimitive.Item>
     </SegmentedControlItemContext.Provider>
   );
 }

@@ -4,6 +4,7 @@ import {
   Pressable as RNPressable,
   type PressableInstance,
   type PressableProps as RNPressableProps,
+  type GestureResponderEvent,
   type PressableStateCallbackType,
   type ViewStyle,
 } from 'react-native';
@@ -43,6 +44,22 @@ const FOCUS_CLASSES: Record<FocusIndicator, string | undefined> = {
 
 /** WCAG 2.5.8 on web, where `hitSlop` does nothing. Native targets use `hitSlop`. */
 const WEB_MIN_TARGET = 'web:min-h-6 web:min-w-6';
+
+/**
+ * Roles Space must activate. React Native Web presses on Space only for `button` and
+ * `menuitem`, so a checkbox, switch, radio or tab answered Enter alone — the reverse of
+ * what the WAI-ARIA patterns ask of them.
+ */
+const SPACE_ROLES = new Set([
+  'checkbox',
+  'switch',
+  'radio',
+  'tab',
+  'menuitemcheckbox',
+  'menuitemradio',
+  'option',
+]);
+const isSpace = (key: string) => key === ' ' || key === 'Spacebar';
 
 function pressedOpacity(variant: PressedVariant, tokens: ReturnType<typeof useInteractionTokens>) {
   if (variant === 'none') return 1;
@@ -85,6 +102,8 @@ const Pressable: ForwardRefComponent<PressableInstance, PressableProps> = React.
       role,
       tabIndex,
       style,
+      onKeyDown,
+      onKeyUp,
       ...props
     },
     ref
@@ -119,6 +138,22 @@ const Pressable: ForwardRefComponent<PressableInstance, PressableProps> = React.
       return [callerStyle, transition, feedbackStyle];
     };
 
+    const resolvedRole = role ?? accessibilityRole;
+    const spaceActivates =
+      Platform.OS === 'web' && interactive && !unavailable && SPACE_ROLES.has(resolvedRole ?? '');
+    // Keydown only stops the page scrolling; the press lands on keyup, as on a native
+    // button, so holding Space does not repeat it.
+    const handleKeyDown: PressableProps['onKeyDown'] = (event) => {
+      onKeyDown?.(event);
+      if (spaceActivates && isSpace(event.nativeEvent.key)) event.preventDefault();
+    };
+    const handleKeyUp: PressableProps['onKeyUp'] = (event) => {
+      onKeyUp?.(event);
+      if (spaceActivates && isSpace(event.nativeEvent.key) && !event.defaultPrevented) {
+        props.onPress?.(event as unknown as GestureResponderEvent);
+      }
+    };
+
     return (
       <RNPressable
         ref={ref}
@@ -129,6 +164,8 @@ const Pressable: ForwardRefComponent<PressableInstance, PressableProps> = React.
         disabled={unavailable}
         aria-busy={loading || undefined}
         style={resolveStyle}
+        onKeyDown={spaceActivates ? handleKeyDown : onKeyDown}
+        onKeyUp={spaceActivates ? handleKeyUp : onKeyUp}
         {...props}
       />
     );

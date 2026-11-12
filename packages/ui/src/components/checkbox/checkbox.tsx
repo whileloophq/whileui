@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Pressable, View, type ViewProps } from 'react-native';
+import { View, type ViewProps } from 'react-native';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
+import { Pressable } from '../pressable';
 import { ControlLabel } from './control-label';
 
 export interface CheckboxProps extends Omit<ViewProps, 'children'> {
@@ -39,20 +38,9 @@ function Checkbox({
 }: CheckboxProps) {
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
   const isChecked = controlledChecked ?? internalChecked;
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const size = Math.max(18, Math.round(visual.controlHeightSm * 0.55));
   const boxRadius = Math.max(6, Math.round(visual.radiusSm * 0.7));
-  // The ring belongs on the pressable, which is what takes keyboard focus. On the inner
-  // box it never matched `:focus-visible`, so the checkbox showed no focus on web.
-  const interactiveStyle = withInteractivePressableStyle(
-    // 24px around the box (WCAG 2.5.8): web ignores hitSlop, so the box alone was the target.
-    label
-      ? { borderRadius: visual.radiusSm }
-      : { borderRadius: boxRadius, minWidth: 24, minHeight: 24 },
-    interaction,
-    { disabled, pressedVariant: 'default' }
-  );
   const tickStroke = Math.max(2, Math.round(size * 0.12));
 
   const handleToggle = () => {
@@ -66,17 +54,12 @@ function Checkbox({
     <Pressable
       onPress={handleToggle}
       disabled={disabled}
-      style={interactiveStyle}
-      className={cn(
-        focusRing,
-        label ? 'flex-row items-start gap-3' : 'items-center justify-center'
-      )}
+      feedback="default"
+      // The ring sits on the pressable, which is what takes keyboard focus.
+      style={{ borderRadius: label ? visual.radiusSm : boxRadius }}
+      className={label ? 'flex-row items-start gap-3' : 'items-center justify-center'}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       accessibilityRole="checkbox"
-      accessibilityState={{ checked: isChecked, disabled }}
-      // React Native Web no longer derives `aria-checked` from `accessibilityState`, and
-      // ARIA requires it on this role — without it a screen reader cannot tell checked
-      // from unchecked. React Native maps the `aria-` form on native, so both are correct.
       aria-checked={isChecked}
       // The pressable is the control, so names, test IDs and layout handlers belong on it.
       // Spread on the inner view, a caller's `accessibilityLabel` named nothing on web.

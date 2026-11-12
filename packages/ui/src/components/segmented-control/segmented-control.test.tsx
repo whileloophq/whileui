@@ -40,7 +40,7 @@ describe('SegmentedControl', () => {
     const day = screen.getByRole('radio', { name: 'Day' });
     // The group role sits on the parent. `accessible` stays unset there: marking that
     // view accessible would hide these radios from VoiceOver.
-    expect(day.parent?.props.accessibilityRole).toBe('radiogroup');
+    expect(day.parent?.props.role).toBe('radiogroup');
     expect(day).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Week' })).not.toBeChecked();
   });
