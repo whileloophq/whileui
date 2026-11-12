@@ -1,5 +1,11 @@
 import React from 'react';
-import { ScrollView, type ScrollViewInstance, type ScrollViewProps } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  type ScrollViewInstance,
+  type ScrollViewProps,
+} from 'react-native';
 import { cn } from '../../lib/cn';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 
@@ -25,7 +31,10 @@ export interface KeyboardAwareScrollViewProps extends ScrollViewProps {
 /**
  * Scroll root for a form. On iOS the native scroll view insets its content by the part
  * the keyboard covers and scrolls the focused field above it, measuring both in window
- * coordinates.
+ * coordinates. Android has no such inset, and since apps draw edge to edge the window no
+ * longer shrinks for the keyboard either, so there the scroll view sits in a
+ * `KeyboardAvoidingView` that shortens it to the keyboard's top edge; Android's scroll
+ * view then brings the focused field into view.
  *
  * `KeyboardAvoidingView` cannot do this inside a native sheet: it compares its layout
  * position with the keyboard's position on screen, and under the new architecture
@@ -46,15 +55,23 @@ export const KeyboardAwareScrollView: ForwardRefComponent<
       ...props
     },
     ref
-  ) => (
-    <ScrollView
-      ref={ref}
-      className={cn('flex-1 bg-background', className)}
-      automaticallyAdjustKeyboardInsets={automaticallyAdjustKeyboardInsets}
-      keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-      {...props}
-    />
-  )
+  ) => {
+    const scroll = (
+      <ScrollView
+        ref={ref}
+        className={cn('flex-1 bg-background', className)}
+        automaticallyAdjustKeyboardInsets={automaticallyAdjustKeyboardInsets}
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+        {...props}
+      />
+    );
+    if (Platform.OS !== 'android') return scroll;
+    return (
+      <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+        {scroll}
+      </KeyboardAvoidingView>
+    );
+  }
 );
 
 KeyboardAwareScrollView.displayName = 'KeyboardAwareScrollView';

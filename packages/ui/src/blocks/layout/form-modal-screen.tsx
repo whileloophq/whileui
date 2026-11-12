@@ -1,10 +1,11 @@
 import React from 'react';
-import { ScrollView, StyleSheet, useWindowDimensions, View, type ViewProps } from 'react-native';
+import { StyleSheet, useWindowDimensions, View, type ViewProps } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '../../components/button';
 import { Text } from '../../components/text';
 import { Spinner } from '../../components/spinner';
 import { cn } from '../../lib/cn';
+import { KeyboardAwareScrollView } from './keyboard-aware-scroll-view';
 import { useVisualTokens } from '../../lib/visual-tokens';
 
 export interface FormModalScreenProps extends Omit<ViewProps, 'className'> {
@@ -126,18 +127,16 @@ function FormModalScreen({
           </View>
         )}
 
-        <ScrollView
-          style={{ flex: 1 }}
+        <KeyboardAwareScrollView
+          className="bg-transparent"
           contentContainerStyle={{
             padding: 16,
             minHeight: screenHeight * visual.formModalContentMinHeightRatio,
           }}
           scrollEnabled={!saving && scrollEnabled}
-          keyboardShouldPersistTaps="handled"
-          automaticallyAdjustKeyboardInsets
         >
           {children}
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </View>
     </SafeAreaView>
   );

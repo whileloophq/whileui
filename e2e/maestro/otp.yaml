@@ -22,13 +22,14 @@ name: OTP accepts, rejects, and pastes a code
 # The result text stays until the next edit, so the assertion is not racing a timeout.
 - tapOn: 'Enter 6-digit verification code'
 - inputText: '000000'
-- hideKeyboard
+# A number pad has no return key for Maestro's hideKeyboard; tap outside, as a person does.
+- tapOn: 'Verification code entry with auto-focus and paste'
 - assertVisible: 'Invalid code — try 123456'
 
 - tapOn: 'Enter 6-digit verification code'
 - eraseText
 - inputText: '123456'
-- hideKeyboard
+- tapOn: 'Verification code entry with auto-focus and paste'
 - assertVisible: 'Code verified!'
 
 # A longer paste is truncated to the field length. 1234567 becomes 123456.
@@ -36,7 +37,7 @@ name: OTP accepts, rejects, and pastes a code
 - eraseText
 - setClipboard: '1234567'
 - pasteText
-- hideKeyboard
+- tapOn: 'Verification code entry with auto-focus and paste'
 - assertVisible: 'Code verified!'
 
 - scrollUntilVisible:
@@ -48,5 +49,5 @@ name: OTP accepts, rejects, and pastes a code
     waitToSettleTimeoutMs: 1000
 - tapOn: 'Enter 4-digit verification code'
 - inputText: '0000'
-- hideKeyboard
+- tapOn: 'Verification code entry with auto-focus and paste'
 - assertVisible: 'PIN accepted'

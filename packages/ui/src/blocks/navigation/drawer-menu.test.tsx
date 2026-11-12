@@ -37,6 +37,24 @@ describe('DrawerMenu', () => {
     jest.restoreAllMocks();
   });
 
+  // The rows past the list's first render batch were drawn but never reached the iOS
+  // accessibility tree, so VoiceOver could not reach the later entries. A drawer is
+  // short, so every row renders at once.
+  it('renders every item at once, past the first virtualized batch', async () => {
+    const many = [
+      {
+        title: 'Components',
+        items: ['a', 'b', 'c', 'd'].map((k) => ({ key: k, label: `Item ${k}` })),
+      },
+      {
+        title: 'Blocks',
+        items: ['e', 'f', 'g', 'h', 'i', 'j', 'k'].map((k) => ({ key: k, label: `Item ${k}` })),
+      },
+    ];
+    await render(<DrawerMenu open onOpenChange={jest.fn()} sections={many} />);
+    expect(screen.getByRole('button', { name: 'Item k' })).toBeOnTheScreen();
+  });
+
   it('keeps navigation items in a scroll owner', async () => {
     const result = await render(<DrawerMenu open onOpenChange={jest.fn()} sections={sections} />);
 

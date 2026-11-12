@@ -10,11 +10,8 @@ name: Docked field stays above the keyboard
 # The clipped Smart Input on this page is not the proof. The full screen is.
 - tapOn:
     text: '.*Open menu.*'
-- scrollUntilVisible:
-    element:
-      text: '.*Layout.*'
-    direction: DOWN
-    centerElement: true
+# The drawer fits on one screen, and centring an item in a list that cannot scroll
+# fails, so the item is tapped directly.
 - tapOn:
     text: '.*Layout.*'
 - scrollUntilVisible:
@@ -37,7 +34,7 @@ name: Docked field stays above the keyboard
     id: 'keyboard-message'
 - assertVisible:
     id: 'keyboard-send'
-- hideKeyboard
+# Send is tapped with the keyboard still up: reaching it while typing is the contract.
 - tapOn:
     id: 'keyboard-send'
 - assertVisible: 'Sent: hello'

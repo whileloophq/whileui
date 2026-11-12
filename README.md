@@ -194,6 +194,10 @@ a component named here is not exported.
 ## Quick Reference (AI / Code Generation)
 
 - **Full-screen:** `AppShell` + `Header` in `header` + `BottomNav` in `bottomNav` + content in `children`
+- **Text fields:** a field never moves itself out from under the keyboard; its scroll
+  view does. Any screen holding an `Input`, `Textarea`, `NumericInput`, `OTPInput` or
+  `SearchField` scrolls in `KeyboardAwareScrollView`, never a plain `ScrollView`; a docked
+  composer uses `KeyboardAwareScreen` + `DockedInput`.
 - **No-jump loading:** keep `AppShell` mounted, set `loading` + `skeleton` (e.g., `PageSkeleton`/`ScreenSkeleton`)
 - **Layout:** `Stack` (vertical), `Row` (horizontal) — both support `gap`, `align`, `justify`
 - **Auth callbacks:** Auth templates use objects: `onSubmit({ email, password })`, `onSubmit({ firstName, lastName, email, password })`, etc. Copy templates from `apps/showcase/catalog/templates/auth/`.
@@ -1975,8 +1979,10 @@ import { ActionBar, Button, ButtonText } from '@thewhileloop/whileui';
 
 Use one keyboard-aware root for the screen, then place the composer in a bottom dock. Feed the dock height into the scroll content inset so the last item remains visible.
 
-`KeyboardAwareScreen` is for a screen with controls docked to its bottom edge. It does
-not scroll, and it is the wrong root for a form: use `KeyboardAwareScrollView` below.
+`KeyboardAwareScreen` is for a screen with controls docked to its bottom edge. It
+shortens itself by the keyboard on iOS and Android, so a `DockedInput` pinned to its
+bottom edge rises above the keyboard. It does not scroll, and it is the wrong root for a
+form: use `KeyboardAwareScrollView` below.
 
 Known limit: inside a native iOS sheet (a `pageSheet` modal, or a stack screen presented
 as a modal) a docked bar stops short of the keyboard by the sheet's distance from the top
@@ -1997,16 +2003,18 @@ import { DockedInput, KeyboardAwareScreen, SmartInput } from '@thewhileloop/whil
 
 ## KeyboardAwareScrollView
 
-The scroll root for a form. On iOS the native scroll view insets its content by whatever
-the keyboard covers and scrolls the focused field above it. `FormModalScreen`,
-`SheetContent` and `PullToRefreshScrollView` do the same by default.
+The scroll root for a form: the focused field stays above the keyboard. On iOS the native
+scroll view insets its content by whatever the keyboard covers and scrolls the field
+into view. On Android, where an edge-to-edge app's window no longer shrinks for the
+keyboard, the scroll view is shortened to the keyboard's top edge and Android scrolls the
+field into view. `FormModalScreen`, `SheetContent` and `PullToRefreshScrollView` are
+built on it.
 
 Use it instead of a `ScrollView` inside `KeyboardAwareScreen`. `KeyboardAvoidingView`,
 which `KeyboardAwareScreen` wraps, misjudges the keyboard inside a native iOS sheet (a
 `pageSheet` modal, or a stack screen presented as a modal): nothing it can measure
 includes where iOS placed the sheet, so the lower fields stay under the keyboard. Do not
-nest the two; both would avoid the keyboard. The inset is iOS only; on Android this is a
-plain `ScrollView` and relies on the window resizing for the keyboard.
+nest the two; both would avoid the keyboard.
 
 ```tsx
 import { Input, KeyboardAwareScrollView } from '@thewhileloop/whileui';

@@ -1,6 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import {
-  ScrollView,
   type ScrollViewProps,
   type StyleProp,
   StyleSheet,
@@ -15,6 +14,7 @@ import { Pressable, type PressableProps } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { CrossGlyph } from '../../lib/cross-glyph';
 import { cn } from '../../lib/cn';
+import { KeyboardAwareScrollView } from './keyboard-aware-scroll-view';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
@@ -249,8 +249,8 @@ export function SheetContent({
 
   if (scrollEnabled) {
     return (
-      <ScrollView
-        className={cn('flex-1', className)}
+      <KeyboardAwareScrollView
+        className={cn('bg-transparent', className)}
         style={style}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps={keyboardShouldPersistTaps}
@@ -260,7 +260,7 @@ export function SheetContent({
         {...props}
       >
         {children}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     );
   }
   return (

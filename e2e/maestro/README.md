@@ -24,6 +24,8 @@ What the layers below cannot prove, from `PLAN.md` > Evidence model:
   hardware keyboard connected no software keyboard appears at all. Turn it off (I/O >
   Keyboard > Toggle Software Keyboard) and judge a keyboard change by a `takeScreenshot`
   that shows the keyboard.
+  A simulator can also stop rotating: `setOrientation` and Device > Rotate both left the
+  app upright after a long session. `xcrun simctl shutdown` and `boot` cleared it.
 - **Android hardware back** dismissing the topmost overlay.
 - **`RefreshControl`**, which React Native Web does not implement at all.
 

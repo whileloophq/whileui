@@ -1,5 +1,9 @@
 appId: dev.whileloop.showcase
 name: Docked field stays reachable in landscape
+# Back to portrait even when a step fails; a flow left in landscape broke every flow
+# after it.
+onFlowComplete:
+  - setOrientation: PORTRAIT
 ---
 - stopApp
 - launchApp
@@ -9,11 +13,8 @@ name: Docked field stays reachable in landscape
 
 - tapOn:
     text: '.*Open menu.*'
-- scrollUntilVisible:
-    element:
-      text: '.*Layout.*'
-    direction: DOWN
-    centerElement: true
+# The drawer fits on one screen, and centring an item in a list that cannot scroll
+# fails, so the item is tapped directly.
 - tapOn:
     text: '.*Layout.*'
 - scrollUntilVisible:
@@ -35,8 +36,15 @@ name: Docked field stays reachable in landscape
 - tapOn:
     id: 'keyboard-message'
 - inputText: 'wide'
-- hideKeyboard
+# Send is tapped with the keyboard still up: reaching it while typing is the contract.
 - tapOn:
     id: 'keyboard-send'
+# On a landscape Android phone the keyboard leaves room for the dock and little else, so
+# the result line is under it; close the keyboard to read it. iOS shows it as is.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - assertVisible: 'Sent: wide'
 - setOrientation: PORTRAIT

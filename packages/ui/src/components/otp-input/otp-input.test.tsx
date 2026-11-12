@@ -10,6 +10,15 @@ describe('OTPInput', () => {
     expect(screen.getByLabelText(label(4))).toBeOnTheScreen();
   });
 
+  // Below 0.01 alpha an iOS view takes no touches, and iOS and Android both leave it out
+  // of the accessibility tree: the cells did nothing and screen readers missed the field.
+  it('keeps the hidden field touchable and reachable', async () => {
+    const { StyleSheet } = jest.requireActual('react-native');
+    await render(<OTPInput />);
+    const { opacity } = StyleSheet.flatten(screen.getByLabelText(label()).props.style);
+    expect(opacity).toBeGreaterThanOrEqual(0.01);
+  });
+
   it('renders the digits it has been given', async () => {
     await render(<OTPInput value="123" />);
     expect(screen.getByText('1')).toBeOnTheScreen();

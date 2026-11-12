@@ -36,18 +36,17 @@ of an error or missing decision.
 
 ```text
 Current phase: Phase 2C — One control foundation
-Current task: Phase 2C — C-01 to C-05 and the navigation-bar fix committed
-Status: C-02 and C-03 owe only an Android release run
-Branch: main, ahead of origin, not pushed (owner's instruction)
-Last verified commit: the C-04/C-05 commit — `bun run verify` passed on its tree
+Current task: Phase 2C complete — C-01 to C-05 done, with iOS and Android device runs
+Status: committed, not pushed (owner's instruction); not released
+Branch: main, ahead of origin
+Last verified commit: the device-fixes commit — `bun run verify` passed on its tree
 Working tree at handoff: clean
-Last command run: bun run verify
-Last command result: passed — 235 unit tests, 299 kB tarball, iOS and Android exports,
-  188 Chromium/WebKit tests in 6.0 min
-Next safe action: the Android release run (`maestro --platform android test e2e/maestro`,
-  one flow at a time, AGENTS.md > Tooling gotchas); fix or record the pre-existing
-  `otp` and keyboard flow failures on iOS; then release — pending changesets include one
-  major (prop renames) — and move the proving product onto it
+Last command run: bun run verify; all ten Maestro flows on iOS and Android release builds
+Last command result: passed — 237 unit tests, 300 kB tarball, iOS and Android exports,
+  188 Chromium/WebKit tests; 10/10 flows on each platform
+Next safe action: release on the owner's word — pending changesets include one major
+  (prop renames), so `bun run release:version` makes 5.0.0 — then move the proving
+  product onto it and push both repositories
 Blockers: none. The Android emulator is unusable while the host load average is above
   roughly 12; see AGENTS.md > Tooling gotchas before rerunning its flows
 ```
@@ -523,7 +522,7 @@ sweep passes with no new allowance; the accessibility-tree baseline diff is revi
   run moves to C-02, the first task that styles from data attributes and changes native
   behaviour; the Android half of the spike goes with it.
 
-### [!] C-02 — Stateful controls on `@rn-primitives`
+### [x] C-02 — Stateful controls on `@rn-primitives`
 
 **Goal:** Checkbox, Switch, RadioGroup, SegmentedControl, Toggle, ToggleGroup, Tabs,
 Accordion and Collapsible take behaviour from their primitive and appearance from the
@@ -600,10 +599,29 @@ device run, batched with C-03's because both change native semantics.
   predating this phase: `otp` cannot find the hidden code field in the iOS hierarchy
   (OTPInput unchanged since the flow last passed), and the two keyboard flows cannot
   hide the keyboard with the simulator's hardware keyboard attached. Android was not run.
-- Owed: the Android release run. The Android half of the C-01 spike gates nothing yet —
+- Device rerun, 2026-11-12, with the simulator's hardware keyboard disconnected — every
+  earlier keyboard result had a hardware keyboard and so no software keyboard. Found and
+  fixed: the docked field stayed under the keyboard (`KeyboardAwareScreen` padded a
+  screen whose dock is `absolute bottom-0`; it now shortens itself), `OTPInput`'s cells
+  took no taps on iOS (hidden field at opacity 0, below iOS's 0.01 threshold),
+  `DrawerMenu` rows past the list's first batch were missing from the iOS accessibility
+  tree, and the catalog's tab content was a plain scroll view, so fields stayed under
+  the keyboard (now `KeyboardAwareScrollView`). Flows fixed: they no longer hide the
+  keyboard before tapping Send, dismiss a number pad by tapping outside, and the
+  orientation flow returns to portrait even on failure. Result: all ten iOS flows pass
+  on a release build.
+- Android, 2026-11-12, Pixel 8 emulator on Android 16, release build: all ten flows
+  pass. It found that an edge-to-edge app's window no longer shrinks for the keyboard,
+  so the dock and form fields sat under it; `KeyboardAwareScreen` now shortens itself
+  on every platform, `KeyboardAwareScrollView` does on Android, and `FormModalScreen`,
+  `SheetContent` and `PullToRefreshScrollView` are built on the latter. Android also
+  hid `OTPInput`'s transparent field from the accessibility tree (now 0.011 everywhere)
+  and opened the landscape full-screen editor over the app (`disableFullscreenUI` on
+  `SmartInput` and `OTPInput`). iOS rerun on the final build: all ten pass.
+- The Android half of the C-01 spike gates nothing yet —
   no component styles from `data-*` — and moves to the first task that does.
 
-### [!] C-03 — Menus and containers
+### [x] C-03 — Menus and containers
 
 **Goal:** DropdownMenu, ContextMenu and Menubar on their primitives inside the overlay
 host; one backdrop and panel for every container.

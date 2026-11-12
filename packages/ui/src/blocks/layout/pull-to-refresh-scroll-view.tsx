@@ -1,6 +1,7 @@
-import { RefreshControl, ScrollView, type ScrollViewProps } from 'react-native';
+import { RefreshControl, type ScrollViewProps } from 'react-native';
 import { useThemeColors } from '../../lib/theme-colors';
 import { cn } from '../../lib/cn';
+import { KeyboardAwareScrollView } from './keyboard-aware-scroll-view';
 
 const REFRESH_ACTION = 'refresh';
 
@@ -53,8 +54,8 @@ export function PullToRefreshScrollView({
   };
 
   return (
-    <ScrollView
-      className={cn('flex-1', className)}
+    <KeyboardAwareScrollView
+      className={cn('bg-transparent', className)}
       alwaysBounceVertical={alwaysBounceVertical}
       automaticallyAdjustKeyboardInsets={automaticallyAdjustKeyboardInsets}
       accessibilityActions={actions}
@@ -70,6 +71,6 @@ export function PullToRefreshScrollView({
       {...props}
     >
       {children}
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }

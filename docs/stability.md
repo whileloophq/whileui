@@ -371,6 +371,28 @@ Large text, RTL, IME composition, autofill, and a VoiceOver/TalkBack pass are st
 open. Device results belong in this section once a build that contains the screen has
 been run. The browser result belongs here once `keyboard-dock.spec.ts` has been run.
 
+**Correction, 2026-11-12.** These flows passed on iOS only because the simulator's
+hardware keyboard was connected, so no software keyboard ever appeared. With it
+disconnected, three iOS defects showed:
+
+- The dock stayed under the keyboard. `KeyboardAwareScreen` padded the screen by a
+  correctly measured 335pt, but `DockedInput` is pinned with `absolute bottom-0`, which
+  ignores its parent's padding. The screen now shortens itself on iOS (`height`).
+  Checked on the simulator: the screen ends at the keyboard's top edge (539 of 874) and
+  the field and Send sit above it.
+- Tapping an `OTPInput`'s cells did nothing. Its hidden field had opacity 0, below the
+  0.01 at which an iOS view stops taking touches; iOS and Android both left it out of the
+  accessibility tree. Now 0.011; the probe that typed into nothing now gets "Invalid
+  code".
+- On Android 16 the window no longer shrinks for the keyboard (edge to edge), so the
+  dock and form fields sat under it there too. `KeyboardAwareScreen` and
+  `KeyboardAwareScrollView` now shorten themselves to the keyboard on Android, and
+  `SmartInput` and `OTPInput` turn off the landscape full-screen editor that hid the
+  app.
+- The flows hid the keyboard before tapping Send, which skipped the contract they exist
+  for. They now tap Send with the keyboard up, and dismiss a number pad by tapping
+  outside, since it has no return key.
+
 ## Keyboard in a native sheet — 2026-11-11
 
 A form in an iOS page sheet kept its focused lower field under the keyboard. The screen

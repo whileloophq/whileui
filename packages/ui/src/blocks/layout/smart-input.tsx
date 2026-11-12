@@ -284,6 +284,9 @@ export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps>
             inputClassName
           )}
           multiline
+          // Android turns a landscape phone's keyboard into a full-screen editor that hides
+          // the app, send button included; a composer keeps its own row in view.
+          disableFullscreenUI
           submitBehavior={submitBehavior}
           textAlignVertical="top"
           placeholderTextColor={placeholderTextColor ?? colors.placeholder}

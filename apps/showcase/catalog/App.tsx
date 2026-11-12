@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { Pressable, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 import { Feather } from '@expo/vector-icons';
@@ -19,6 +19,7 @@ import {
   DrawerMenu,
   focusRing,
   FontProvider,
+  KeyboardAwareScrollView,
   MotionProvider,
   PortalHost,
   SplashScreen,
@@ -313,8 +314,10 @@ function AppContent() {
               />
             </View>
 
-            <ScrollView
-              style={{ flex: 1 }}
+            {/* Every tab has text fields, so the tab scrolls a focused one above the
+                keyboard. A plain ScrollView left them under it. */}
+            <KeyboardAwareScrollView
+              className="bg-transparent"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1 }}
             >
@@ -333,7 +336,7 @@ function AppContent() {
                   onOpenFabScreen={() => setDemoScreen('fab')}
                 />
               </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
           </View>
         </SafeAreaView>
         <ToastContainer position="top" />

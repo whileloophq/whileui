@@ -142,9 +142,11 @@ function OTPInput({
         })}
       </Animated.View>
 
-      {/* Keep the native input full-size so every cell is tappable. Opacity is
-          required because Android can still paint composing text even when its
-          text color is transparent. */}
+      {/* Keep the native input full-size so every cell is tappable. Its opacity stays just
+          above 0.01: below that iOS gives a view no touches, and both iOS and Android leave
+          it out of the accessibility tree, so the cells could not focus the field and
+          neither VoiceOver nor TalkBack could reach it. At 1% any composing text Android
+          paints is invisible; the text is transparent and the caret hidden besides. */}
       <TextInput
         value={val}
         onChangeText={update}
@@ -157,6 +159,8 @@ function OTPInput({
         autoFocus={autoFocus}
         editable={!disabled}
         caretHidden
+        // The cells are the field's UI; Android's landscape full-screen editor hid them.
+        disableFullscreenUI
         // eslint-disable-next-line no-restricted-syntax -- visually hidden input; the cell cursor shows focus
         className="outline-none"
         style={{
@@ -165,7 +169,7 @@ function OTPInput({
           left: 0,
           right: 0,
           bottom: 0,
-          opacity: 0,
+          opacity: 0.011,
           color: 'transparent',
         }}
         accessibilityLabel={`Enter ${length}-digit verification code`}

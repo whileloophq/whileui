@@ -52,6 +52,9 @@ variants, not ad-hoc font sizes; one primary action per region; long content ins
 - One prop vocabulary: overlays are `open` / `onOpenChange`; selections are `value` /
   `onValueChange`; checkable controls are `checked` / `onCheckedChange`.
 - A menu item's press handler runs and the menu closes; there is no close call to add.
+- A screen with text fields scrolls in `KeyboardAwareScrollView`, never React Native's
+  plain scroll view: a field cannot move itself above the keyboard, only its scroll view
+  can. A composer docked to the bottom uses `KeyboardAwareScreen` with `DockedInput`.
 
 ## Theming
 

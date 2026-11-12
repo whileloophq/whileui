@@ -134,6 +134,10 @@ function DrawerSectionList({ sections, activeKey, onSelect, visual }: DrawerSect
     () => sections.map((section) => ({ title: section.title, data: section.items })),
     [sections]
   );
+  // Every row in the first render: a drawer is short, and the rows a virtualized list
+  // mounted in later batches were drawn but never reached the iOS accessibility tree,
+  // so VoiceOver could not reach them. A header and a footer count as rows too.
+  const rowCount = sections.reduce((count, section) => count + section.items.length + 2, 0);
   const renderItem = React.useCallback(
     ({ item }: { item: DrawerMenuItem }) => (
       <DrawerItemRow
@@ -170,6 +174,7 @@ function DrawerSectionList({ sections, activeKey, onSelect, visual }: DrawerSect
       renderSectionFooter={DrawerSectionGap}
       ItemSeparatorComponent={DrawerItemGap}
       renderItem={renderItem}
+      initialNumToRender={rowCount}
     />
   );
 }

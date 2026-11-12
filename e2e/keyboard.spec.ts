@@ -64,7 +64,8 @@ test.describe('keyboard operation', () => {
  * cannot detect that, which is why this is a hand-written assertion.
  *
  * Exclusions are narrow and deliberate: a visually hidden input (OTPInput's real field
- * sits at `opacity: 0` behind the cells it drives, which carry the blinking cursor), and
+ * sits at near-zero opacity behind the cells it drives, which carry the blinking cursor;
+ * not zero, which iOS and Android treat as absent), and
  * `<noscript>`, which is not a control.
  */
 test('every keyboard-reachable control shows a focus indicator', async ({ page }) => {
@@ -83,7 +84,7 @@ test('every keyboard-reachable control shows a focus indicator', async ({ page }
       if (!el || el === document.body || el === document.documentElement) return null;
 
       const style = getComputedStyle(el);
-      if (parseFloat(style.opacity) === 0) return null;
+      if (parseFloat(style.opacity) < 0.02) return null;
 
       const hasRing = /0px 0px 0px [1-9]\d*px/.test(style.boxShadow);
       const hasOutline = style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
