@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
+import { View, type ViewProps } from 'react-native';
+import { Pressable, type PressableProps } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
 import { ChevronGlyph } from '../../lib/chevron-glyph';
-import { focusRing } from '../../lib/focus-ring';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
@@ -38,7 +37,6 @@ export function Header({
   style,
   ...props
 }: HeaderProps) {
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
 
   return (
@@ -89,13 +87,10 @@ export function Header({
         {rightActions?.map((action) => (
           <Pressable
             key={action.key}
-            accessibilityRole="button"
             accessibilityLabel={action.accessibilityLabel}
             onPress={action.onPress}
+            hitSlop={4}
             className="rounded-full p-2 active:bg-state-pressed"
-            style={withInteractivePressableStyle(undefined, interaction, {
-              pressedVariant: 'default',
-            })}
           >
             {action.icon}
           </Pressable>
@@ -119,29 +114,19 @@ export function HeaderBackButton({
   style: styleProp,
   ...props
 }: HeaderBackButtonProps) {
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
-  const interactiveStyle = withInteractivePressableStyle(styleProp, interaction, {
-    disabled: Boolean(props.disabled),
-    pressedVariant: 'default',
-  });
 
   return (
-    // A role, a name and a touch target, set before `props` so a caller can override.
-    // Without the role, React Native Web gave Tab a stop that Enter could not press, and
-    // without the name VoiceOver read the chevron glyph.
+    // The name is set before `props` so a caller can override it. Without it VoiceOver
+    // read the chevron glyph.
     <Pressable
-      accessibilityRole="button"
       accessibilityLabel={label ?? 'Back'}
       hitSlop={8}
-      className={cn(
-        'flex-row items-center justify-center gap-1 rounded-full py-1',
-        focusRing,
-        className
-      )}
+      feedback="default"
+      className={cn('flex-row items-center justify-center gap-1 rounded-full py-1', className)}
       style={(state) => [
         { minHeight: visual.touchTargetMinSize, minWidth: visual.touchTargetMinSize },
-        typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle,
+        typeof styleProp === 'function' ? styleProp(state) : styleProp,
       ]}
       {...props}
     >

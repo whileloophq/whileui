@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable as RNPressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable } from '../../components/pressable';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -204,14 +205,14 @@ function DateRangePickerModalSession({
       <OverlayHost open={open} animationType="slide" onRequestClose={handleBackdropPress}>
         {/* Containers only. Pressable defaults to `accessible: true`, which on iOS
             collapses the calendar and its controls into one accessibility element. */}
-        <Pressable
+        <RNPressable
           accessible={false}
           importantForAccessibility="no"
           className="flex-1 justify-end"
           style={{ backgroundColor: colors.overlay }}
           onPress={handleBackdropPress}
         >
-          <Pressable
+          <RNPressable
             accessible={false}
             className={cn(
               'border border-border relative overflow-hidden',
@@ -268,8 +269,8 @@ function DateRangePickerModalSession({
                 />
               </View>
             </View>
-          </Pressable>
-        </Pressable>
+          </RNPressable>
+        </RNPressable>
       </OverlayHost>
     </>
   );

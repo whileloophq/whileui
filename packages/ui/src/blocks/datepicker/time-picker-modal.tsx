@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Platform,
-  Pressable,
+  Pressable as RNPressable,
   ScrollView,
   View,
   type NativeScrollEvent,
@@ -11,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { Button, ButtonText } from '../../components/button';
 import { cn } from '../../lib/cn';
@@ -196,7 +197,8 @@ function Wheel({ label, options, selected, onSelect }: WheelProps) {
             <Pressable
               key={option.value}
               onPress={() => onSelect(option.value)}
-              focusable={false}
+              tabIndex={-1}
+              focusIndicator="none"
               className="items-center justify-center"
               style={{ height: ITEM_HEIGHT }}
             >
@@ -296,14 +298,14 @@ function TimePickerModalSession({
       <OverlayHost open={open} animationType="slide" onRequestClose={handleDismiss}>
         {/* Containers only. Pressable defaults to `accessible: true`, which on iOS
             collapses the wheels and their controls into one accessibility element. */}
-        <Pressable
+        <RNPressable
           accessible={false}
           importantForAccessibility="no"
           className="flex-1 justify-end"
           style={{ backgroundColor: colors.overlay }}
           onPress={handleDismiss}
         >
-          <Pressable
+          <RNPressable
             accessible={false}
             className={cn(
               'border border-border relative overflow-hidden',
@@ -370,8 +372,8 @@ function TimePickerModalSession({
                 />
               ) : null}
             </View>
-          </Pressable>
-        </Pressable>
+          </RNPressable>
+        </RNPressable>
       </OverlayHost>
     </>
   );

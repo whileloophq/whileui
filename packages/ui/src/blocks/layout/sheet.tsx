@@ -1,9 +1,8 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import {
-  Pressable,
+  Pressable as RNPressable,
   ScrollView,
   type ScrollViewProps,
-  type PressableProps,
   type StyleProp,
   StyleSheet,
   useWindowDimensions,
@@ -13,11 +12,13 @@ import {
 } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, type PressableProps } from '../../components/pressable';
 import { Text } from '../../components/text';
+import { CrossGlyph } from '../../lib/cross-glyph';
 import { cn } from '../../lib/cn';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useOverlayPresence } from '../../lib/overlay-presence';
 import { useTapOnly } from '../../lib/tap-only';
@@ -161,7 +162,7 @@ export function Sheet({
         </Animated.View>
         {/* Tap-to-dismiss only, and a tap only: a drag across it must not close the sheet.
             Not an accessibility element; screen reader users close from inside. */}
-        <Pressable
+        <RNPressable
           accessible={false}
           importantForAccessibility="no"
           className="flex-1"
@@ -191,7 +192,6 @@ export function SheetHeader({
   ...props
 }: SheetHeaderProps) {
   const { onClose } = useContext(SheetContext);
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
 
   return (
@@ -228,20 +228,13 @@ export function SheetHeader({
       {children ?? (
         <Pressable
           onPress={onClose}
-          className="p-2 -mr-2 -mt-2 -mb-2"
-          style={withInteractivePressableStyle({ borderRadius: visual.radiusMd }, interaction, {
-            pressedVariant: 'default',
-          })}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityRole="button"
+          // 44 px everywhere, since hitSlop does nothing on the web; the negative margin
+          // keeps the header as compact as the old glyph button left it.
+          hitSlop={2}
+          className="-my-2 -mr-2 h-11 w-11 items-center justify-center rounded-full active:bg-state-pressed"
           accessibilityLabel="Close"
         >
-          <Text
-            className="text-muted-foreground leading-none"
-            style={typographyStyle(visual, 'title')}
-          >
-            ×
-          </Text>
+          <CrossGlyph size={14} />
         </Pressable>
       )}
     </View>
@@ -324,7 +317,6 @@ export function SheetClose({ children, asChild, className, onPress, ...props }: 
 
   return (
     <Pressable
-      accessibilityRole="button"
       {...props}
       className={cn(className)}
       onPress={composeEventHandlers(onPress, () => onClose())}

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Pressable, View, type TextInputInstance } from 'react-native';
-import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
+import { View, type TextInputInstance } from 'react-native';
+import { Pressable } from '../pressable';
 import type { ForwardRefComponent } from '../../lib/ref-types';
 import { Input, type InputProps } from '../input';
 import { CrossGlyph } from '../../lib/cross-glyph';
@@ -68,11 +67,10 @@ export const SearchField: ForwardRefComponent<TextInputInstance, SearchFieldProp
         suffix={
           value ? (
             <Pressable
-              accessibilityRole="button"
               accessibilityLabel={clearLabel}
               hitSlop={12}
               onPress={() => onChangeText('')}
-              className={cn('h-6 w-6 items-center justify-center rounded-full bg-muted', focusRing)}
+              className="h-6 w-6 items-center justify-center rounded-full bg-muted"
             >
               <CrossGlyph size={9} />
             </Pressable>

@@ -777,29 +777,33 @@ blinking cursor.
 ```tsx
 import { Pressable, Text } from '@thewhileloop/whileui';
 
-<Pressable
-  accessibilityRole="button"
-  feedback="strong"
-  disabledFeedback="default"
-  loading={false}
-  onPress={() => {}}
->
+<Pressable feedback="strong" onPress={() => {}}>
   <Text>Open</Text>
 </Pressable>;
 ```
 
-`Pressable` preserves React Native's event, ref, accessibility, and function-style
-`style` contracts. Feedback changes opacity without changing layout. Native press state
-comes directly from React Native; web adds a motion-policy-aware opacity transition.
+The base every WhileUI control renders through; build custom controls on it rather than
+React Native's `Pressable`. It decides from its handlers whether it is a control. With
+`onPress`, `onLongPress`, `onPressIn` or `onPressOut` it is a `button` unless you pass
+another role, a Tab stop on web with a focus ring, and at least 24px there, where
+`hitSlop` does nothing. Without a handler it is plain content: no role, no feedback and
+no Tab stop. Express state with `aria-checked`, `aria-selected` or `aria-expanded`; React
+Native maps them to native accessibility state and React Native Web emits them as
+written.
+
+It preserves React Native's event, ref, accessibility and function-style `style`
+contracts. Feedback changes opacity without changing layout. Native press state comes
+directly from React Native; web adds a motion-policy-aware opacity transition.
 
 <!-- api:Pressable -->
 
-| Prop             | Type              | Default     | Description                                                                 |
-| ---------------- | ----------------- | ----------- | --------------------------------------------------------------------------- |
-| className        | `string`          | —           | Additional Tailwind classes.                                                |
-| feedback         | `PressedVariant`  | `'none'`    | Semantic press feedback. `none` preserves a plain React Native Pressable.   |
-| disabledFeedback | `DisabledVariant` | `'default'` | Opacity used while the control is unavailable.                              |
-| loading          | `boolean`         | `false`     | Loading controls are busy and non-interactive, just like disabled controls. |
+| Prop             | Type              | Default     | Description                                                                  |
+| ---------------- | ----------------- | ----------- | ---------------------------------------------------------------------------- |
+| className        | `string`          | —           | Additional Tailwind classes.                                                 |
+| feedback         | `PressedVariant`  | `'none'`    | Semantic press feedback. `none` preserves a plain React Native Pressable.    |
+| disabledFeedback | `DisabledVariant` | `'default'` | Opacity used while the control is unavailable.                               |
+| loading          | `boolean`         | `false`     | Loading controls are busy and non-interactive, just like disabled controls.  |
+| focusIndicator   | `FocusIndicator`  | `'ring'`    | Keyboard focus on web: `inset` inside a track, `none` when a proxy draws it. |
 
 Also accepts the props of React Native's `PressableProps`.
 <!-- /api:Pressable -->
@@ -823,15 +827,16 @@ import { Button, ButtonText, ButtonIcon } from '@thewhileloop/whileui';
 
 <!-- api:Button -->
 
-| Prop             | Type                                                                          | Default     | Description                                                             |
-| ---------------- | ----------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------- |
-| children         | `React.ReactNode`                                                             | —           |                                                                         |
-| className        | `string`                                                                      | —           | Additional Tailwind classes.                                            |
-| disabled         | `boolean`                                                                     | `false`     | Disable the button.                                                     |
-| loading          | `boolean`                                                                     | `false`     | Shows a centered spinner, exposes busy state, and prevents interaction. |
-| disabledFeedback | `DisabledVariant`                                                             | —           | Opacity used while the control is unavailable.                          |
-| size             | `'sm' \| 'lg' \| 'default' \| 'icon'`                                         | `'default'` |                                                                         |
-| variant          | `'default' \| 'destructive' \| 'outline' \| 'secondary' \| 'ghost' \| 'link'` | `'default'` |                                                                         |
+| Prop             | Type                                                                          | Default     | Description                                                                  |
+| ---------------- | ----------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| children         | `React.ReactNode`                                                             | —           |                                                                              |
+| className        | `string`                                                                      | —           | Additional Tailwind classes.                                                 |
+| disabled         | `boolean`                                                                     | `false`     | Disable the button.                                                          |
+| loading          | `boolean`                                                                     | `false`     | Shows a centered spinner, exposes busy state, and prevents interaction.      |
+| disabledFeedback | `DisabledVariant`                                                             | —           | Opacity used while the control is unavailable.                               |
+| focusIndicator   | `FocusIndicator`                                                              | `'ring'`    | Keyboard focus on web: `inset` inside a track, `none` when a proxy draws it. |
+| size             | `'sm' \| 'lg' \| 'default' \| 'icon'`                                         | `'default'` |                                                                              |
+| variant          | `'default' \| 'destructive' \| 'outline' \| 'secondary' \| 'ghost' \| 'link'` | `'default'` |                                                                              |
 
 Also accepts the props of `PressableProps`.
 <!-- /api:Button -->
@@ -2599,20 +2604,23 @@ import { ProductCard } from '@thewhileloop/whileui';
 
 <!-- api:ProductCard -->
 
-| Prop             | Type                         | Default      | Description                                     |
-| ---------------- | ---------------------------- | ------------ | ----------------------------------------------- |
-| imageUrl         | `string`                     | —            |                                                 |
-| title (required) | `string`                     | —            |                                                 |
-| description      | `string`                     | —            |                                                 |
-| price (required) | `string`                     | —            |                                                 |
-| originalPrice    | `string`                     | —            |                                                 |
-| badge            | `string`                     | —            |                                                 |
-| rating           | `number`                     | —            |                                                 |
-| reviewCount      | `number`                     | —            |                                                 |
-| inStock          | `boolean`                    | `true`       |                                                 |
-| variant          | `'vertical' \| 'horizontal'` | `'vertical'` |                                                 |
-| loading          | `boolean`                    | `false`      | Show a skeleton placeholder instead of content. |
-| className        | `string`                     | —            |                                                 |
+| Prop             | Type                         | Default      | Description                                                                  |
+| ---------------- | ---------------------------- | ------------ | ---------------------------------------------------------------------------- |
+| imageUrl         | `string`                     | —            |                                                                              |
+| title (required) | `string`                     | —            |                                                                              |
+| description      | `string`                     | —            |                                                                              |
+| price (required) | `string`                     | —            |                                                                              |
+| originalPrice    | `string`                     | —            |                                                                              |
+| badge            | `string`                     | —            |                                                                              |
+| rating           | `number`                     | —            |                                                                              |
+| reviewCount      | `number`                     | —            |                                                                              |
+| inStock          | `boolean`                    | `true`       |                                                                              |
+| variant          | `'vertical' \| 'horizontal'` | `'vertical'` |                                                                              |
+| loading          | `boolean`                    | `false`      | Show a skeleton placeholder instead of content.                              |
+| className        | `string`                     | —            | Additional Tailwind classes.                                                 |
+| feedback         | `PressedVariant`             | —            | Semantic press feedback. `none` preserves a plain React Native Pressable.    |
+| disabledFeedback | `DisabledVariant`            | —            | Opacity used while the control is unavailable.                               |
+| focusIndicator   | `FocusIndicator`             | `'ring'`     | Keyboard focus on web: `inset` inside a track, `none` when a proxy draws it. |
 
 Also accepts the props of `PressableProps`.
 <!-- /api:ProductCard -->
@@ -3282,19 +3290,22 @@ import { ListItem } from '@thewhileloop/whileui';
 
 <!-- api:ListItem -->
 
-| Prop             | Type              | Default | Description                                     |
-| ---------------- | ----------------- | ------- | ----------------------------------------------- |
-| icon             | `React.ReactNode` | —       |                                                 |
-| title (required) | `string`          | —       |                                                 |
-| subtitle         | `string`          | —       |                                                 |
-| description      | `string`          | —       |                                                 |
-| rightIcon        | `React.ReactNode` | —       |                                                 |
-| rightText        | `string`          | —       |                                                 |
-| action           | `React.ReactNode` | —       |                                                 |
-| showBorder       | `boolean`         | `true`  |                                                 |
-| compact          | `boolean`         | `false` |                                                 |
-| loading          | `boolean`         | `false` | Show a skeleton placeholder instead of content. |
-| className        | `string`          | —       |                                                 |
+| Prop             | Type              | Default  | Description                                                                  |
+| ---------------- | ----------------- | -------- | ---------------------------------------------------------------------------- |
+| icon             | `React.ReactNode` | —        |                                                                              |
+| title (required) | `string`          | —        |                                                                              |
+| subtitle         | `string`          | —        |                                                                              |
+| description      | `string`          | —        |                                                                              |
+| rightIcon        | `React.ReactNode` | —        |                                                                              |
+| rightText        | `string`          | —        |                                                                              |
+| action           | `React.ReactNode` | —        |                                                                              |
+| showBorder       | `boolean`         | `true`   |                                                                              |
+| compact          | `boolean`         | `false`  |                                                                              |
+| loading          | `boolean`         | `false`  | Show a skeleton placeholder instead of content.                              |
+| className        | `string`          | —        | Additional Tailwind classes.                                                 |
+| feedback         | `PressedVariant`  | —        | Semantic press feedback. `none` preserves a plain React Native Pressable.    |
+| disabledFeedback | `DisabledVariant` | —        | Opacity used while the control is unavailable.                               |
+| focusIndicator   | `FocusIndicator`  | `'ring'` | Keyboard focus on web: `inset` inside a track, `none` when a proxy draws it. |
 
 Also accepts the props of `PressableProps`.
 <!-- /api:ListItem -->
@@ -3309,18 +3320,21 @@ import { NotificationItem } from '@thewhileloop/whileui';
 
 <!-- api:NotificationItem -->
 
-| Prop               | Type              | Default | Description                                     |
-| ------------------ | ----------------- | ------- | ----------------------------------------------- |
-| icon               | `React.ReactNode` | —       |                                                 |
-| avatarUrl          | `string`          | —       |                                                 |
-| avatarFallback     | `string`          | —       |                                                 |
-| title (required)   | `string`          | —       |                                                 |
-| message (required) | `string`          | —       |                                                 |
-| time (required)    | `string`          | —       |                                                 |
-| read               | `boolean`         | `false` |                                                 |
-| showDot            | `boolean`         | `true`  |                                                 |
-| loading            | `boolean`         | `false` | Show a skeleton placeholder instead of content. |
-| className          | `string`          | —       |                                                 |
+| Prop               | Type              | Default  | Description                                                                  |
+| ------------------ | ----------------- | -------- | ---------------------------------------------------------------------------- |
+| icon               | `React.ReactNode` | —        |                                                                              |
+| avatarUrl          | `string`          | —        |                                                                              |
+| avatarFallback     | `string`          | —        |                                                                              |
+| title (required)   | `string`          | —        |                                                                              |
+| message (required) | `string`          | —        |                                                                              |
+| time (required)    | `string`          | —        |                                                                              |
+| read               | `boolean`         | `false`  |                                                                              |
+| showDot            | `boolean`         | `true`   |                                                                              |
+| loading            | `boolean`         | `false`  | Show a skeleton placeholder instead of content.                              |
+| className          | `string`          | —        | Additional Tailwind classes.                                                 |
+| feedback           | `PressedVariant`  | —        | Semantic press feedback. `none` preserves a plain React Native Pressable.    |
+| disabledFeedback   | `DisabledVariant` | —        | Opacity used while the control is unavailable.                               |
+| focusIndicator     | `FocusIndicator`  | `'ring'` | Keyboard focus on web: `inset` inside a track, `none` when a proxy draws it. |
 
 Also accepts the props of `PressableProps`.
 <!-- /api:NotificationItem -->

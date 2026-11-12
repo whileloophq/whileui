@@ -1,11 +1,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { AccessibilityInfo, Platform, Pressable, View, type ViewProps } from 'react-native';
+import { AccessibilityInfo, Platform, View, type ViewProps } from 'react-native';
+import { Pressable } from '../pressable';
 import Animated, { FadeOut, SlideInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
 import { CrossGlyph } from '../../lib/cross-glyph';
-import { focusRing } from '../../lib/focus-ring';
 import { useMotionPolicy } from '../../lib/motion-policy';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -164,12 +164,11 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
         </View>
         {action ? (
           <Pressable
-            accessibilityRole="button"
             onPress={() => {
               action.onPress();
               onDismiss();
             }}
-            className={cn('border border-border active:bg-state-pressed', focusRing)}
+            className="border border-border active:bg-state-pressed"
             style={{
               borderRadius: visual.radiusMd,
               borderWidth: visual.borderWidthControl,
@@ -186,16 +185,12 @@ function Toast({ toast: toastData, onDismiss, className, style, ...props }: Toas
           </Pressable>
         ) : null}
         <Pressable
-          accessibilityRole="button"
           accessibilityLabel="Dismiss"
           onPress={onDismiss}
           // 44 px everywhere, since hitSlop does nothing on the web; the negative margin
           // keeps the toast as compact as the old 32 px button left it.
           hitSlop={2}
-          className={cn(
-            '-my-1.5 -mr-1.5 h-11 w-11 items-center justify-center rounded-full active:bg-state-pressed',
-            focusRing
-          )}
+          className="-my-1.5 -mr-1.5 h-11 w-11 items-center justify-center rounded-full active:bg-state-pressed"
         >
           <CrossGlyph size={12} />
         </Pressable>

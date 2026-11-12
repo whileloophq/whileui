@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import {
   View,
-  Pressable,
+  Pressable as RNPressable,
   Text,
   Alert,
   Platform,
@@ -18,12 +18,11 @@ import {
   type ViewProps,
   type ViewStyle,
   type TextProps,
-  type PressableProps,
   type PressableStateCallbackType,
 } from 'react-native';
 import { cn } from '../../lib/cn';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { Pressable, type PressableProps } from '../pressable';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { OverlayHost } from '../../lib/overlay-host';
@@ -212,7 +211,6 @@ function AlertDialogTrigger({
 
   return (
     <Pressable
-      accessibilityRole="button"
       {...props}
       className={cn(className)}
       onPress={composeEventHandlers(onPress, () => setOpen(true))}
@@ -332,7 +330,7 @@ function AlertDialogContent({
   }, [open, useNativeAlert, setOpen, nativeCopyRef]);
 
   const themedBody = (
-    <Pressable
+    <RNPressable
       // Tap-to-dismiss is a pointer affordance. Left accessible, this Pressable would be
       // a single accessibility element wrapping the entire dialog, so VoiceOver would
       // reach one "dismiss" target and none of the buttons inside it. Screen reader users
@@ -343,7 +341,7 @@ function AlertDialogContent({
       style={{ backgroundColor: colors.overlayStrong }}
       onPress={() => setOpen(false)}
     >
-      <Pressable
+      <RNPressable
         // This Pressable is a container: its only `onPress` stops the backdrop from
         // dismissing. `accessible={false}` is what keeps it that way — Pressable defaults
         // to `accessible: true`, which on iOS collapses every descendant into one element
@@ -378,8 +376,8 @@ function AlertDialogContent({
       >
         {frostedSurface.overlay}
         {children}
-      </Pressable>
-    </Pressable>
+      </RNPressable>
+    </RNPressable>
   );
 
   if (useNativeAlert) {
@@ -496,15 +494,11 @@ function AlertDialogAction({
   ...props
 }: AlertDialogActionProps) {
   const { setOpen, nativeCopyRef } = useContext(AlertDialogContext);
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const onPressRef = useRef(onPress);
   useLayoutEffect(() => {
     onPressRef.current = onPress;
   }, [onPress]);
-  const interactiveStyle = withInteractivePressableStyle(undefined, interaction, {
-    pressedVariant: 'strong',
-  });
 
   useLayoutEffect(() => {
     const copy = nativeCopyRef.current;
@@ -532,24 +526,14 @@ function AlertDialogAction({
 
   return (
     <Pressable
-      // Pressable sets no role of its own, so without this the confirm button in a
-      // destructive dialog announces as a plain view. Before the spread, so a caller can
-      // still override it.
-      accessibilityRole="button"
+      feedback="strong"
       {...props}
       className={cn('inline-flex items-center justify-center bg-primary', className)}
-      style={(state) => {
-        const baseStyle =
-          typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle;
-        return [
-          baseStyle,
-          {
-            minHeight: visual.controlHeightDefault,
-            borderRadius: visual.radiusLg,
-            paddingHorizontal: visual.controlPaddingXDefault,
-            paddingVertical: visual.controlPaddingYDefault,
-          },
-        ];
+      style={{
+        minHeight: visual.controlHeightDefault,
+        borderRadius: visual.radiusLg,
+        paddingHorizontal: visual.controlPaddingXDefault,
+        paddingVertical: visual.controlPaddingYDefault,
       }}
       onPress={composeEventHandlers(onPress, () => setOpen(false))}
     >
@@ -569,15 +553,11 @@ function AlertDialogAction({
 
 function AlertDialogCancel({ className, children, onPress, ...props }: AlertDialogCancelProps) {
   const { setOpen, nativeCopyRef } = useContext(AlertDialogContext);
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const onPressRef = useRef(onPress);
   useLayoutEffect(() => {
     onPressRef.current = onPress;
   }, [onPress]);
-  const interactiveStyle = withInteractivePressableStyle(undefined, interaction, {
-    pressedVariant: 'default',
-  });
 
   useLayoutEffect(() => {
     const copy = nativeCopyRef.current;
@@ -594,25 +574,18 @@ function AlertDialogCancel({ className, children, onPress, ...props }: AlertDial
 
   return (
     <Pressable
-      accessibilityRole="button"
+      feedback="default"
       {...props}
       className={cn(
         'inline-flex items-center justify-center border-border bg-transparent',
         className
       )}
-      style={(state) => {
-        const baseStyle =
-          typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle;
-        return [
-          baseStyle,
-          {
-            minHeight: visual.controlHeightDefault,
-            borderWidth: visual.borderWidthControl,
-            borderRadius: visual.radiusLg,
-            paddingHorizontal: visual.controlPaddingXDefault,
-            paddingVertical: visual.controlPaddingYDefault,
-          },
-        ];
+      style={{
+        minHeight: visual.controlHeightDefault,
+        borderWidth: visual.borderWidthControl,
+        borderRadius: visual.radiusLg,
+        paddingHorizontal: visual.controlPaddingXDefault,
+        paddingVertical: visual.controlPaddingYDefault,
       }}
       onPress={composeEventHandlers(onPress, () => setOpen(false))}
     >

@@ -35,23 +35,21 @@ Update this block before ending every work session, including sessions that end 
 of an error or missing decision.
 
 ```text
-Current phase: Phase 3 — Overlays and keyboard
-Current task: P3-01 — Overlay coordinator contract (implemented; evidence in the task)
-Status: in progress — every gate passed; closes on commit
+Current phase: Phase 2C — One control foundation
+Current task: C-02 — Stateful controls on `@rn-primitives` (not started)
+Status: C-01 complete in the working tree, not committed
 Branch: main
-Last verified commit: 0ff1089 (`Release 4.2.0`, published)
-Working tree at handoff: overlay host and presence hook, eleven migrated hosts, four
-  portal content components, sheet motion, five press-token fixes, box-shadow recipe,
-  DialogTitle header role, contract tests, browser tests, Maestro flow, showcase nested
-  demo, README, stability, AGENTS, PLAN, changeset — not committed
+Last verified commit: dca0656 (`Draw the back and month chevrons`, after 4.7.1;
+  verified, not released)
+Working tree at handoff: the Phase 2C plan (IMPLEMENTATION.md, PLAN.md); C-01 — the
+  control base, 23 call sites moved onto it, AGENTS/README updates, a catalog demo, one
+  reviewed accessibility baseline, `.changeset/control-base.md`
 Last command run: bun run verify
-Last command result: passed — format, zero-warning lint, typecheck, 134 unit tests,
-  build, 150 kB publishable tarball, iOS and Android exports, 116 Chromium/WebKit tests
-  (115 passed, one existing WebKit autofill skip). Final iOS and Android release builds
-  pass the nested flow; the translucent card renders clean on both
-Next safe action: decide the shapes of the D-03 pulled components, starting with the
-  labelled Select; then P3-02 with AlertDialog, whose `presentation="overlay"` path is
-  the first thing to re-examine now that a nested native Modal is proven on iOS
+Last command result: passed — 227 unit tests, 289 kB tarball, iOS and Android exports,
+  150 Chromium/WebKit tests
+Next safe action: commit C-01 once the owner has reviewed it; then C-02 with Checkbox —
+  pin `@rn-primitives/checkbox` exactly, boot the Android emulator for the spike's
+  missing half, and write the Space-key Playwright spec before moving the component
 Blockers: none. The Android emulator is unusable while the host load average is above
   roughly 12; see AGENTS.md > Tooling gotchas before rerunning its flows
 ```
@@ -110,7 +108,14 @@ The commit and working-tree lines are historical hints, not authority. Always ru
 
 ## Product-pulled deliveries
 
-### [~] D-03 — Consumer audit: fixes and pulled components
+### [x] D-03 — Consumer audit: fixes and pulled components
+
+**Closed 2026-11-12.** Items 1–7 and 9 shipped in 4.5.0–4.7.0 (`KeyboardAwareScrollView`,
+`SelectField`, `PageHeader`, `SearchField` + `useDebouncedSearch`, labelled `Checkbox` and
+`Switch`, `SectionedList`, `Pagination`, scrolling `SegmentedControl`, pressable and
+disabled `DataRow`, `FormModalScreen` text actions) and the proving product adopted
+each. Item 8 stays an application pattern: a `Stack` holding the sentence and two
+buttons, no component. Item 10 moves to C-03, which needs a device check for it anyway.
 
 **Goal:** close the generic gaps the first consuming application exposed, without
 publishing product-shaped components or letting the app hide library defects behind
@@ -391,12 +396,264 @@ record of what cannot substitute.
 **Follow-up, not a blocker:** nested scrolling under forced RTL on a device. Forcing RTL
 needs a showcase switch that restarts the app.
 
+## Phase 2C — One control foundation
+
+Phase exit: no component or block renders React Native's press primitives except
+through the control base; every Tier 1 stateful control and menu takes its behaviour
+from `@rn-primitives`, pinned exactly; the interaction sweep, including opened overlays
+and arrow keys, reports nothing in Chromium and WebKit; the iOS sweep flow passes; a
+release with upgrade notes is published and the proving product runs on it.
+
+**Why this phase exists.** Phase 2 built a shared press primitive and migrated `Button`,
+and nothing required anything else to use it. An inventory on 2026-11-12 found 67
+`Pressable`s across components and blocks — 48 controls and 19 containers (backdrops
+and panels). Three components rendered the shared primitive. Of the 48 controls, 16
+drew `focusRing` on the element that takes focus, 3 set `tabIndex`, 5 had a minimum
+target, and selection state reached assistive technology in six different ways.
+Thirteen behaviour components — Accordion, AlertDialog, Checkbox, Collapsible,
+ContextMenu, Dialog, DropdownMenu, Menubar, RadioGroup, Switch, Tabs, ToggleGroup and
+Toggle — were hand-built, although `PLAN.md` > Supported stack names `@rn-primitives/*`
+as the behaviour layer, and the dependency range was `>=1.5.2` rather than pinned. None
+of the thirteen handles an arrow key, so on web every radio, tab and menu item is its
+own Tab stop.
+
+The defects consumers reported through 4.4–4.7 — a checkbox whose label was a second
+control, toggles the browser could not tell were on, a focus ring that never showed on
+one screen — were each one instance of that. Fixing instances does not end the class.
+Making the correct path the only path does.
+
+**Contract this phase establishes:**
+
+1. **Behaviour from `@rn-primitives`, appearance and layering from WhileUI.** On native
+   the primitives set role, `aria-*` state and `accessibilityState` together; on web
+   they wrap our React Native element in Radix through `asChild`, which supplies the
+   WAI-ARIA keyboard patterns (roving focus, arrow keys, Home/End, typeahead). Checked
+   against the 1.5.2 sources of checkbox, switch, radio-group, tabs, toggle-group,
+   accordion, dropdown-menu and dialog. Overlay layering stays with `OverlayHost`.
+2. **One control base.** Every interactive element in a component or block renders
+   through `components/pressable`, extended rather than duplicated, either directly or
+   as the `asChild` target of a primitive part. The base derives what callers kept
+   getting wrong:
+   - interactive only when it has a press handler: otherwise no role, no feedback and
+     `tabIndex={-1}`;
+   - role `button` by default when interactive;
+   - a focus indicator by default (`ring`, `inset`, `field` or an explicit `none`);
+   - a 24px minimum target on web, where `hitSlop` does nothing.
+3. **State through `aria-*` only.** `aria-checked`, `aria-selected`, `aria-expanded` and
+   `aria-disabled`: React Native maps them to native accessibility state and React
+   Native Web emits them as they are. Library code stops writing `accessibilityState`.
+4. **State styled from data attributes, if the spike proves it** — `data-state` and
+   `data-disabled`, matched by Uniwind's `data-[…]:` variants on native (documented
+   since Uniwind 1.3), giving consumers one styling vocabulary across targets.
+5. **Containers are not controls.** One backdrop and one panel implementation —
+   inaccessible, hidden from assistive technology, tap-only — serve all 19 container
+   sites.
+6. **Enforced by lint and gates, not by memory**, and stated briefly enough that the
+   agent docs can carry it whole.
+
+**Release shape:** C-01 to C-04 change roles, ARIA and keyboard behaviour but not props,
+so they ship as minor releases. Prop renames from C-05 land together in one major with
+call-site instructions.
+
+### [x] C-01 — Control base
+
+**Goal:** extend the shared `Pressable` into the base every control renders through,
+and move the plain buttons onto it.
+
+**Prerequisites:** none.
+
+**Work:**
+
+- Spike first and record the result: does a `data-*` prop reach the DOM through React
+  Native Web 0.21, and does the same `data-[…]:` class apply on iOS, Android and web? If
+  not, drop contract item 4 and keep state styling per component.
+- Derive interactivity from the handlers. An explicit `accessibilityRole` or `tabIndex`
+  from the caller still wins.
+- Default role, focus indicator and web minimum target. Native `hitSlop` stays
+  explicit, because the base cannot know a visual size before layout.
+- Keep feedback, loading, disabled, refs and function styles exactly as P2-02 left
+  them.
+- Move the plain buttons onto the base: `DataRow`, `ListItem`, header actions, the toast
+  close, chips, the FAB items, pagination and calendar buttons, and the rest of the
+  inventory's controls that are not stateful.
+
+**Acceptance evidence:** contract tests for each derived default (no handler: no role
+and not focusable on web; handler: `button`, a Tab stop, Enter and Space activate;
+disabled: `aria-disabled` and no press; keyboard focus shows the ring); the interaction
+sweep passes with no new allowance; the accessibility-tree baseline diff is reviewed;
+`bun run verify`.
+
+**Review cards:** 02, 05, 07, 09, 10, 11.
+
+**Notes/evidence:** Started 2026-11-12.
+
+- Spike, 2026-11-12: three probes in the catalog — a `View` with `data-state="on"`, one
+  with `"off"`, and a `Pressable` with a bare boolean `data-checked`, each styled
+  `bg-muted data-[…]:bg-destructive`. Web (React Native Web 0.21, Chromium): the
+  attributes reach the DOM and the computed backgrounds are destructive, muted,
+  destructive. iOS 17 Pro simulator through Expo Go: the same three colours. Contract
+  item 4 holds. Android is not yet observed — no emulator was running — and is part of
+  this task's closing device run.
+- Base, 2026-11-12: `Pressable` derives interactivity from its four press handlers;
+  with one it defaults to `button`, carries `focusRing` (or `focusRingInset`, or none
+  through `focusIndicator`) and `web:min-h-6 web:min-w-6`; without one it has no role
+  and `tabIndex={-1}` on web only — on Android `tabIndex` maps to `focusable`, which
+  there is no reason to touch. State is `aria-*` only; React Native's `Pressable.js`
+  merges those into `accessibilityState` with `disabled` winning, so the base no longer
+  writes `accessibilityState`. Five new contract tests.
+- Moved onto it: Chat suggestions and send, ProductCard, ListItem, NotificationItem,
+  DataRow, the three date-picker triggers and the time-picker wheel rows, Sheet's close
+  and `SheetClose`, ConfirmActionSheet's actions, DrawerMenu items, Header actions and
+  `HeaderBackButton`, BottomNav, FloatingBottomNav and TabBar items, Dialog and
+  AlertDialog triggers and actions, Toast's action and dismiss, SearchField's clear and
+  NumericInput's steppers. Four files lost a hand-written copy of the handler-derived
+  role and `tabIndex` logic. Their backdrops and panels stay on React Native's
+  `Pressable`, imported as `RNPressable`, until C-03.
+- Defects fixed on the way: Chat's suggestion chips pressed `bg-muted` onto `bg-muted`
+  and showed nothing; the send button's name carried its state ("Send (disabled)");
+  Sheet's close drew a "×" glyph with `leading-none`, now `CrossGlyph` at 44px; the
+  time-picker wheel rows were Tab stops inside a subtree hidden from assistive
+  technology; header actions were 40px with no `hitSlop`; nineteen of the moved
+  controls carried no `focusRing` class, so web showed at most the browser's default
+  outline.
+- The base caught a demo bug at once: the catalog's `HeaderBackButton` had no
+  `onPress`, so it is no longer announced as a button. The demo now has a handler.
+- Closed 2026-11-12. `bun run verify` passed: format, zero-warning lint, typecheck, 227
+  unit tests, build, a 289 kB tarball, iOS and Android exports, 150 Chromium/WebKit
+  tests. The one accessibility-tree change is the new Pressable demo, reviewed. No
+  container changed, and the classes the base adds are `web:`-scoped, so the device
+  run moves to C-02, the first task that styles from data attributes and changes native
+  behaviour; the Android half of the spike goes with it.
+
+### [ ] C-02 — Stateful controls on `@rn-primitives`
+
+**Goal:** Checkbox, Switch, RadioGroup, SegmentedControl, Toggle, ToggleGroup, Tabs,
+Accordion and Collapsible take behaviour from their primitive and appearance from the
+base. SegmentedControl is a radio group in behaviour, so it takes the radio-group or
+toggle-group primitive.
+
+**Prerequisites:** C-01.
+
+**Work:**
+
+- One family per commit, in that order. Public props unchanged; renames wait for C-05.
+- Pin each primitive exactly, and pin the four already in use, which today float.
+- Delete the hand-written state ARIA in favour of the primitive's.
+- Label and Progress: migrate only if it improves semantics; neither has keyboard
+  behaviour to gain.
+- Decide how navigation selection is expressed. `BottomNav`, `FloatingBottomNav` and
+  `TabBar` items are `tab`s with no `tablist` arrow keys, and DrawerMenu's active item
+  has no state at all. `aria-current="page"` is the web answer, and React Native has
+  no such prop, so the choice is between real tab lists with arrow keys and buttons
+  carrying a selected state.
+- Deprecate `withInteractivePressableStyle` once its last internal user moves; it is a
+  public export, so it is removed in C-05's major.
+
+**Acceptance evidence per family:** RNTL contract; once per task, before the first
+family that styles from `data-*`, the Android half of the C-01 spike and the existing
+Maestro flows on iOS and Android release builds; a Playwright keyboard spec in
+Chromium and WebKit following the WAI-ARIA pattern — one Tab stop and arrow keys with
+Home/End for radio groups, toggle groups and tab lists; Space for checkbox and switch;
+Enter and Space on accordion headers — with the tabs activation mode recorded as a
+decision; the baseline diff reviewed; reachable as its own element in the iOS sweep
+flow; `docs/stability.md` updated.
+
+**Review cards:** 02, 05, 07, 09, 11.
+
+**Notes/evidence:** Not started.
+
+### [ ] C-03 — Menus and containers
+
+**Goal:** DropdownMenu, ContextMenu and Menubar on their primitives inside the overlay
+host; one backdrop and panel for every container.
+
+**Prerequisites:** C-01.
+
+**Work:**
+
+- Follow `Select`'s pattern: the primitive's portal takes `useOverlayPortalTarget()`
+  and the content registers with `useNestedOverlay()`, so a menu inside a Dialog opens
+  inside it and Escape or back closes one layer.
+- Menu items render through the base with `menuitem`, `menuitemcheckbox` and
+  `menuitemradio` roles; arrow keys and typeahead come from the primitive on web.
+- Dialog, AlertDialog, Sheet and DrawerMenu stay on `OverlayHost`: P3-01 proved their
+  nesting, back and Escape on both devices, and no defect argues for replacing it.
+- Replace the 19 container `Pressable`s with the shared backdrop and panel.
+- Check on an iOS device whether a Select on a navigator-presented modal screen opens
+  above it (moved from D-03).
+
+**Acceptance evidence:** contract tests; Playwright opens each menu from the keyboard,
+moves with arrows, and Escape returns focus to the trigger, including one menu nested
+in a Dialog; the iOS and Android nested Maestro flow; baseline diff reviewed.
+
+**Review cards:** 02, 05, 07, 09, 10, 11.
+
+**Notes/evidence:** Not started.
+
+### [ ] C-04 — Enforcement and gates
+
+**Goal:** a contract violation fails a command instead of waiting for a consumer to see
+it.
+
+**Prerequisites:** C-02 and C-03, so the rules land with zero violations.
+
+**Work:**
+
+- ESLint `no-restricted-imports`: `Pressable` and the `Touchable*` family from
+  `react-native` are banned in `components/` and `blocks/` outside the base.
+- ESLint `no-restricted-syntax`: no `accessibilityState` attribute and no class string
+  containing a bare `outline-none` in library code.
+- The interaction sweep opens every menu, select, popover, dialog and sheet in the
+  catalog and runs the same checks inside it, and checks one Tab stop plus arrow-key
+  movement in every `radiogroup`, `tablist`, `menu` and toggle group.
+- A permanent iOS Maestro flow visits every catalog screen and asserts each control is
+  its own accessibility element — the container defect only iOS shows.
+
+**Acceptance evidence:** lint passes with no disables outside the base; the widened
+sweep passes in Chromium and WebKit; the iOS flow passes on the simulator and is listed
+in the release checklist, since it needs a device and so cannot run inside `verify`.
+
+**Review cards:** 04, 05, 07, 11.
+
+**Notes/evidence:** Not started.
+
+### [ ] C-05 — Agent-ready contract
+
+**Goal:** an agent or a new contributor builds a correct control from the docs alone,
+and the docs cannot drift from the code.
+
+**Prerequisites:** C-04.
+
+**Work:**
+
+- Rewrite `AGENTS.md` > Core component robustness: entries the base now enforces
+  collapse into "render controls through the base; lint stops anything else". Keep only
+  the platform facts that still need a person.
+- One prop vocabulary across controls: `value` / `defaultValue` / `onValueChange`,
+  `checked` / `defaultChecked` / `onCheckedChange`, `open` / `defaultOpen` /
+  `onOpenChange`, `disabled`, `onPress`. Audit every control; renames ship together in
+  one major whose changeset says what to change at each call site.
+- `catalog.json` and the llms files carry each control's role, keys and state
+  attributes, generated from source so they cannot drift; the build fails when an
+  exported control lacks them. The skill and the MCP server answer "how do I make this
+  interactive" with the base.
+
+**Acceptance evidence:** the generated docs build and their examples typecheck in the
+type-smoke fixture; the changeset names every rename with its replacement; the proving
+product upgrades using only those notes.
+
+**Review cards:** 03, 04, 06, 08, 09.
+
+**Notes/evidence:** Not started.
+
 ## Phase 3 — Overlays and keyboard
 
 Phase exit: the local critical acceptance flow passes Maestro on iOS and Android and
 Playwright in Chromium and WebKit.
 
-### [~] P3-01 — Overlay coordinator contract
+### [x] P3-01 — Overlay coordinator contract
+
+**Closed:** committed and released in 4.2.0; the evidence below is what closed it.
 
 **Goal:** coordinate stack order, topmost dismissal, portal roots and return-focus intent
 without reimplementing focus traps or menu semantics from the behavior substrate.
@@ -569,7 +826,7 @@ public props. Expected net code change is negative.
 **Goal:** move the product-used overlay families to the coordinator one family at a
 time without widening their public APIs.
 
-**Prerequisites:** P3-01.
+**Prerequisites:** P3-01; C-03 for the menu families, which move there.
 
 **Order:** AlertDialog, Sheet, DrawerMenu, then any additional family pulled by the
 local consumer plan.
@@ -872,6 +1129,21 @@ unstable API is churn, not help.
 - Phase 6B public registry UX before the internal registry is proven twice.
 
 ## Handoff log
+
+### 2026-11-12 — Phase 2C planned; C-01 control base
+
+- Outcome: researched how established React Native libraries structure interaction —
+  behaviour primitives separate from styling, state exposed as data attributes, a
+  touchable with no handler treated as non-interactive — and checked the
+  `@rn-primitives` 1.5.2 sources for the families WhileUI hand-built. Wrote Phase 2C
+  (C-01 to C-05) here and in `PLAN.md`, closed D-03 and P3-01, which had shipped, and
+  completed C-01.
+- Evidence: the data-attribute spike on web and iOS; `bun run verify` passed (see C-01).
+- Changed: `components/pressable`, 23 call sites in components and blocks, AGENTS
+  (four entries folded into one rule), README, the catalog's Pressable demo and back
+  button, `all-components.aria.yml`, `.changeset/control-base.md`.
+- Risk: a consumer's handler-less `HeaderBackButton` or custom `Pressable` stops being
+  a button; the changeset says so. Not yet observed on a device.
 
 Append one concise entry per work session. Keep the newest entry first and remove detail
 that has been incorporated into a completed task's Evidence section.

@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Pressable, ScrollView, type ViewProps, type PressableProps } from 'react-native';
+import { View, ScrollView, type ViewProps } from 'react-native';
+import { Pressable, type PressableProps } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
@@ -35,7 +35,6 @@ function TabBarItemComponent({
   ...props
 }: TabBarItemProps) {
   const { label, icon } = item;
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
 
   const showUnderline = variant === 'default' || (variant === 'underline' && isActive);
@@ -45,10 +44,6 @@ function TabBarItemComponent({
     ...(variant === 'pills' ? { borderRadius: visual.badgeRadius } : null),
     ...(showUnderline ? { borderBottomWidth: visual.borderWidthEmphasis } : null),
   };
-  const interactiveStyle = withInteractivePressableStyle(styleProp, interaction, {
-    disabled: Boolean(props.disabled),
-    pressedVariant: 'default',
-  });
 
   const baseStyles = 'flex-row items-center justify-center gap-2';
   const variantStyles = {
@@ -65,12 +60,13 @@ function TabBarItemComponent({
   return (
     <Pressable
       accessibilityRole="tab"
-      accessibilityState={{ selected: isActive }}
       aria-selected={isActive}
+      feedback="default"
+      focusIndicator="inset"
       className={cn(baseStyles, variantStyles[variant], className)}
       style={(state) => [
         tokenStyle,
-        typeof interactiveStyle === 'function' ? interactiveStyle(state) : interactiveStyle,
+        typeof styleProp === 'function' ? styleProp(state) : styleProp,
       ]}
       {...props}
     >

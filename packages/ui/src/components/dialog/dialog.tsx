@@ -1,15 +1,15 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import {
   View,
-  Pressable,
+  Pressable as RNPressable,
   Text,
   type StyleProp,
   type ViewProps,
   type ViewStyle,
   type TextProps,
-  type PressableProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
+import { Pressable, type PressableProps } from '../pressable';
 import { composeEventHandlers, type AsChildElement } from '../../lib/compose-event-handlers';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
@@ -107,7 +107,6 @@ function DialogTrigger({ className, children, asChild, onPress, ...props }: Dial
 
   return (
     <Pressable
-      accessibilityRole="button"
       {...props}
       className={cn(className)}
       onPress={composeEventHandlers(onPress, () => setOpen(true))}
@@ -140,7 +139,7 @@ function DialogContent({
 
   return (
     <OverlayHost open={open} animationType="fade" onRequestClose={() => setOpen(false)}>
-      <Pressable
+      <RNPressable
         // Tap-to-dismiss is a pointer affordance. Left accessible it would swallow the
         // whole panel into one element; screen reader users close from inside.
         accessible={false}
@@ -149,7 +148,7 @@ function DialogContent({
         style={{ backgroundColor: colors.overlayStrong }}
         onPress={() => setOpen(false)}
       >
-        <Pressable
+        <RNPressable
           // Container, not a control — Pressable defaults to `accessible: true`, which
           // on iOS collapses every descendant into one accessibility element.
           accessible={false}
@@ -173,8 +172,8 @@ function DialogContent({
         >
           {frostedSurface.overlay}
           {children}
-        </Pressable>
-      </Pressable>
+        </RNPressable>
+      </RNPressable>
     </OverlayHost>
   );
 }
@@ -228,7 +227,6 @@ function DialogClose({ className, children, asChild, onPress, ...props }: Dialog
 
   return (
     <Pressable
-      accessibilityRole="button"
       {...props}
       className={cn(className)}
       onPress={composeEventHandlers(onPress, () => setOpen(false))}

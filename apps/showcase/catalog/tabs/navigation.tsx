@@ -79,7 +79,7 @@ export function NavigationBlocksTab() {
           <Header
             title="Settings"
             subtitle="Manage your preferences"
-            leftAction={<HeaderBackButton label="Back" />}
+            leftAction={<HeaderBackButton label="Back" onPress={() => {}} />}
             rightActions={[
               {
                 key: 'search',

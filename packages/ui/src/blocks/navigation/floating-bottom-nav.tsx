@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
+import { View, type ViewProps } from 'react-native';
+import { Pressable, type PressableProps } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
 import { useVisualTokens } from '../../lib/visual-tokens';
@@ -43,7 +44,6 @@ function FloatingNavItem({
       accessibilityRole="tab"
       // Inactive tabs show only an icon, so the label must still name them.
       accessibilityLabel={label}
-      accessibilityState={{ selected: isActive }}
       aria-selected={isActive}
       className={cn(
         'flex-row items-center gap-2 active:scale-95',

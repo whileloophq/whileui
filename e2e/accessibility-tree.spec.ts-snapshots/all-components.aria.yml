@@ -36,7 +36,9 @@
   - progressbar "Loading":
     - img
 - 'button "Press test: 0"'
-- text: "Theme Bridge Official light/dark/system sync helper Active mode: system"
+- text: "Pressable The base every control renders through: a handler makes it a control"
+- button "With onPress A button, a Tab stop and a focus ring on web"
+- text: "Without a handler Plain content: no role and skipped by Tab Theme Bridge Official light/dark/system sync helper Active mode: system"
 - radiogroup:
   - radio "Light"
   - radio "Dark"

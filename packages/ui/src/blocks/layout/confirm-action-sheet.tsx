@@ -1,11 +1,17 @@
 import { useMemo } from 'react';
-import { Pressable, View, type StyleProp, type ViewProps, type ViewStyle } from 'react-native';
+import {
+  Pressable as RNPressable,
+  View,
+  type StyleProp,
+  type ViewProps,
+  type ViewStyle,
+} from 'react-native';
+import { Pressable } from '../../components/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
 import { OverlayHost } from '../../lib/overlay-host';
 import { useThemeColors } from '../../lib/theme-colors';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, surfacePadding, surfaceRadius, typographyStyle } from '../../lib/recipes';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
@@ -54,7 +60,6 @@ export function ConfirmActionSheet({
 }: ConfirmActionSheetProps) {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   const frostedSurface = useFrostedSurface({
     frosted,
@@ -98,7 +103,7 @@ export function ConfirmActionSheet({
     <OverlayHost open={open} animationType="fade" onRequestClose={handleClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: colors.overlay }}>
         {/* Backdrop: tap-to-dismiss only, not a control. */}
-        <Pressable
+        <RNPressable
           accessible={false}
           importantForAccessibility="no"
           className="flex-1"
@@ -147,23 +152,15 @@ export function ConfirmActionSheet({
                   className={cn(
                     'items-center justify-center',
                     isCancel ? 'border-border bg-muted' : 'border-transparent bg-secondary',
-                    isDestructive && 'bg-destructive-soft border-destructive-soft-border',
-                    action.disabled && ''
+                    isDestructive && 'bg-destructive-soft border-destructive-soft-border'
                   )}
-                  style={withInteractivePressableStyle(
-                    {
-                      ...controlRecipe(visual, 'default'),
-                      borderWidth: visual.borderWidthControl,
-                    },
-                    interaction,
-                    {
-                      disabled: Boolean(action.disabled),
-                      pressedVariant: 'default',
-                    }
-                  )}
+                  feedback="default"
+                  style={{
+                    ...controlRecipe(visual, 'default'),
+                    borderWidth: visual.borderWidthControl,
+                  }}
                   onPress={() => handleActionPress(action)}
                   disabled={action.disabled}
-                  accessibilityRole="button"
                 >
                   <Text
                     className={cn(

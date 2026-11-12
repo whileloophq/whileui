@@ -108,7 +108,7 @@ export {
 export { Text, textVariants, type TextProps } from './components/text';
 export { Surface, type SurfaceLevel, type SurfaceProps } from './components/surface';
 export { View, type ViewProps } from './components/view';
-export { Pressable, type PressableProps } from './components/pressable';
+export { Pressable, type FocusIndicator, type PressableProps } from './components/pressable';
 export { Stack, stackVariants, type StackProps } from './components/stack';
 export { Row, rowVariants, type RowProps } from './components/row';
 

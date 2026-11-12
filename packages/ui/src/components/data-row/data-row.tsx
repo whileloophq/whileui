@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import {
-  Pressable,
   Text,
   View,
   type GestureResponderEvent,
@@ -10,9 +9,8 @@ import {
   type ViewProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
-import { focusRingInset } from '../../lib/focus-ring';
+import { Pressable } from '../pressable';
 import { tv } from '../../lib/tv';
-import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
@@ -135,7 +133,6 @@ export interface DataRowValueProps extends TextProps {
 const DataRow: ForwardRefComponent<ViewInstance, DataRowProps> = React.forwardRef(
   ({ className, size = 'default', style, onPress, onLongPress, disabled, ...props }, ref) => {
     const visual = useVisualTokens();
-    const interaction = useInteractionTokens();
     const contextValue = useMemo(() => ({ size }), [size]);
     const rowStyle = [getDataRowStyle(visual, size), style];
     return (
@@ -143,17 +140,16 @@ const DataRow: ForwardRefComponent<ViewInstance, DataRowProps> = React.forwardRe
         {onPress ? (
           <Pressable
             ref={ref}
-            accessibilityRole="button"
+            focusIndicator="inset"
             onPress={onPress}
             onLongPress={onLongPress}
             disabled={disabled}
             className={cn(
               dataRowVariants({ size }),
               !disabled && 'active:bg-state-pressed',
-              focusRingInset,
               className
             )}
-            style={[rowStyle, disabled ? { opacity: interaction.disabledOpacity } : null]}
+            style={rowStyle}
             {...props}
           />
         ) : (

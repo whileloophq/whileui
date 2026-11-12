@@ -505,6 +505,26 @@ the right foundation once, with its non-drag path included.
 pointer and keyboard paths verified via Playwright; traces show no per-frame React
 state; no unexplained React Doctor findings in touched components.
 
+### Phase 2C — One control foundation
+
+Phase 2 produced a shared press primitive but nothing required its use, and most
+behaviour components were hand-built instead of taking behaviour from the pinned
+substrate above. Defects then recurred one component at a time.
+
+- Extend the shared `Pressable` into the base every control renders through: it derives
+  interactivity from handlers, defaults the role, focus indicator and web target, and
+  expresses state through `aria-*` only.
+- Move stateful controls and menus onto `@rn-primitives`, pinned exactly; keep
+  `OverlayHost` for layering.
+- One backdrop and panel implementation for every overlay container.
+- Lint bans the raw press primitives outside the base; the browser sweep opens overlays
+  and checks arrow keys; an iOS flow checks each control is its own accessibility
+  element.
+- State the contract once, briefly enough for the agent docs to carry it whole, and
+  generate per-control roles, keys and states into them.
+
+**Exit:** as recorded in `IMPLEMENTATION.md` > Phase 2C.
+
 ### Phase 3 — Overlays and keyboard
 
 - Overlay coordinator with the narrow contract above.

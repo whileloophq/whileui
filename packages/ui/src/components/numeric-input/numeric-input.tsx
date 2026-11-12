@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Platform,
-  Pressable,
   Text,
   TextInput,
   View,
@@ -12,7 +11,8 @@ import { cn } from '../../lib/cn';
 import { focusFieldWrapper } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { useInteractionTokens } from '../../lib/interaction-tokens';
+import { Pressable } from '../pressable';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { textCursorColors, typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
@@ -222,7 +222,6 @@ interface NumericStepperButtonProps {
   size: number;
   radius: number;
   model: ReturnType<typeof useNumericInputModel>;
-  interaction: ReturnType<typeof useInteractionTokens>;
   visual: ReturnType<typeof useVisualTokens>;
 }
 
@@ -234,26 +233,17 @@ function NumericStepperButton({
   size,
   radius,
   model,
-  interaction,
   visual,
 }: NumericStepperButtonProps) {
-  const feedbackStyle = withInteractivePressableStyle(undefined, interaction, {
-    disabled: !enabled,
-    disabledVariant: 'subtle',
-    pressedVariant: 'default',
-  });
   return (
     <Pressable
       className="shrink-0 items-center justify-center bg-secondary"
-      style={(state) => {
-        const baseStyle =
-          typeof feedbackStyle === 'function' ? feedbackStyle(state) : feedbackStyle;
-        return [baseStyle, { width: size, height: size, borderRadius: radius }];
-      }}
+      feedback="default"
+      disabledFeedback="subtle"
+      style={{ width: size, height: size, borderRadius: radius }}
       onPress={() => model.nudge(delta)}
       disabled={!enabled}
       hitSlop={4}
-      accessibilityRole="button"
       accessibilityLabel={label}
     >
       <Text className="font-medium text-foreground" style={typographyStyle(visual, 'body')}>
@@ -269,7 +259,6 @@ function NumericSteppers({
   size,
   radius,
   model,
-  interaction,
   visual,
 }: {
   visible: boolean;
@@ -277,7 +266,6 @@ function NumericSteppers({
   size: number;
   radius: number;
   model: ReturnType<typeof useNumericInputModel>;
-  interaction: ReturnType<typeof useInteractionTokens>;
   visual: ReturnType<typeof useVisualTokens>;
 }) {
   if (!visible) return null;
@@ -294,7 +282,6 @@ function NumericSteppers({
         size={size}
         radius={radius}
         model={model}
-        interaction={interaction}
         visual={visual}
       />
       <NumericStepperButton
@@ -305,7 +292,6 @@ function NumericSteppers({
         size={size}
         radius={radius}
         model={model}
-        interaction={interaction}
         visual={visual}
       />
     </View>
@@ -427,7 +413,6 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
           size={stepSize}
           radius={stepRadius}
           model={model}
-          interaction={interaction}
           visual={visual}
         />
       </View>

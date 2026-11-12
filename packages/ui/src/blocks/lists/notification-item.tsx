@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Pressable, type PressableProps, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
+import { Pressable, type PressableProps } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/avatar';
 import { Skeleton } from '../../components/skeleton';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { surfacePadding, typographyStyle } from '../../lib/recipes';
 
@@ -71,16 +71,9 @@ export function NotificationItem({
 
   return (
     <Pressable
-      // Only a row with a press handler is a control. A Pressable is a Tab stop on web
-      // whether or not it does anything, so a static row was focusable with no role.
-      accessibilityRole={pressable ? 'button' : undefined}
-      focusable={pressable}
-      // React Native Web ignores `focusable` on a Pressable; only `tabIndex` removes the Tab stop.
-      tabIndex={pressable ? 0 : -1}
       className={cn(
         'flex-row items-start',
-        pressable && 'active:bg-muted',
-        focusRing,
+        pressable && 'active:bg-state-pressed',
         !read && 'bg-primary-soft-subtle',
         className
       )}

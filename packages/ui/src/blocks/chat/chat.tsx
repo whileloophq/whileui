@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Pressable, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native';
+import { View, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native';
+import { Pressable } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { SmartInput } from '../layout/smart-input';
 import { ChatConversation } from './chat-conversation';
 import { cn } from '../../lib/cn';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle, type TypographyRole } from '../../lib/recipes';
 import { tv } from '../../lib/tv';
@@ -142,7 +142,7 @@ export function ChatSuggestions({ suggestions, onSelect, className }: ChatSugges
           onPress={() => onSelect(text)}
           accessibilityRole="button"
           accessibilityLabel={`Suggestion: ${text}`}
-          className="rounded-full border-border bg-muted active:bg-muted"
+          className="rounded-full border-border bg-muted active:bg-state-pressed"
           style={{
             borderWidth: visual.borderWidthHairline,
             paddingHorizontal: visual.controlPaddingXDefault,
@@ -263,25 +263,14 @@ export function Chat({
 }
 
 function ChatSendButton({ onPress, disabled }: { onPress: () => void; disabled?: boolean }) {
-  const interaction = useInteractionTokens();
   const visual = useVisualTokens();
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      accessibilityRole="button"
-      accessibilityLabel={disabled ? 'Send (disabled)' : 'Send message'}
-      style={withInteractivePressableStyle(
-        {
-          height: visual.controlHeightDefault,
-          width: visual.controlHeightDefault,
-        },
-        interaction,
-        {
-          disabled: Boolean(disabled),
-          pressedVariant: 'strong',
-        }
-      )}
+      accessibilityLabel="Send message"
+      feedback="strong"
+      style={{ height: visual.controlHeightDefault, width: visual.controlHeightDefault }}
       className={cn(
         'items-center justify-center rounded-full',
         disabled ? 'bg-muted' : 'bg-primary'

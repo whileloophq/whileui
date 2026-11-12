@@ -15,6 +15,7 @@ import {
   CardTitle,
   type MotionMode,
   MotionProvider,
+  Pressable,
   Progress,
   SegmentedControl,
   SegmentedControlItem,
@@ -185,6 +186,26 @@ export function PrimitivesTab({
         >
           <ButtonText>Press test: {buttonPressCount}</ButtonText>
         </Button>
+      </Section>
+
+      <Section
+        title="Pressable"
+        subtitle="The base every control renders through: a handler makes it a control"
+      >
+        <View className="gap-3">
+          <Pressable
+            onPress={() => setButtonPressCount((count) => count + 1)}
+            feedback="default"
+            className="rounded-xl border border-border bg-card p-4"
+          >
+            <Text variant="label">With onPress</Text>
+            <Text variant="caption">A button, a Tab stop and a focus ring on web</Text>
+          </Pressable>
+          <Pressable className="rounded-xl border border-border bg-card p-4">
+            <Text variant="label">Without a handler</Text>
+            <Text variant="caption">Plain content: no role and skipped by Tab</Text>
+          </Pressable>
+        </View>
       </Section>
 
       <Section title="Theme Bridge" subtitle="Official light/dark/system sync helper">

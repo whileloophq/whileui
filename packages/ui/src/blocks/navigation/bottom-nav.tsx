@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
+import { View, type ViewProps } from 'react-native';
+import { Pressable, type PressableProps } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 
@@ -34,9 +35,6 @@ function BottomNavItemComponent({
   const { label, icon, badge } = item;
   const interaction = useInteractionTokens();
   const visual = useVisualTokens();
-  const interactiveStyle = withInteractivePressableStyle(styleProp, interaction, {
-    pressedVariant: 'default',
-  });
 
   return (
     <Pressable
@@ -44,10 +42,11 @@ function BottomNavItemComponent({
       // Named here rather than from the children: iOS built "3, Home" from them, badge
       // first, and on device the active tab also exposed its icon glyph on its own.
       accessibilityLabel={badge ? `${label}, ${badge > 99 ? '99+' : badge}` : label}
-      accessibilityState={{ selected: isActive }}
       aria-selected={isActive}
+      feedback="default"
+      focusIndicator="inset"
       className={cn('flex-1 flex-col-reverse items-center justify-center py-2', className)}
-      style={interactiveStyle}
+      style={styleProp}
       {...props}
     >
       {/* Label first in the document, drawn below the icon by `flex-col-reverse`: the

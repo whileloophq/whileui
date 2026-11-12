@@ -1,1 +1,1 @@
-export { Pressable, type PressableProps } from './pressable';
+export { Pressable, type FocusIndicator, type PressableProps } from './pressable';

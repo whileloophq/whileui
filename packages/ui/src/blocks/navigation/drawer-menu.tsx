@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View,
-  Pressable,
+  Pressable as RNPressable,
   Platform,
   I18nManager,
   SectionList,
@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
 import { useThemeColors } from '../../lib/theme-colors';
-import { useInteractionTokens, withInteractivePressableStyle } from '../../lib/interaction-tokens';
+import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { shadowStyle, surfaceRadius } from '../../lib/recipes';
 import { OverlayHost } from '../../lib/overlay-host';
@@ -58,31 +59,25 @@ interface DrawerItemRowProps {
   item: DrawerMenuItem;
   active: boolean;
   onSelect: (key: string) => void;
-  interaction: ReturnType<typeof useInteractionTokens>;
   visual: ReturnType<typeof useVisualTokens>;
 }
 
-function DrawerItemRow({ item, active, onSelect, interaction, visual }: DrawerItemRowProps) {
+function DrawerItemRow({ item, active, onSelect, visual }: DrawerItemRowProps) {
   const handlePress = React.useCallback(() => onSelect(item.key), [item.key, onSelect]);
   const pressStyle = React.useMemo(
-    () =>
-      withInteractivePressableStyle(
-        {
-          borderRadius: visual.radiusLg,
-          paddingHorizontal: visual.controlPaddingXDefault,
-          paddingVertical: visual.controlPaddingYDefault,
-          minHeight: visual.touchTargetMinSize,
-        },
-        interaction,
-        { pressedVariant: 'default' }
-      ),
-    [interaction, visual]
+    () => ({
+      borderRadius: visual.radiusLg,
+      paddingHorizontal: visual.controlPaddingXDefault,
+      paddingVertical: visual.controlPaddingYDefault,
+      minHeight: visual.touchTargetMinSize,
+    }),
+    [visual]
   );
 
   return (
     <Pressable
-      accessibilityRole="button"
       onPress={handlePress}
+      feedback="default"
       className={cn(
         'flex-row items-center gap-3 mx-1 transition-colors',
         active && 'bg-primary-soft-subtle'
@@ -128,17 +123,10 @@ interface DrawerSectionListProps {
   sections: DrawerMenuSection[];
   activeKey: string | undefined;
   onSelect: (key: string) => void;
-  interaction: ReturnType<typeof useInteractionTokens>;
   visual: ReturnType<typeof useVisualTokens>;
 }
 
-function DrawerSectionList({
-  sections,
-  activeKey,
-  onSelect,
-  interaction,
-  visual,
-}: DrawerSectionListProps) {
+function DrawerSectionList({ sections, activeKey, onSelect, visual }: DrawerSectionListProps) {
   const data = React.useMemo(
     () => sections.map((section) => ({ title: section.title, data: section.items })),
     [sections]
@@ -149,11 +137,10 @@ function DrawerSectionList({
         item={item}
         active={activeKey === item.key}
         onSelect={onSelect}
-        interaction={interaction}
         visual={visual}
       />
     ),
-    [activeKey, interaction, onSelect, visual]
+    [activeKey, onSelect, visual]
   );
   const renderSectionHeader = React.useCallback(
     ({ section }: { section: { title?: string } }) =>
@@ -305,7 +292,7 @@ export function DrawerMenu({
       >
         {frostedBackdrop}
         {/* Backdrop: tap-to-dismiss only, not a control, and a drag across it is not a tap. */}
-        <Pressable
+        <RNPressable
           accessible={false}
           importantForAccessibility="no"
           style={StyleSheet.absoluteFill}
@@ -341,7 +328,6 @@ export function DrawerMenu({
             sections={sections}
             activeKey={activeKey}
             onSelect={handleItemPress}
-            interaction={interaction}
             visual={visual}
           />
 
