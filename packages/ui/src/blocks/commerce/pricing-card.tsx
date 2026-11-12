@@ -131,7 +131,7 @@ export function PricingCard({
       )}
 
       <View className="mb-6 flex-row items-baseline">
-        <Text className="text-4xl font-bold text-foreground">{price}</Text>
+        <Text variant="display">{price}</Text>
         <Text className="ml-1 text-muted-foreground">{period}</Text>
       </View>
 

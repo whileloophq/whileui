@@ -31,3 +31,14 @@ describe('DataRow', () => {
     expect(row).not.toBeDisabled();
   });
 });
+
+describe('DataRow disabled', () => {
+  it('stays a button but does not fire, and says so', async () => {
+    const onPress = jest.fn();
+    await render(<Expense onPress={onPress} disabled />);
+    const row = screen.getByRole('button', { name: /Groceries/ });
+    expect(row).toBeDisabled();
+    await fireEvent.press(row);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+});

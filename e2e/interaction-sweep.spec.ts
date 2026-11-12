@@ -68,14 +68,7 @@ for (const category of CATEGORIES) {
         if (text) return text;
         return (el.getAttribute('placeholder') ?? el.getAttribute('title') ?? '').trim();
       };
-      // Known gap, recorded in docs/stability.md: react-native-calendars draws its month
-      // arrows as role-less focusable views inside its own header (role "slider"), which
-      // WhileUI cannot reach without replacing that header.
-      const calendarArrow = (el: Element) =>
-        el.closest('[role="slider"]') !== null && !el.getAttribute('role');
-      const controls = Array.from(document.querySelectorAll(selector))
-        .filter(visible)
-        .filter((el) => !calendarArrow(el));
+      const controls = Array.from(document.querySelectorAll(selector)).filter(visible);
       const out: string[] = [];
       for (const el of controls) {
         const role = el.getAttribute('role') ?? el.tagName.toLowerCase();

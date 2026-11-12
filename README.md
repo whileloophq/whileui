@@ -842,13 +842,18 @@ Also accepts the props of `PressableProps`.
 classes are unnecessary for normal hierarchy. `heading` also sets
 `accessibilityRole="header"` unless the caller supplies another role.
 
+`display` is the largest size, for an amount, a total or a metric that leads its screen
+(`<Text variant="display">{formatMoney(total)}</Text>`). It reads the
+`--ui-font-size-display` token (36 by default), so a preset can change it. It is not a
+heading; give it a role yourself if it titles the screen.
+
 <!-- api:Text -->
 
-| Prop      | Type                                                                                                       | Default     | Description |
-| --------- | ---------------------------------------------------------------------------------------------------------- | ----------- | ----------- |
-| className | `string`                                                                                                   | —           |             |
-| size      | `'base' \| 'xs' \| 'sm' \| 'lg' \| 'xl' \| '2xl' \| '3xl'`                                                 | —           |             |
-| variant   | `'default' \| 'heading' \| 'title' \| 'subtitle' \| 'body' \| 'caption' \| 'label' \| 'eyebrow' \| 'code'` | `'default'` |             |
+| Prop      | Type                                                                                                                    | Default     | Description |
+| --------- | ----------------------------------------------------------------------------------------------------------------------- | ----------- | ----------- |
+| className | `string`                                                                                                                | —           |             |
+| size      | `'base' \| 'xs' \| 'sm' \| 'lg' \| 'xl' \| '2xl' \| '3xl'`                                                              | —           |             |
+| variant   | `'default' \| 'heading' \| 'display' \| 'title' \| 'subtitle' \| 'body' \| 'caption' \| 'label' \| 'eyebrow' \| 'code'` | `'default'` |             |
 
 Also accepts the props of React Native's `TextProps`.
 <!-- /api:Text -->
@@ -1124,6 +1129,7 @@ never looks disabled. Do not wrap a row in your own `Pressable`.
 | className   | `string`                                 | —           |                                                                                                                                                                        |
 | onPress     | `(event: GestureResponderEvent) => void` | —           | Make the whole row one button: role, pressed background and focus ring included. Without it the row is plain content, so a row that does nothing never looks disabled. |
 | onLongPress | `(event: GestureResponderEvent) => void` | —           | Long-press handler; only used together with `onPress`.                                                                                                                 |
+| disabled    | `boolean`                                | —           | Keep the row a button but stop it firing, dimmed and announced as disabled — for a row whose action is busy. Only used together with `onPress`.                        |
 
 Also accepts the props of `ViewProps`.
 <!-- /api:DataRow -->
@@ -1894,6 +1900,12 @@ Use one keyboard-aware root for the screen, then place the composer in a bottom 
 
 `KeyboardAwareScreen` is for a screen with controls docked to its bottom edge. It does
 not scroll, and it is the wrong root for a form: use `KeyboardAwareScrollView` below.
+
+Known limit: inside a native iOS sheet (a `pageSheet` modal, or a stack screen presented
+as a modal) a docked bar stops short of the keyboard by the sheet's distance from the top
+of the screen. `KeyboardAvoidingView`, which this wraps, cannot see where iOS placed the
+sheet. Put a docked composer on a full screen, or pass that distance as
+`keyboardVerticalOffset`.
 
 ```tsx
 import { DockedInput, KeyboardAwareScreen, SmartInput } from '@thewhileloop/whileui';

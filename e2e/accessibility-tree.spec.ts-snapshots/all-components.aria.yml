@@ -12,7 +12,7 @@
 - button "Profile"
 - button "Lists"
 - button "Commerce"
-- text: Typography Semantic type roles driven by visual tokens Semantic roles
+- text: /Typography Semantic type roles driven by visual tokens Semantic roles \$\d+,\d+/
 - heading "Build faster, ship beautiful." [level=1]
 - text: WhileUI gives you production-ready components that look stunning out of the box. Every component uses design tokens for effortless theming. React Native Expo Uniwind Buttons 6 variants × 4 sizes
 - button "Primary"
@@ -47,7 +47,9 @@
   - radio "Reduced"
   - radio "Full"
   - radio "Disabled"
-- text: "/Resolved mode: system Reduced: no · animations: enabled Durations: \\d+\\/\\d+\\/\\d+ ms Surfaces, Cards & Badges Three elevation levels, compound cards, and badges Base Raised Overlay Team Activity Live Your team completed \\d+ tasks this week\\./"
+- text: "/Resolved mode: system Reduced: no · animations: enabled Durations: \\d+\\/\\d+\\/\\d+ ms Surfaces, Cards & Badges Three elevation levels, compound cards, and badges Base Raised Overlay/"
+- heading "Team Activity" [level=1]
+- text: /Live Your team completed \d+ tasks this week\./
 - progressbar "Progress"
 - button "View Dashboard"
 - text: "`padding=\\\"sm\\\"` Dense cards for compact settings. `padding=\\\"lg\\\"` Roomy layouts for onboarding and forms. Unstyled card shell Use your own spacing/layout for advanced compositions. Default Secondary Destructive Outline Success Warning Info"

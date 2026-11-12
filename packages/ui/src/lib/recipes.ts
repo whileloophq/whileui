@@ -13,7 +13,8 @@ import { useVisualTokens, type VisualTokens } from './visual-tokens';
 export type ControlSize = 'sm' | 'default' | 'lg' | 'icon';
 export type SurfacePaddingSize = 'none' | 'sm' | 'default' | 'lg';
 export type ShadowTier = 'none' | 'sm' | 'md' | 'lg';
-export type TypographyRole = 'caption' | 'label' | 'body' | 'emphasis' | 'title' | 'headline';
+export type TypographyRole =
+  'caption' | 'label' | 'body' | 'emphasis' | 'title' | 'headline' | 'display';
 
 export function controlRecipe(visual: VisualTokens, size: ControlSize = 'default'): ViewStyle {
   if (size === 'sm') {
@@ -193,6 +194,11 @@ export function typographyStyle(visual: VisualTokens, role: TypographyRole): Tex
   if (role === 'headline')
     return {
       fontSize: visual.fontSize2xl,
+      letterSpacing: visual.letterSpacingHeadline,
+    };
+  if (role === 'display')
+    return {
+      fontSize: visual.fontSizeDisplay,
       letterSpacing: visual.letterSpacingHeadline,
     };
   return { fontSize: visual.fontSizeBase, letterSpacing: visual.letterSpacingBody };

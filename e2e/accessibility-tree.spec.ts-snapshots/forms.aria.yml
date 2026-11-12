@@ -36,7 +36,9 @@
 - text: Time Picker Modal Hour and minute wheels in the same sheet
 - button "Pick a time"
 - text: Date Picker Inline Embedded calendar for forms or dashboards
-- slider: /< June \d+ > Sun Mon Tue Wed Thu Fri Sat/
+- button "Previous month"
+- text: /June \d+/
+- button "Next month"
 - button /Monday 1 June \d+/
 - button /Tuesday 2 June \d+/
 - button /Wednesday 3 June \d+/

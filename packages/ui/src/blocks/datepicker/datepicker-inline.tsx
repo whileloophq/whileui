@@ -1,12 +1,11 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { View } from 'react-native';
 import { useUniwind } from 'uniwind';
 import { Calendar, type DateData } from 'react-native-calendars';
-import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
-import { useThemeColors } from '../../lib/theme-colors';
 import { useVisualTokens } from '../../lib/visual-tokens';
-import { surfaceRadius, typographyStyle } from '../../lib/recipes';
+import { surfaceRadius } from '../../lib/recipes';
+import { CalendarHeader } from './calendar-header';
 import { useCalendarTheme, type CalendarTheme } from './use-calendar-theme';
 
 export interface DatePickerInlineProps {
@@ -32,23 +31,8 @@ export function DatePickerInline({
   className,
 }: DatePickerInlineProps) {
   const { theme } = useUniwind();
-  const colors = useThemeColors();
   const visual = useVisualTokens();
   const calendarTheme = useCalendarTheme(customTheme);
-  const arrowColor =
-    calendarTheme.arrowColor ??
-    calendarTheme.monthTextColor ??
-    calendarTheme.dayTextColor ??
-    colors.foreground;
-  const arrowFontSize = typographyStyle(visual, 'body').fontSize;
-  const renderArrow = useCallback(
-    (direction: 'left' | 'right') => (
-      <Text className="font-medium" style={{ color: arrowColor, fontSize: arrowFontSize }}>
-        {direction === 'left' ? '<' : '>'}
-      </Text>
-    ),
-    [arrowColor, arrowFontSize]
-  );
 
   const markedDates = useMemo(() => {
     if (!value) return undefined;
@@ -81,7 +65,7 @@ export function DatePickerInline({
         minDate={minDate}
         maxDate={maxDate}
         theme={calendarTheme as Record<string, unknown>}
-        renderArrow={renderArrow}
+        customHeader={CalendarHeader}
         enableSwipeMonths
         // Days from the next month were disabled yet still Tab stops, with no role.
         hideExtraDays

@@ -70,4 +70,19 @@ describe('DatePickerModal', () => {
 
     expect(onOpenChange).toHaveBeenCalledWith(true);
   });
+
+  it('moves between months with named buttons, so a keyboard can use them', async () => {
+    // The calendar library drew its arrows as role-less views: on web Tab reached them
+    // and Enter did nothing.
+    const user = userEvent.setup();
+    await render(
+      <DatePickerModal open value="2026-01-15" onOpenChange={jest.fn()} onValueChange={jest.fn()} />
+    );
+
+    expect(screen.getByText('January 2026')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Next month' }));
+    expect(screen.getByText('February 2026')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Previous month' }));
+    expect(screen.getByText('January 2026')).toBeOnTheScreen();
+  });
 });

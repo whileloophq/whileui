@@ -24,6 +24,8 @@ export interface VisualTokens {
   fontSizeLg: number;
   fontSizeXl: number;
   fontSize2xl: number;
+  /** The largest size: an amount, a total or a metric that leads its screen. */
+  fontSizeDisplay: number;
   letterSpacingCaption: number;
   letterSpacingLabel: number;
   letterSpacingBody: number;
@@ -251,6 +253,13 @@ export const VISUAL_TOKEN_SPECS: readonly VisualTokenSpec[] = [
     key: 'fontSize2xl',
     cssVar: '--ui-font-size-2xl',
     fallback: 24,
+    kind: 'pixel',
+    group: 'typography',
+  },
+  {
+    key: 'fontSizeDisplay',
+    cssVar: '--ui-font-size-display',
+    fallback: 36,
     kind: 'pixel',
     group: 'typography',
   },

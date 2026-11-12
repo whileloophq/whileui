@@ -27,7 +27,9 @@
 - img "Not included": ✕
 - text: White-label license
 - button "Get Started"
-- text: /Subscription Card Current plan summary for settings screens Pro Active \$\d+ \/month Renews on April \d+, \d+/
+- text: Subscription Card Current plan summary for settings screens
+- heading "Pro" [level=1]
+- text: /Active \$\d+ \/month Renews on April \d+, \d+/
 - button "Manage plan"
 - button "Upgrade"
 - text: Upgrade Banner Inline upsell with dismiss action Unlock unlimited exports and advanced templates with Pro.

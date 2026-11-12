@@ -12,6 +12,7 @@ import {
 import { cn } from '../../lib/cn';
 import { focusRingInset } from '../../lib/focus-ring';
 import { tv } from '../../lib/tv';
+import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
 import type { ForwardRefComponent } from '../../lib/ref-types';
@@ -100,6 +101,11 @@ export interface DataRowProps extends ViewProps {
   onPress?: (event: GestureResponderEvent) => void;
   /** Long-press handler; only used together with `onPress`. */
   onLongPress?: (event: GestureResponderEvent) => void;
+  /**
+   * Keep the row a button but stop it firing, dimmed and announced as disabled — for a
+   * row whose action is busy. Only used together with `onPress`.
+   */
+  disabled?: boolean;
 }
 
 export interface DataRowLeftProps extends ViewProps {
@@ -127,8 +133,9 @@ export interface DataRowValueProps extends TextProps {
 }
 
 const DataRow: ForwardRefComponent<ViewInstance, DataRowProps> = React.forwardRef(
-  ({ className, size = 'default', style, onPress, onLongPress, ...props }, ref) => {
+  ({ className, size = 'default', style, onPress, onLongPress, disabled, ...props }, ref) => {
     const visual = useVisualTokens();
+    const interaction = useInteractionTokens();
     const contextValue = useMemo(() => ({ size }), [size]);
     const rowStyle = [getDataRowStyle(visual, size), style];
     return (
@@ -139,13 +146,14 @@ const DataRow: ForwardRefComponent<ViewInstance, DataRowProps> = React.forwardRe
             accessibilityRole="button"
             onPress={onPress}
             onLongPress={onLongPress}
+            disabled={disabled}
             className={cn(
               dataRowVariants({ size }),
-              'active:bg-state-pressed',
+              !disabled && 'active:bg-state-pressed',
               focusRingInset,
               className
             )}
-            style={rowStyle}
+            style={[rowStyle, disabled ? { opacity: interaction.disabledOpacity } : null]}
             {...props}
           />
         ) : (

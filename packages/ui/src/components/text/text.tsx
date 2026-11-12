@@ -12,6 +12,8 @@ const textVariants = tv({
     variant: {
       default: 'font-normal',
       heading: 'font-bold tracking-tight',
+      /** An amount, a total or a metric that leads its screen. */
+      display: 'font-bold tracking-tight',
       title: 'font-semibold',
       subtitle: 'font-medium',
       body: 'font-normal',
@@ -40,6 +42,7 @@ export interface TextProps extends RNTextProps, VariantProps<typeof textVariants
 const VARIANT_ROLES: Record<NonNullable<TextProps['variant']>, TypographyRole> = {
   default: 'body',
   heading: 'headline',
+  display: 'display',
   title: 'title',
   subtitle: 'emphasis',
   body: 'body',

@@ -491,13 +491,13 @@ For scale, the proving product's iOS bundle attributed 269 kB of 3.98 MB to this
 library plus 108 kB of culori, with all 165 modules shipped regardless of use. That is
 startup weight for the Phase 4 budget task, not a snappiness lever.
 
-## Known gap — calendar month arrows on web
+## Calendar month arrows — fixed 2026-11-12
 
-`DatePickerInline`, `DatePickerModal` and `DateRangePickerModal` use react-native-calendars,
-whose header draws the month arrows as focusable views with no role inside a `slider`. On
-web, Tab reaches them and Enter does nothing; swiping and the day cells work. Fixing it
-means replacing that header with WhileUI's own. `e2e/interaction-sweep.spec.ts` excludes
-exactly these arrows and nothing else; remove the exclusion when the header is replaced.
+react-native-calendars drew the month arrows as focusable views with no role inside an
+"adjustable" header, so on web Tab reached them and Enter did nothing. The three date
+pickers now pass `customHeader={CalendarHeader}`: named "Previous month" and "Next month"
+buttons and a polite live-region title. `datepicker-modal.test.tsx` pages a month each
+way; `e2e/interaction-sweep.spec.ts` no longer excludes anything.
 
 ## Known gap — overlay edge padding on web
 

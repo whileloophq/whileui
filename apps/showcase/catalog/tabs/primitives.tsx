@@ -87,6 +87,7 @@ export function PrimitivesTab({
     <View>
       <Section title="Typography" subtitle="Semantic type roles driven by visual tokens">
         <Text variant="eyebrow">Semantic roles</Text>
+        <Text variant="display">$12,480</Text>
         <Text variant="heading">Build faster,{'\n'}ship beautiful.</Text>
         <Text variant="body" className="text-muted-foreground leading-relaxed">
           WhileUI gives you production-ready components that look stunning out of the box. Every

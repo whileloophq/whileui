@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { shadowStyle, textCursorColors } from './recipes';
+import { shadowStyle, textCursorColors, typographyStyle } from './recipes';
 import { WHILEUI_LIGHT_THEME_COLORS } from './theme-contract';
 import { VISUAL_TOKEN_SPECS, type VisualTokens } from './visual-token-contract';
 
@@ -64,5 +64,14 @@ describe('textCursorColors', () => {
   it('leaves the web caret to the browser', () => {
     jest.replaceProperty(Platform, 'OS', 'web');
     expect(textCursorColors(WHILEUI_LIGHT_THEME_COLORS)).toEqual({});
+  });
+});
+
+describe('display typography', () => {
+  it('is the largest role, for an amount or a metric', () => {
+    const display = typographyStyle(DEFAULT_VISUAL_TOKENS, 'display');
+    const headline = typographyStyle(DEFAULT_VISUAL_TOKENS, 'headline');
+    expect(display.fontSize).toBe(36);
+    expect(display.fontSize).toBeGreaterThan(headline.fontSize as number);
   });
 });

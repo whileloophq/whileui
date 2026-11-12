@@ -40,7 +40,8 @@
 - tablist:
   - tab "Preview" [selected]
   - tab "Code"
-- text: Welcome back Your workspace is ready. Email
+- heading "Welcome back" [level=1]
+- text: Your workspace is ready. Email
 - textbox "you@company.com"
 - button "Continue"
 - text: /Data Display Avatars, aspect ratios, and hover cards WU JD MK \d+:9/

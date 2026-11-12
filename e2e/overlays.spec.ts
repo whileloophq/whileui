@@ -19,7 +19,9 @@ test.describe('AlertDialog', () => {
 
     // The title is a heading, and both controls are buttons. Neither was true before
     // 2026-09-12: the title was plain text and the controls carried no role at all.
-    await expect(page.getByRole('heading')).toHaveCount(1);
+    // Scoped to the dialog: card titles on the tab behind it are headings too.
+    const dialog = page.locator('[role="alert"]', { hasText: 'Delete workspace?' });
+    await expect(dialog.getByRole('heading')).toHaveCount(1);
     await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
     // The panel itself is the alert region. `Alert` components elsewhere on the tab
     // carry the same role, so scope to the dialog's own text.

@@ -97,6 +97,9 @@ const CardTitle: ForwardRefComponent<TextInstance, CardTitleProps> = React.forwa
     return (
       <Text
         ref={ref}
+        // A heading, so a screen reader can move between cards by title. Without it,
+        // apps hand-wrote their own card titles to get the role.
+        accessibilityRole="header"
         className={cn('font-semibold text-card-foreground tracking-tight', className)}
         style={[typographyStyle(visual, 'title'), style]}
         {...props}
