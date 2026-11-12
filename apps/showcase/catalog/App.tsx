@@ -201,8 +201,8 @@ function AppContent() {
           </SafeAreaView>
           <ToastContainer position="top" />
           <DrawerMenu
-            visible={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
+            open={drawerOpen}
+            onOpenChange={setDrawerOpen}
             sections={[
               {
                 title: 'Back',
@@ -221,8 +221,8 @@ function AppContent() {
                   .map((category) => toDrawerItem(category, activeTab, colors)),
               },
             ]}
-            activeKey={activeTab}
-            onSelect={(key) => {
+            value={activeTab}
+            onValueChange={(key) => {
               setActiveTab(key as CategoryKey);
               setDrawerOpen(false);
             }}
@@ -339,11 +339,11 @@ function AppContent() {
         <ToastContainer position="top" />
 
         <DrawerMenu
-          visible={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
           sections={createShowcaseDrawerSections(activeTab, colors)}
-          activeKey={activeTab}
-          onSelect={(key) => {
+          value={activeTab}
+          onValueChange={(key) => {
             setActiveTab(key as CategoryKey);
             setDrawerOpen(false);
           }}

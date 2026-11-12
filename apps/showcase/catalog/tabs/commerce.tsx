@@ -72,8 +72,8 @@ export function CommerceBlocksTab() {
 
       <Section title="Pricing" subtitle="Subscription plans">
         <PlanToggle
-          selected={billingCycle}
-          onChange={setBillingCycle}
+          value={billingCycle}
+          onValueChange={setBillingCycle}
           annualDiscount="Save 20%"
           className="mb-3"
         />

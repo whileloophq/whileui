@@ -13,12 +13,25 @@ export function findPhantomComponents(components, { packageExports, templateExpo
 }
 
 /** Names the skill puts in backticks that no longer exist: APIs, MCP tools, subpaths, files. */
-export function findStaleSkillNames(skill, { publicApi, mcpServer, subpaths, agentFiles }) {
+/**
+ * Names in the skill that no longer exist: an API the package does not export, a prop no
+ * README API table lists (the tables are generated from the types, so a renamed prop is
+ * caught too), an MCP tool, a subpath or an agent file.
+ */
+export function findStaleSkillNames(
+  skill,
+  { publicApi, propTables = '', mcpServer, subpaths, agentFiles }
+) {
+  const props = new Set(
+    [...propTables.matchAll(/^\| (\w+)(?: \(required\))? +\|/gm)].map((m) => m[1])
+  );
   return [...skill.matchAll(/`([^`\n]+)`/g)]
     .map(([, token]) => token)
     .filter((token) => {
       if (/^[a-z]+(?:_[a-z]+)+$/.test(token)) return !mcpServer.includes(`'${token}'`);
-      if (/^[A-Za-z]+$/.test(token) && /[A-Z]/.test(token)) return !word(token).test(publicApi);
+      if (/^[A-Za-z]+$/.test(token) && /[A-Z]/.test(token)) {
+        return !word(token).test(publicApi) && !props.has(token);
+      }
       if (token.startsWith('@thewhileloop/whileui/')) {
         return !subpaths.includes(`./${token.slice('@thewhileloop/whileui/'.length)}`);
       }

@@ -12,6 +12,7 @@ import {
   HeaderBackButton,
   PageHeader,
   TabBar,
+  type NavIconState,
   useIconColors,
 } from '@thewhileloop/whileui';
 import { Section } from '../ui';
@@ -32,29 +33,29 @@ export function NavigationBlocksTab() {
     {
       key: 'home',
       label: 'Home',
-      icon: <Feather name="home" size={22} color={colors.muted} />,
+      icon: ({ color }: NavIconState) => <Feather name="home" size={22} color={color} />,
       badge: 3,
     },
     {
       key: 'search',
       label: 'Explore',
-      icon: <Feather name="search" size={22} color={colors.muted} />,
+      icon: ({ color }: NavIconState) => <Feather name="search" size={22} color={color} />,
     },
     {
       key: 'add',
       label: 'Create',
-      icon: <Feather name="plus" size={22} color={colors.muted} />,
+      icon: ({ color }: NavIconState) => <Feather name="plus" size={22} color={color} />,
     },
     {
       key: 'inbox',
       label: 'Inbox',
-      icon: <Feather name="inbox" size={22} color={colors.muted} />,
+      icon: ({ color }: NavIconState) => <Feather name="inbox" size={22} color={color} />,
       badge: 12,
     },
     {
       key: 'profile',
       label: 'Profile',
-      icon: <Feather name="user" size={22} color={colors.muted} />,
+      icon: ({ color }: NavIconState) => <Feather name="user" size={22} color={color} />,
     },
   ];
 
@@ -62,15 +63,15 @@ export function NavigationBlocksTab() {
     <View className="gap-6">
       <Section title="Bottom Navigation" subtitle="iOS/Android style tab bar">
         <View className="rounded-xl overflow-hidden border border-border">
-          <BottomNav items={navItems} activeKey={activeNav} onSelect={setActiveNav} />
+          <BottomNav items={navItems} value={activeNav} onValueChange={setActiveNav} />
         </View>
       </Section>
 
       <Section title="Floating Bottom Nav" subtitle="Modern floating pill style">
         <FloatingBottomNav
           items={navItems.slice(0, 4)}
-          activeKey={activeNav}
-          onSelect={setActiveNav}
+          value={activeNav}
+          onValueChange={setActiveNav}
         />
       </Section>
 
@@ -118,14 +119,14 @@ export function NavigationBlocksTab() {
       </Section>
 
       <Section title="Tab Bar" subtitle="Content filtering tabs">
-        <TabBar items={TAB_BAR_ITEMS} activeKey={activeTabBar} onSelect={setActiveTabBar} />
+        <TabBar items={TAB_BAR_ITEMS} value={activeTabBar} onValueChange={setActiveTabBar} />
       </Section>
 
       <Section title="Tab Bar — Pills" subtitle="Pill-style variant">
         <TabBar
           items={TAB_BAR_ITEMS}
-          activeKey={activeTabBar}
-          onSelect={setActiveTabBar}
+          value={activeTabBar}
+          onValueChange={setActiveTabBar}
           variant="pills"
         />
       </Section>

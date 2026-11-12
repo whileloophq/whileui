@@ -131,6 +131,7 @@ const stale = findStaleSkillNames(readFileSync(join(ROOT, 'skills/whileui/SKILL.
     exportedSource(join(PKG, 'src/tokens.ts')),
     readFileSync(join(PKG, 'src/metro.cjs'), 'utf8'),
   ].join('\n'),
+  propTables: readme,
   mcpServer: readFileSync(join(ROOT, 'packages/mcp/src/server.ts'), 'utf8'),
   subpaths: Object.keys(JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8')).exports),
   agentFiles: ['llms.txt', 'llms-components.txt', 'llms-full.txt', 'catalog.json'],

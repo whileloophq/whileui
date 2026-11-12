@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { Pressable, Text, type PressableProps, type TextProps } from 'react-native';
+import { Text, type TextProps } from 'react-native';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { controlRecipe, typographyStyle, type TypographyRole } from '../../lib/recipes';
+import { Pressable, type PressableProps } from '../pressable';
 
 interface ToggleContextValue {
   pressed: boolean;
@@ -113,15 +113,16 @@ function Toggle({
   return (
     <ToggleContext.Provider value={contextValue}>
       <Pressable
-        className={cn(toggleVariants({ variant, size, pressed }), focusRing, className)}
+        className={cn(toggleVariants({ variant, size, pressed }), className)}
         style={(state) => [
           tokenStyle,
           typeof styleProp === 'function' ? styleProp(state) : styleProp,
         ]}
         onPress={handlePress}
-        accessibilityRole="button"
-        // `selected` for native; React Native Web ignores `accessibilityState`, so the
-        // pressed state needs `aria-pressed` to reach a browser.
+        // A toggle button is pressed on web and selected on native. React Native has no
+        // `aria-pressed`, and `aria-selected` is invalid on a button in a browser, so the
+        // native state can only go through `accessibilityState`, which web ignores.
+        // eslint-disable-next-line no-restricted-syntax -- the native half of aria-pressed; see above
         accessibilityState={{ selected: pressed }}
         aria-pressed={pressed}
         {...props}

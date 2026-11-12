@@ -9,20 +9,22 @@ import { controlRecipe, typographyStyle } from '../../lib/recipes';
 export type PlanToggleValue = 'monthly' | 'annual';
 
 export interface PlanToggleProps extends ViewProps {
-  selected: PlanToggleValue;
+  /** The chosen billing period. */
+  value: PlanToggleValue;
   monthlyLabel?: string;
   annualLabel?: string;
   annualDiscount?: string;
-  onChange?: (value: PlanToggleValue) => void;
+  /** Called with the period the user chose. Without it the toggle is read-only. */
+  onValueChange?: (value: PlanToggleValue) => void;
   className?: string;
 }
 
 export function PlanToggle({
-  selected,
+  value: selected,
   monthlyLabel = 'Monthly',
   annualLabel = 'Annual',
   annualDiscount,
-  onChange,
+  onValueChange,
   className,
   style,
   ...props
@@ -36,9 +38,9 @@ export function PlanToggle({
     return (
       <Pressable
         key={value}
-        // A two-state chooser is a toggle button; `aria-pressed` is the state ARIA
-        // allows on that role.
-        accessibilityRole="button"
+        // A two-state chooser is a toggle button: pressed on web, selected on native,
+        // where React Native has no `aria-pressed`.
+        // eslint-disable-next-line no-restricted-syntax -- the native half of aria-pressed
         accessibilityState={{ selected: active }}
         aria-pressed={active}
         className={cn(
@@ -47,8 +49,8 @@ export function PlanToggle({
         )}
         feedback="default"
         style={[segmentStyle, active ? { borderWidth: visual.borderWidthHairline } : null]}
-        disabled={!onChange}
-        onPress={() => onChange?.(value)}
+        disabled={!onValueChange}
+        onPress={() => onValueChange?.(value)}
       >
         <Text
           className={cn(active ? 'text-foreground' : 'text-muted-foreground')}

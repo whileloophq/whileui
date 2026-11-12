@@ -1,11 +1,9 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
 import {
-  Platform,
   Text,
   View,
   type GestureResponderEvent,
   type StyleProp,
-  type ViewInstance,
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
@@ -13,6 +11,7 @@ import { Pressable, type PressableProps } from '../components/pressable';
 import { cn } from './cn';
 import { composeEventHandlers } from './compose-event-handlers';
 import { useFrostedSurface, type FrostedSurfaceProps } from './frosted-surface';
+import { useRovingFocus } from './roving-focus';
 import { OverlayBackdrop } from './overlay-backdrop';
 import { OverlayHost } from './overlay-host';
 import { shadowStyle, surfaceRadius, typographyStyle } from './recipes';
@@ -54,13 +53,6 @@ export interface MenuSheetContentProps extends ViewProps, FrostedSurfaceProps {
 
 const ITEM_SELECTOR = '[role="menuitem"]:not([aria-disabled="true"])';
 
-/** The DOM members the web keyboard handling needs; the package builds without DOM types. */
-interface WebElement {
-  focus(): void;
-  querySelectorAll(selector: string): ArrayLike<WebElement>;
-  ownerDocument: { activeElement: unknown };
-}
-
 export function MenuSheetContent({
   className,
   children,
@@ -73,7 +65,6 @@ export function MenuSheetContent({
   const { open, setOpen } = useMenuSheet();
   const visual = useVisualTokens();
   const colors = useThemeColors();
-  const panel = useRef<ViewInstance>(null);
   const frostedSurface = useFrostedSurface({
     frosted,
     blurIntensity,
@@ -94,31 +85,9 @@ export function MenuSheetContent({
     style,
   ];
 
-  // Web keyboard, as the WAI-ARIA menu pattern asks: focus starts on the first item, and
-  // the arrow keys, Home and End move between items. On the web a React Native view is
-  // its DOM element. The Modal restores focus to the trigger when it closes.
-  const items = useCallback(() => {
-    const node = panel.current as unknown as WebElement | null;
-    return node ? Array.from(node.querySelectorAll(ITEM_SELECTOR)) : [];
-  }, []);
-  const focusFirst = useCallback(() => {
-    if (Platform.OS === 'web') items()[0]?.focus();
-  }, [items]);
-  const onKeyDown = (event: { nativeEvent: { key: string }; preventDefault(): void }) => {
-    const list = items();
-    if (list.length === 0) return;
-    const at = list.findIndex((item) => item === item.ownerDocument.activeElement);
-    const next: Record<string, number> = {
-      ArrowDown: (at + 1) % list.length,
-      ArrowUp: (at - 1 + list.length) % list.length,
-      Home: 0,
-      End: list.length - 1,
-    };
-    const target = next[event.nativeEvent.key];
-    if (target === undefined) return;
-    event.preventDefault();
-    list[target]?.focus();
-  };
+  // The WAI-ARIA menu pattern on web: focus starts on the first item, and the arrow keys,
+  // Home and End move between items. The Modal restores focus to the trigger on close.
+  const { ref: panel, focusFirst, keyboardProps } = useRovingFocus(ITEM_SELECTOR, 'vertical');
 
   return (
     <OverlayHost
@@ -138,7 +107,7 @@ export function MenuSheetContent({
             className
           )}
           style={contentStyle}
-          {...(Platform.OS === 'web' ? { onKeyDown } : null)}
+          {...keyboardProps}
           {...props}
         >
           {frostedSurface.overlay}

@@ -157,6 +157,7 @@ function OTPInput({
         autoFocus={autoFocus}
         editable={!disabled}
         caretHidden
+        // eslint-disable-next-line no-restricted-syntax -- visually hidden input; the cell cursor shows focus
         className="outline-none"
         style={{
           position: 'absolute',

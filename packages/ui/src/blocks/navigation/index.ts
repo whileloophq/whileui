@@ -13,6 +13,7 @@ export {
 } from './header';
 export { PageHeader, type PageHeaderProps } from './page-header';
 export { TabBar, type TabBarItem, type TabBarProps } from './tab-bar';
+export { type NavIcon, type NavIconState } from './nav-icon';
 export {
   DrawerMenu,
   type DrawerMenuItem,

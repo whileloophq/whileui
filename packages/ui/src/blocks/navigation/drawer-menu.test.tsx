@@ -38,7 +38,7 @@ describe('DrawerMenu', () => {
   });
 
   it('keeps navigation items in a scroll owner', async () => {
-    const result = await render(<DrawerMenu visible onClose={jest.fn()} sections={sections} />);
+    const result = await render(<DrawerMenu open onOpenChange={jest.fn()} sections={sections} />);
 
     expect(result.root!.queryAll((instance) => instance.type === 'RCTScrollView')).toHaveLength(1);
     expect(screen.getByRole('button', { name: 'History' })).toBeOnTheScreen();
@@ -46,29 +46,29 @@ describe('DrawerMenu', () => {
 
   it('exits towards the leading edge, which is the right in RTL', async () => {
     jest.useFakeTimers();
-    const ltr = await render(<DrawerMenu visible onClose={jest.fn()} sections={sections} />);
-    await ltr.rerender(<DrawerMenu visible={false} onClose={jest.fn()} sections={sections} />);
+    const ltr = await render(<DrawerMenu open onOpenChange={jest.fn()} sections={sections} />);
+    await ltr.rerender(<DrawerMenu open={false} onOpenChange={jest.fn()} sections={sections} />);
     expect(panelTranslateX(ltr)).toBeLessThan(0);
     await ltr.unmount();
 
     jest.replaceProperty(I18nManager, 'isRTL', true);
-    const rtl = await render(<DrawerMenu visible onClose={jest.fn()} sections={sections} />);
-    await rtl.rerender(<DrawerMenu visible={false} onClose={jest.fn()} sections={sections} />);
+    const rtl = await render(<DrawerMenu open onOpenChange={jest.fn()} sections={sections} />);
+    await rtl.rerender(<DrawerMenu open={false} onOpenChange={jest.fn()} sections={sections} />);
     expect(panelTranslateX(rtl)).toBeGreaterThan(0);
   });
 
   it('cancels a pending exit when reopened, and unmounts cleanly mid-exit', async () => {
     jest.useFakeTimers();
-    const result = await render(<DrawerMenu visible onClose={jest.fn()} sections={sections} />);
+    const result = await render(<DrawerMenu open onOpenChange={jest.fn()} sections={sections} />);
 
-    await result.rerender(<DrawerMenu visible={false} onClose={jest.fn()} sections={sections} />);
-    await result.rerender(<DrawerMenu visible onClose={jest.fn()} sections={sections} />);
+    await result.rerender(<DrawerMenu open={false} onOpenChange={jest.fn()} sections={sections} />);
+    await result.rerender(<DrawerMenu open onOpenChange={jest.fn()} sections={sections} />);
     await act(() => {
       jest.runAllTimers();
     });
     expect(screen.getByRole('button', { name: 'History' })).toBeOnTheScreen();
 
-    await result.rerender(<DrawerMenu visible={false} onClose={jest.fn()} sections={sections} />);
+    await result.rerender(<DrawerMenu open={false} onOpenChange={jest.fn()} sections={sections} />);
     await result.unmount();
     expect(() => jest.runAllTimers()).not.toThrow();
   });
@@ -76,8 +76,8 @@ describe('DrawerMenu', () => {
   it('ignores a dismiss request that arrives during its exit', async () => {
     jest.useFakeTimers();
     const onClose = jest.fn();
-    const result = await render(<DrawerMenu visible onClose={onClose} sections={sections} />);
-    await result.rerender(<DrawerMenu visible={false} onClose={onClose} sections={sections} />);
+    const result = await render(<DrawerMenu open onOpenChange={onClose} sections={sections} />);
+    await result.rerender(<DrawerMenu open={false} onOpenChange={onClose} sections={sections} />);
     const [modal] = result.root!.queryAll((instance) => instance.type === 'Modal');
     modal!.props.onRequestClose();
     expect(onClose).not.toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe('DrawerMenu', () => {
     jest.useFakeTimers();
     const onSelect = jest.fn();
     const result = await render(
-      <DrawerMenu visible onClose={jest.fn()} onSelect={onSelect} sections={sections} />
+      <DrawerMenu open onOpenChange={jest.fn()} onValueChange={onSelect} sections={sections} />
     );
 
     const item = screen.getByRole('button', { name: 'History' });
@@ -95,7 +95,12 @@ describe('DrawerMenu', () => {
     expect(onSelect).toHaveBeenCalledWith('history');
 
     await result.rerender(
-      <DrawerMenu visible={false} onClose={jest.fn()} onSelect={onSelect} sections={sections} />
+      <DrawerMenu
+        open={false}
+        onOpenChange={jest.fn()}
+        onValueChange={onSelect}
+        sections={sections}
+      />
     );
     await act(() => {
       jest.runAllTimers();

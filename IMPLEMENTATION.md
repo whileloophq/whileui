@@ -36,15 +36,18 @@ of an error or missing decision.
 
 ```text
 Current phase: Phase 2C — One control foundation
-Current task: C-04 — Enforcement and gates
-Status: C-01 to C-03 committed; C-02 and C-03 blocked only on the batched device run
-Branch: main (not pushed, on the owner's instruction)
-Last verified commit: the C-03 commit — browser suite 172 passed, 234 unit tests
-Working tree at handoff: clean after the C-03 commit
-Last command run: bun run test:web
-Last command result: passed — 172 Chromium/WebKit tests
-Next safe action: C-04 — the lint bans, the sweep opening overlays and checking arrow
-  keys, and the iOS Maestro sweep flow; then the device run for C-02 to C-04
+Current task: Phase 2C — C-01 to C-05 and the navigation-bar fix committed
+Status: C-02 and C-03 owe only an Android release run
+Branch: main, ahead of origin, not pushed (owner's instruction)
+Last verified commit: the C-04/C-05 commit — `bun run verify` passed on its tree
+Working tree at handoff: clean
+Last command run: bun run verify
+Last command result: passed — 235 unit tests, 299 kB tarball, iOS and Android exports,
+  188 Chromium/WebKit tests in 6.0 min
+Next safe action: the Android release run (`maestro --platform android test e2e/maestro`,
+  one flow at a time, AGENTS.md > Tooling gotchas); fix or record the pre-existing
+  `otp` and keyboard flow failures on iOS; then release — pending changesets include one
+  major (prop renames) — and move the proving product onto it
 Blockers: none. The Android emulator is unusable while the host load average is above
   roughly 12; see AGENTS.md > Tooling gotchas before rerunning its flows
 ```
@@ -579,15 +582,26 @@ device run, batched with C-03's because both change native semantics.
   with its own, so activation arrives once as `onPress`; Radix selects on arrow focus
   only while the key is held, which Playwright's `press` does not do.
 - Navigation selection decided: BottomNav, FloatingBottomNav and TabBar keep the `tab`
-  role, which native tab bars announce with position; arrow keys between them wait for
-  a consumer with keyboard-heavy web navigation. DrawerMenu's active item stays visual
-  only — React Native has no `aria-current`, and `aria-selected` is invalid on a button.
+  role, which native tab bars announce with position. Deferring their arrow keys did
+  not survive C-04's sweep, which rejects a tab list with more than one Tab stop, so
+  they got `lib/roving-focus` there. DrawerMenu's active item stays visual only —
+  React Native has no `aria-current`, and `aria-selected` is invalid on a button.
 - `withInteractivePressableStyle` deleted, not deprecated (the owner's call).
 - Evidence: 233 unit tests including new RadioGroup, Tabs, Accordion and Collapsible
   suites; `bun run verify` passed — 166 Chromium/WebKit tests, a 293 kB tarball, iOS and
   Android exports; the Controls and Overlays accessibility-tree diffs reviewed.
-- Owed: the Android half of the C-01 spike and the Maestro flows on iOS and Android
-  release builds.
+- Device run, 2026-11-12, iOS 17 Pro simulator, release build: `alert-dialog`,
+  `button`, `drawer-lifecycle`, `scroll-ownership`, `select-long-list`,
+  `nested-overlays` and the new `overlay-reachability` pass — every rebuilt overlay
+  family exposes its own controls, and choosing a menu item closes the menu. A first
+  full run under a load average of 26 dropped taps; rerun one flow at a time.
+  `nested-overlays` and `otp` needed updating for the catalog's split into tabs on
+  2026-11-11 (a trigger below the fold, OTP now on Controls). Still failing, and
+  predating this phase: `otp` cannot find the hidden code field in the iOS hierarchy
+  (OTPInput unchanged since the flow last passed), and the two keyboard flows cannot
+  hide the keyboard with the simulator's hardware keyboard attached. Android was not run.
+- Owed: the Android release run. The Android half of the C-01 spike gates nothing yet —
+  no component styles from `data-*` — and moves to the first task that does.
 
 ### [!] C-03 — Menus and containers
 
@@ -631,9 +645,10 @@ batched device run (and the navigator-presented modal check moved here from D-03
   `lib/overlay-backdrop`. On web the old backdrops were Tab stops ahead of the overlay.
   Outside the control base, only the backdrop imports React Native's `Pressable`.
 - Evidence: 234 unit tests; `e2e/menus.spec.ts` (3 checks) and the full browser suite,
-  172 tests, pass in Chromium and WebKit with no accessibility-tree change.
+  172 tests, pass in Chromium and WebKit with no accessibility-tree change. iOS: see
+  C-02's device run — `overlay-reachability` and `nested-overlays` pass. Owed: Android.
 
-### [~] C-04 — Enforcement and gates
+### [x] C-04 — Enforcement and gates
 
 **Goal:** a contract violation fails a command instead of waiting for a consumer to see
 it.
@@ -658,9 +673,34 @@ in the release checklist, since it needs a device and so cannot run inside `veri
 
 **Review cards:** 04, 05, 07, 11.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** Started and code-complete 2026-11-12.
 
-### [ ] C-05 — Agent-ready contract
+- Lint: one block in `eslint.config.mjs` for `packages/ui/src` bans React Native's
+  `Pressable` and `Touchable*` outside the control base and `lib/overlay-backdrop`, the
+  `accessibilityState` attribute, and a bare `outline-none` class. On landing it found
+  five sites: Toggle still on React Native's Pressable (moved); Toggle and PlanToggle's
+  `selected` state, the native half of `aria-pressed`, which React Native lacks —
+  disabled with that reason; OTPInput's visually hidden input, the exemption AGENTS
+  already names; and Select options, which showed focus with a faint tint alone — they
+  now draw the inset ring and need no exemption.
+- Sweep: `e2e/interaction-sweep.spec.ts` now opens eight overlays (Dialog, AlertDialog,
+  Sheet, nested overlays, DropdownMenu, ContextMenu from the keyboard, Select, the
+  drawer) and runs the same audit and focus walk inside each, and checks every radio
+  group and tab list is one Tab stop. It caught the navigation bars' deferred arrow keys
+  at once; they now use `lib/roving-focus`, which the menu sheet shares.
+- iOS: `e2e/maestro/overlay-reachability.yaml` opens each rebuilt overlay family and
+  asserts its controls are elements of their own, and that choosing a menu item closes
+  the menu; it passes on the iOS simulator (C-02's device run). Added to the release
+  checklist in `AGENTS.md`.
+- Owner review, 2026-11-12, of the navigation bars on device: the inactive badge was
+  faded (the 54% inactive dim wrapped it), inactive icons fell below 3:1, the active
+  icon could not follow the tab colour (grey on the floating pill), and `BottomNav`'s
+  fixed `pb-6` doubled the safe area inside `AppShell`. Fixed: `icon` also takes a
+  function of `{ active, color }` (`NavIcon`) in all three bars, selection is colour
+  alone, the padding is even, and the unused `inactiveOpacity` token is deleted. A unit
+  test pins the colours; screenshots in both themes checked by eye.
+
+### [x] C-05 — Agent-ready contract
 
 **Goal:** an agent or a new contributor builds a correct control from the docs alone,
 and the docs cannot drift from the code.
@@ -687,7 +727,25 @@ product upgrades using only those notes.
 
 **Review cards:** 03, 04, 06, 08, 09.
 
-**Notes/evidence:** Not started.
+**Notes/evidence:** Completed 2026-11-12.
+
+- `AGENTS.md`: the per-symptom control entries folded into three rules — render
+  controls through the base, composites take behaviour from `@rn-primitives` (with the
+  three wiring traps), containers are a panel beside `OverlayBackdrop` — and the sweep
+  entry covers overlays and Tab stops.
+- One prop vocabulary. The audit found five blocks with their own names: `DrawerMenu`
+  (`visible` / `onClose`, `activeKey` / `onSelect`), `BottomNav`, `FloatingBottomNav`,
+  `TabBar` (`activeKey` / `onSelect`) and `PlanToggle` (`selected` / `onChange`). All
+  now take `open` / `onOpenChange` or `value` / `onValueChange`; no consuming app used
+  any of them, and the showcase apps moved in the same change. Major changeset with a
+  rename table.
+- The skill gained a Controls section — the base, no nested controls, `label` on
+  checkable controls, the vocabulary. Its build guard now checks prop names against the
+  README API tables, which are generated from the types, so a renamed prop in the skill
+  fails the build.
+- Decided against per-control role/keys metadata in `catalog.json`: the keyboard rules
+  are one README paragraph that the generated agent files already carry, and a second
+  per-component copy would be one more thing to drift.
 
 ## Phase 3 — Overlays and keyboard
 

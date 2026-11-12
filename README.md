@@ -578,8 +578,8 @@ import { AppShell, Header, BottomNav, ScrollView } from '@thewhileloop/whileui';
   bottomNav={
     <BottomNav
       items={[...]}
-      activeKey="home"
-      onSelect={(key) => setTab(key)}
+      value="home"
+      onValueChange={(key) => setTab(key)}
     />
   }
 >
@@ -1893,13 +1893,36 @@ import { BottomNav } from '@thewhileloop/whileui';
 
 <BottomNav
   items={[
-    { key: 'home', label: 'Home', icon: <Icon /> },
-    { key: 'profile', label: 'Profile', icon: <Icon />, badge: 3 },
+    { key: 'home', label: 'Home', icon: ({ color }) => <Feather name="home" color={color} /> },
+    {
+      key: 'inbox',
+      label: 'Inbox',
+      icon: ({ color }) => <Feather name="inbox" color={color} />,
+      badge: 3,
+    },
   ]}
-  activeKey="home"
-  onSelect={(key) => {}}
+  value="home"
+  onValueChange={(key) => {}}
 />;
 ```
+
+Pass `icon` as a function of `{ active, color }` so the icon takes the tab's colour: an
+icon font needs a colour value, not a class, so a fixed-colour element stays grey on the
+active tab. `BottomNav`, `FloatingBottomNav` and `TabBar` all accept it, and a plain
+element still works. Selection is shown by colour alone. The bar pads itself evenly;
+the screen's safe area owns the bottom inset, which `AppShell` applies.
+
+<!-- api:BottomNav -->
+
+| Prop                     | Type                    | Default | Description                                     |
+| ------------------------ | ----------------------- | ------- | ----------------------------------------------- |
+| items (required)         | `BottomNavItem[]`       | —       |                                                 |
+| value (required)         | `string`                | —       | Key of the selected item.                       |
+| onValueChange (required) | `(key: string) => void` | —       | Called with the key of the item the user chose. |
+| className                | `string`                | —       |                                                 |
+
+Also accepts the props of `ViewProps`.
+<!-- /api:BottomNav -->
 
 ## AppShell
 
@@ -1910,7 +1933,7 @@ import { AppShell, PageSkeleton } from '@thewhileloop/whileui';
 
 <AppShell
   header={<Header title="Settings" />}
-  bottomNav={<BottomNav items={[...]} activeKey="settings" onSelect={setTab} />}
+  bottomNav={<BottomNav items={[...]} value="settings" onValueChange={setTab} />}
   loading={loading}
   skeleton={<PageSkeleton variant="settings" headerPlaceholder />}
 >
@@ -2772,11 +2795,11 @@ Also accepts the props of `ViewProps`.
 import { PlanToggle } from '@thewhileloop/whileui';
 
 <PlanToggle
-  selected="monthly"
+  value="monthly"
   monthlyLabel="Monthly"
   annualLabel="Annual"
   annualDiscount="Save 20%"
-  onChange={(next) => {}}
+  onValueChange={(next) => {}}
 />;
 ```
 
@@ -2799,8 +2822,8 @@ import { UpgradeBanner } from '@thewhileloop/whileui';
 import { DrawerMenu } from '@thewhileloop/whileui';
 
 <DrawerMenu
-  visible={open}
-  onClose={() => setOpen(false)}
+  open={open}
+  onOpenChange={setOpen}
   sections={[
     {
       title: 'Menu',
@@ -2810,8 +2833,8 @@ import { DrawerMenu } from '@thewhileloop/whileui';
       ],
     },
   ]}
-  activeKey="home"
-  onSelect={(key) => {}}
+  value="home"
+  onValueChange={(key) => {}}
   header={<View>...</View>}
   footer={<Text>v1.0</Text>}
 />;
@@ -2819,21 +2842,21 @@ import { DrawerMenu } from '@thewhileloop/whileui';
 
 <!-- api:DrawerMenu -->
 
-| Prop                | Type                    | Default                | Description                                                 |
-| ------------------- | ----------------------- | ---------------------- | ----------------------------------------------------------- |
-| visible (required)  | `boolean`               | —                      |                                                             |
-| onClose (required)  | `() => void`            | —                      |                                                             |
-| sections (required) | `DrawerMenuSection[]`   | —                      |                                                             |
-| activeKey           | `string`                | —                      |                                                             |
-| onSelect            | `(key: string) => void` | —                      |                                                             |
-| header              | `React.ReactNode`       | —                      |                                                             |
-| footer              | `React.ReactNode`       | —                      |                                                             |
-| maxWidth            | `number`                | —                      | Max width in px. On web, defaults to 360 when not provided. |
-| className           | `string`                | —                      |                                                             |
-| style               | `StyleProp<ViewStyle>`  | —                      |                                                             |
-| frosted             | `boolean`               | `false`                | Enable the optional frosted overlay.                        |
-| blurIntensity       | `number`                | medium preset          | Override blur amount directly.                              |
-| blurTintToken       | `FrostedTintToken`      | `'surfaceTranslucent'` | Tint token used for frosted mode.                           |
+| Prop                    | Type                      | Default                | Description                                                 |
+| ----------------------- | ------------------------- | ---------------------- | ----------------------------------------------------------- |
+| open (required)         | `boolean`                 | —                      | Whether the drawer is open.                                 |
+| onOpenChange (required) | `(open: boolean) => void` | —                      | Called with `false` when the user dismisses the drawer.     |
+| sections (required)     | `DrawerMenuSection[]`     | —                      |                                                             |
+| value                   | `string`                  | —                      | Key of the item to mark as current.                         |
+| onValueChange           | `(key: string) => void`   | —                      | Called with the key of the item the user chose.             |
+| header                  | `React.ReactNode`         | —                      |                                                             |
+| footer                  | `React.ReactNode`         | —                      |                                                             |
+| maxWidth                | `number`                  | —                      | Max width in px. On web, defaults to 360 when not provided. |
+| className               | `string`                  | —                      |                                                             |
+| style                   | `StyleProp<ViewStyle>`    | —                      |                                                             |
+| frosted                 | `boolean`                 | `false`                | Enable the optional frosted overlay.                        |
+| blurIntensity           | `number`                  | medium preset          | Override blur amount directly.                              |
+| blurTintToken           | `FrostedTintToken`        | `'surfaceTranslucent'` | Tint token used for frosted mode.                           |
 
 <!-- /api:DrawerMenu -->
 
@@ -2944,15 +2967,19 @@ import { Toggle } from '@thewhileloop/whileui';
 
 <!-- api:Toggle -->
 
-| Prop            | Type                                             | Default     | Description |
-| --------------- | ------------------------------------------------ | ----------- | ----------- |
-| pressed         | `boolean`                                        | `false`     |             |
-| defaultPressed  | `boolean`                                        | `false`     |             |
-| onPressedChange | `(pressed: boolean) => void`                     | —           |             |
-| variant         | `VariantProps<typeof toggleVariants>['variant']` | `'default'` |             |
-| size            | `VariantProps<typeof toggleVariants>['size']`    | `'default'` |             |
-| className       | `string`                                         | —           |             |
-| children        | `React.ReactNode`                                | —           |             |
+| Prop             | Type                                             | Default     | Description                                                                  |
+| ---------------- | ------------------------------------------------ | ----------- | ---------------------------------------------------------------------------- |
+| pressed          | `boolean`                                        | `false`     |                                                                              |
+| defaultPressed   | `boolean`                                        | `false`     |                                                                              |
+| onPressedChange  | `(pressed: boolean) => void`                     | —           |                                                                              |
+| variant          | `VariantProps<typeof toggleVariants>['variant']` | `'default'` |                                                                              |
+| size             | `VariantProps<typeof toggleVariants>['size']`    | `'default'` |                                                                              |
+| className        | `string`                                         | —           | Additional Tailwind classes.                                                 |
+| children         | `React.ReactNode`                                | —           |                                                                              |
+| feedback         | `PressedVariant`                                 | —           | Semantic press feedback. `none` preserves a plain React Native Pressable.    |
+| loading          | `boolean`                                        | —           | Loading controls are busy and non-interactive, just like disabled controls.  |
+| disabledFeedback | `DisabledVariant`                                | —           | Opacity used while the control is unavailable.                               |
+| focusIndicator   | `FocusIndicator`                                 | `'ring'`    | Keyboard focus on web: `inset` inside a track, `none` when a proxy draws it. |
 
 Also accepts the props of `PressableProps`.
 <!-- /api:Toggle -->
@@ -3124,12 +3151,12 @@ import { FloatingBottomNav } from '@thewhileloop/whileui';
 
 <!-- api:FloatingBottomNav -->
 
-| Prop                 | Type                      | Default | Description |
-| -------------------- | ------------------------- | ------- | ----------- |
-| items (required)     | `FloatingBottomNavItem[]` | —       |             |
-| activeKey (required) | `string`                  | —       |             |
-| onSelect (required)  | `(key: string) => void`   | —       |             |
-| className            | `string`                  | —       |             |
+| Prop                     | Type                      | Default | Description                                     |
+| ------------------------ | ------------------------- | ------- | ----------------------------------------------- |
+| items (required)         | `FloatingBottomNavItem[]` | —       |                                                 |
+| value (required)         | `string`                  | —       | Key of the selected item.                       |
+| onValueChange (required) | `(key: string) => void`   | —       | Called with the key of the item the user chose. |
+| className                | `string`                  | —       |                                                 |
 
 Also accepts the props of `ViewProps`.
 <!-- /api:FloatingBottomNav -->
@@ -3144,14 +3171,14 @@ import { TabBar } from '@thewhileloop/whileui';
 
 <!-- api:TabBar -->
 
-| Prop                 | Type                                  | Default     | Description |
-| -------------------- | ------------------------------------- | ----------- | ----------- |
-| items (required)     | `TabBarItem[]`                        | —           |             |
-| activeKey (required) | `string`                              | —           |             |
-| onSelect (required)  | `(key: string) => void`               | —           |             |
-| variant              | `'default' \| 'pills' \| 'underline'` | `'default'` |             |
-| scrollable           | `boolean`                             | `false`     |             |
-| className            | `string`                              | —           |             |
+| Prop                     | Type                                  | Default     | Description                                     |
+| ------------------------ | ------------------------------------- | ----------- | ----------------------------------------------- |
+| items (required)         | `TabBarItem[]`                        | —           |                                                 |
+| value (required)         | `string`                              | —           | Key of the selected item.                       |
+| onValueChange (required) | `(key: string) => void`               | —           | Called with the key of the item the user chose. |
+| variant                  | `'default' \| 'pills' \| 'underline'` | `'default'` |                                                 |
+| scrollable               | `boolean`                             | `false`     |                                                 |
+| className                | `string`                              | —           |                                                 |
 
 Also accepts the props of `ViewProps`.
 <!-- /api:TabBar -->

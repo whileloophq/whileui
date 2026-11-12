@@ -20,6 +20,7 @@ import {
   ToastProvider,
   cn,
   focusRing,
+  type NavIconState,
   useIconColors,
   useThemeBridge,
   useToast,
@@ -71,7 +72,6 @@ function Studio() {
   const { resolvedTheme, toggleTheme } = useThemeBridge({ initialMode: 'system' });
   const dark = resolvedTheme === 'dark';
   const insets = useSafeAreaInsets();
-  const colors = useIconColors();
   const { toast } = useToast();
   const firing = useLiveFiring();
 
@@ -97,13 +97,7 @@ function Studio() {
   const navItems = TABS.map((t) => ({
     key: t.key,
     label: t.label,
-    icon: (
-      <Feather
-        name={t.icon}
-        size={18}
-        color={tab === t.key ? colors.primaryForeground : colors.muted}
-      />
-    ),
+    icon: ({ color }: NavIconState) => <Feather name={t.icon} size={18} color={color} />,
   }));
 
   return (
@@ -144,8 +138,8 @@ function Studio() {
         <FloatingBottomNav
           className="w-full web:max-w-md"
           items={navItems}
-          activeKey={tab}
-          onSelect={(key) => setTab(key as Tab)}
+          value={tab}
+          onValueChange={(key) => setTab(key as Tab)}
         />
       </View>
 

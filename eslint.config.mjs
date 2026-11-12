@@ -58,7 +58,10 @@ export default tseslint.config(
       // `interface FooProps extends ViewProps {}` is how a component publishes a named
       // prop type it does not yet extend. Adding a member to satisfy the rule would be
       // worse than the empty body.
-      '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        { allowInterfaces: 'with-single-extends' },
+      ],
 
       // `require` is how React Native resolves a bundled asset — an ES import would need
       // the generated `expo-env.d.ts`, which is not checked in.
@@ -74,6 +77,53 @@ export default tseslint.config(
           object: 'StyleSheet',
           property: 'absoluteFillObject',
           message: 'Removed in React Native 0.86. Use StyleSheet.absoluteFill.',
+        },
+      ],
+    },
+  },
+
+  // The control contract (`AGENTS.md` > Core component robustness), enforced. Every
+  // defect a consumer reported through 4.4–4.7 was a control that skipped one of these;
+  // a rule fails the change instead of waiting for someone to see it.
+  {
+    files: ['packages/ui/src/**/*.tsx'],
+    ignores: [
+      // The two places allowed to touch React Native's press primitive.
+      'packages/ui/src/components/pressable/pressable.tsx',
+      'packages/ui/src/lib/overlay-backdrop.tsx',
+      '**/*.test.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react-native',
+              importNames: [
+                'Pressable',
+                'TouchableOpacity',
+                'TouchableHighlight',
+                'TouchableWithoutFeedback',
+                'TouchableNativeFeedback',
+              ],
+              message:
+                'Render controls through components/pressable, which supplies the role, focus ring, web target and Space key. Backdrops use lib/overlay-backdrop.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='accessibilityState']",
+          message:
+            'Use aria-checked, aria-selected, aria-expanded or aria-disabled. React Native folds them into accessibility state and React Native Web emits them; it dropped the accessibilityState mapping.',
+        },
+        {
+          selector: 'Literal[value=/(^|\\s)outline-none(\\s|$)/]',
+          message:
+            'A bare outline-none removes the focus indicator (WCAG 2.4.7). Use focusRing, focusRingInset or focusField from lib/focus-ring.',
         },
       ],
     },

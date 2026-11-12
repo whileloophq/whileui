@@ -7,6 +7,10 @@ name: OTP accepts, rejects, and pastes a code
     visible: 'Typography'
     timeout: 60000
 
+# The catalog keeps OTP on its Controls tab.
+- tapOn:
+    text: '.*Controls$'
+
 - scrollUntilVisible:
     element:
       text: '.*try 123456.*'

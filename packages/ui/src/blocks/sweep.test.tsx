@@ -95,8 +95,8 @@ describe('BottomNav names each tab itself', () => {
     const { BottomNav } = jest.requireActual('./navigation/bottom-nav');
     await render(
       <BottomNav
-        activeKey="home"
-        onSelect={jest.fn()}
+        value="home"
+        onValueChange={jest.fn()}
         items={[
           { key: 'home', label: 'Home', icon: <Text>H</Text>, badge: 3 },
           { key: 'inbox', label: 'Inbox', icon: <Text>I</Text> },

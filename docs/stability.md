@@ -505,15 +505,16 @@ way; `e2e/interaction-sweep.spec.ts` no longer excludes anything.
 Authoring Practices pattern in Chromium and WebKit. Against 4.7.1, seven of its eight
 checks failed; only `Toggle` passed.
 
-| Control                          | Before                                                                  | Now                                               |
-| -------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------- |
-| `RadioGroup`, `SegmentedControl` | every radio its own Tab stop; no arrow keys                             | one Tab stop; arrows move and select              |
-| `ToggleGroup`                    | same                                                                    | same fix; single choice keeps radio semantics     |
-| `Tabs`                           | every tab a Tab stop; panel unlabelled                                  | one Tab stop; arrows; `tabpanel` named by its tab |
-| `RadioGroup` with text beside it | radios outside any `radiogroup`, text a separate element                | `label` / `description` make each row one radio   |
-| `Checkbox`, `Switch`             | Space did nothing — React Native Web presses on Space only for `button` | Space toggles, from the control base              |
-| `Accordion`, `Collapsible`       | no `aria-expanded`                                                      | `aria-expanded` on every trigger                  |
-| `CollapsibleTrigger asChild`     | wrapped the child in a second pressable                                 | clones the child                                  |
+| Control                                    | Before                                                                  | Now                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| `RadioGroup`, `SegmentedControl`           | every radio its own Tab stop; no arrow keys                             | one Tab stop; arrows move and select                 |
+| `ToggleGroup`                              | same                                                                    | same fix; single choice keeps radio semantics        |
+| `BottomNav`, `FloatingBottomNav`, `TabBar` | every tab a Tab stop                                                    | one Tab stop; arrows, Home, End (`lib/roving-focus`) |
+| `Tabs`                                     | every tab a Tab stop; panel unlabelled                                  | one Tab stop; arrows; `tabpanel` named by its tab    |
+| `RadioGroup` with text beside it           | radios outside any `radiogroup`, text a separate element                | `label` / `description` make each row one radio      |
+| `Checkbox`, `Switch`                       | Space did nothing — React Native Web presses on Space only for `button` | Space toggles, from the control base                 |
+| `Accordion`, `Collapsible`                 | no `aria-expanded`                                                      | `aria-expanded` on every trigger                     |
+| `CollapsibleTrigger asChild`               | wrapped the child in a second pressable                                 | clones the child                                     |
 
 **Menus — `e2e/menus.spec.ts`.** `DropdownMenu`, `ContextMenu` and `Menubar` were three
 copies of one 215-line file, and every item spread the caller's props after its own

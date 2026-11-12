@@ -13,6 +13,12 @@ name: Nested overlays render above their host and dismiss one layer at a time
 
 - tapOn:
     text: '.*Overlays.*'
+# `tapOn` does not scroll on iOS, and the trigger sits below the first screen.
+- scrollUntilVisible:
+    element:
+      text: '.*Nested overlays.*'
+    direction: DOWN
+    centerElement: true
 - tapOn:
     text: '.*Nested overlays.*'
 - assertVisible: 'A Select and a confirmation inside one sheet.'

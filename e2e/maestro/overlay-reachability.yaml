@@ -1,0 +1,73 @@
+appId: dev.whileloop.showcase
+name: Every overlay family reaches its own controls
+---
+# The iOS half of the control contract. An accessible container on iOS is one element
+# and its descendants vanish from VoiceOver, so each overlay below is opened and the
+# controls inside it asserted as elements of their own. Phase 2C rebuilt every backdrop
+# and panel (`lib/overlay-backdrop`) and merged the three menus (`lib/menu-sheet`); only
+# this layer can see whether that kept them reachable. `alert-dialog.yaml`,
+# `nested-overlays.yaml` and `drawer-lifecycle.yaml` cover the other families.
+#
+# It also proves on a device that choosing a menu item closes the menu, which every
+# menu failed to do while an item spread its props over its own closing handler.
+
+- launchApp:
+    clearState: true
+
+# Radios with text beside them are one element each, named by the text.
+- tapOn:
+    text: '.*Controls$'
+- assertVisible: 'Free plan'
+- assertVisible: '.*Pro plan.*'
+
+# `tapOn` does not scroll on iOS; each trigger below is scrolled to first.
+- tapOn:
+    text: '.*Overlays$'
+
+# Dialog: title and its own button reachable; the button closes it.
+- scrollUntilVisible:
+    element:
+      text: '.*Dialog$'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    text: '.*Dialog$'
+- assertVisible: 'Edit Profile'
+- tapOn: 'Save'
+- assertNotVisible: 'Edit Profile'
+
+# DropdownMenu: items reachable; choosing one closes the menu. The selector is the whole
+# label: Maestro matches case-insensitively, and `.*Menu$` also hit the "Open menu" button.
+- scrollUntilVisible:
+    element:
+      text: 'Menu'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Menu'
+- assertVisible: 'Workspace'
+- assertVisible: 'Members'
+- tapOn: 'Settings'
+- assertNotVisible: 'Members'
+
+# ContextMenu: a long press opens it; choosing an item closes it.
+- scrollUntilVisible:
+    element:
+      text: 'Long press for context menu'
+    direction: DOWN
+    centerElement: true
+- longPressOn: 'Long press for context menu'
+- assertVisible: 'Paste'
+- tapOn: 'Copy'
+- assertNotVisible: 'Paste'
+
+# Sheet: both of its own buttons reachable.
+- scrollUntilVisible:
+    element:
+      text: '.*native confirm$'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    text: '.*native confirm$'
+- assertVisible: 'Delete item'
+- tapOn: 'Close'
+- assertNotVisible: 'Delete item'

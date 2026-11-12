@@ -11,7 +11,6 @@ export const INTERACTION_TOKENS = {
   disabledOpacity: 0.46,
   disabledOpacitySoft: 0.56,
   disabledOpacitySubtle: 0.36,
-  inactiveOpacity: 0.54,
   motionFast: 140,
   motionNormal: 200,
   motionSlow: 280,
@@ -38,7 +37,6 @@ export interface InteractionTokens {
   disabledOpacity: number;
   disabledOpacitySoft: number;
   disabledOpacitySubtle: number;
-  inactiveOpacity: number;
   motionFast: number;
   motionNormal: number;
   motionSlow: number;

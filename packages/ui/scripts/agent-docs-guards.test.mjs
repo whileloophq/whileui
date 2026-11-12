@@ -17,6 +17,19 @@ test('a README component the package does not export is caught', () => {
   assert.deepEqual(findPhantomComponents(components, sources), ['Carousel']);
 });
 
+test('a skill naming a prop is checked against the generated API tables', () => {
+  const skill = 'Pass `onValueChange`, not `onSelect`.';
+  const propTables = '| Prop | Type |\n| onValueChange (required) | `(key: string) => void` |';
+  const stale = findStaleSkillNames(skill, {
+    publicApi: '',
+    propTables,
+    mcpServer: '',
+    subpaths: [],
+    agentFiles: [],
+  });
+  assert.deepEqual(stale, ['onSelect']);
+});
+
 test('a skill naming a removed API, tool, subpath or file is caught', () => {
   const skill =
     'Use `themeFromSeeds`, `gone_tool`, `get_guide`, `@thewhileloop/whileui/tokens`, ' +

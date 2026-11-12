@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Platform,
@@ -41,11 +41,15 @@ export interface DrawerMenuSection {
 }
 
 export interface DrawerMenuProps extends FrostedSurfaceProps {
-  visible: boolean;
-  onClose: () => void;
+  /** Whether the drawer is open. */
+  open: boolean;
+  /** Called with `false` when the user dismisses the drawer. */
+  onOpenChange: (open: boolean) => void;
   sections: DrawerMenuSection[];
-  activeKey?: string;
-  onSelect?: (key: string) => void;
+  /** Key of the item to mark as current. */
+  value?: string;
+  /** Called with the key of the item the user chose. */
+  onValueChange?: (key: string) => void;
   header?: React.ReactNode;
   footer?: React.ReactNode;
   /** Max width in px. On web, defaults to 360 when not provided. */
@@ -231,11 +235,11 @@ function drawerPanelClassName(frosted: boolean, className: string | undefined) {
 }
 
 export function DrawerMenu({
-  visible,
-  onClose,
+  open: visible,
+  onOpenChange,
   sections,
-  activeKey,
-  onSelect,
+  value: activeKey,
+  onValueChange: onSelect,
   header,
   footer,
   maxWidth,
@@ -245,6 +249,7 @@ export function DrawerMenu({
   blurIntensity,
   blurTintToken,
 }: DrawerMenuProps) {
+  const onClose = useCallback(() => onOpenChange(false), [onOpenChange]);
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const interaction = useInteractionTokens();

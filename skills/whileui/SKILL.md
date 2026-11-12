@@ -40,6 +40,19 @@ sections; a `Surface` only where grouping means something; hierarchy through `Te
 variants, not ad-hoc font sizes; one primary action per region; long content inside
 `Container`.
 
+## Controls
+
+- Build a custom control on WhileUI's `Pressable`, never React Native's. With a press
+  handler it is a button, a Tab stop with a focus ring, and a 24px target on web; pass
+  `role` and `aria-checked`, `aria-selected` or `aria-expanded` for anything else.
+  Without a handler it is plain content.
+- Never put a control inside another. A checkbox, switch or radio with text beside it
+  takes `label` (and `description`) — `Checkbox`, `Switch`, `RadioGroupItem` — instead of
+  sitting in a pressable row.
+- One prop vocabulary: overlays are `open` / `onOpenChange`; selections are `value` /
+  `onValueChange`; checkable controls are `checked` / `onCheckedChange`.
+- A menu item's press handler runs and the menu closes; there is no close call to add.
+
 ## Theming
 
 Build a palette from three colours with `themeFromSeeds`, render it with

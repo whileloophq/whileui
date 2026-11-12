@@ -14,7 +14,7 @@ import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
 import { Text } from '../text';
 import { cn } from '../../lib/cn';
 import { useDismissKeyboardOnOpen } from '../../lib/dismiss-keyboard-on-open';
-import { focusRing } from '../../lib/focus-ring';
+import { focusRing, focusRingInset } from '../../lib/focus-ring';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useFrostedSurface, type FrostedSurfaceProps } from '../../lib/frosted-surface';
 import { useNestedOverlay, useOverlayPortalTarget } from '../../lib/overlay-host';
@@ -306,8 +306,9 @@ const SelectItem: ForwardRefComponent<SelectPrimitive.ItemRef, SelectItemProps> 
         ref={ref}
         className={cn(
           'active:bg-state-pressed group relative flex w-full flex-row items-center gap-2 pr-8',
+          // A tinted background alone was too faint to find, so focus also draws the ring.
           Platform.select({
-            web: 'focus:bg-state-hover focus:text-foreground cursor-default outline-none',
+            web: cn('focus:bg-state-hover focus:text-foreground cursor-default', focusRingInset),
           }),
           props.disabled && '',
           className

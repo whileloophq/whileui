@@ -1,21 +1,27 @@
-import React from 'react';
 import { View, ScrollView, type ViewProps } from 'react-native';
 import { Pressable, type PressableProps } from '../../components/pressable';
 import { Text } from '../../components/text';
 import { cn } from '../../lib/cn';
+import { useThemeColors } from '../../lib/theme-colors';
+import { rovingTabIndex, useRovingFocus } from '../../lib/roving-focus';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { typographyStyle } from '../../lib/recipes';
+import { renderNavIcon, type NavIcon } from './nav-icon';
 
+const TAB_SELECTOR = '[role="tab"]:not([aria-disabled="true"])';
 export interface TabBarItem {
   key: string;
   label: string;
-  icon?: React.ReactNode;
+  /** A function receives the tab's colour; see `NavIcon`. */
+  icon?: NavIcon;
 }
 
 export interface TabBarProps extends ViewProps {
   items: TabBarItem[];
-  activeKey: string;
-  onSelect: (key: string) => void;
+  /** Key of the selected item. */
+  value: string;
+  /** Called with the key of the item the user chose. */
+  onValueChange: (key: string) => void;
   variant?: 'default' | 'pills' | 'underline';
   scrollable?: boolean;
 }
@@ -35,6 +41,15 @@ function TabBarItemComponent({
   ...props
 }: TabBarItemProps) {
   const { label, icon } = item;
+  const colors = useThemeColors();
+  // The icon takes the colour the label's class gives it in each variant.
+  const iconColor = !isActive
+    ? colors.mutedForeground
+    : variant === 'pills'
+      ? colors.primaryForeground
+      : variant === 'underline'
+        ? colors.foreground
+        : colors.primary;
   const visual = useVisualTokens();
 
   const showUnderline = variant === 'default' || (variant === 'underline' && isActive);
@@ -70,14 +85,9 @@ function TabBarItemComponent({
       ]}
       {...props}
     >
-      {icon && (
-        <View
-          aria-hidden
-          className={isActive && variant === 'pills' ? 'text-primary-foreground' : ''}
-        >
-          {icon}
-        </View>
-      )}
+      {icon ? (
+        <View aria-hidden>{renderNavIcon(icon, { active: isActive, color: iconColor })}</View>
+      ) : null}
       <Text className={cn(textStyles[variant])} style={typographyStyle(visual, 'label')}>
         {label}
       </Text>
@@ -87,8 +97,8 @@ function TabBarItemComponent({
 
 export function TabBar({
   items,
-  activeKey,
-  onSelect,
+  value,
+  onValueChange,
   variant = 'default',
   scrollable = false,
   className,
@@ -97,8 +107,11 @@ export function TabBar({
 }: TabBarProps) {
   const visual = useVisualTokens();
 
+  const { ref: tablist, keyboardProps } = useRovingFocus(TAB_SELECTOR, 'horizontal');
+  const tabStop = items.some((item) => item.key === value) ? value : items[0]?.key;
   const content = (
     <View
+      ref={tablist}
       accessibilityRole="tablist"
       className={cn(
         'flex-row',
@@ -108,15 +121,17 @@ export function TabBar({
         className
       )}
       style={[variant === 'pills' ? { borderRadius: visual.badgeRadius } : null, style]}
+      {...keyboardProps}
       {...props}
     >
       {items.map((item) => (
         <TabBarItemComponent
           key={item.key}
           item={item}
-          isActive={activeKey === item.key}
+          isActive={value === item.key}
           variant={variant}
-          onPress={() => onSelect(item.key)}
+          tabIndex={rovingTabIndex(item.key === tabStop)}
+          onPress={() => onValueChange(item.key)}
         />
       ))}
     </View>

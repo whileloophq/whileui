@@ -13,6 +13,8 @@ What the layers below cannot prove, from `PLAN.md` > Evidence model:
   **Android does not behave this way** — `accessible` groups children for TalkBack but
   leaves every node in the UIAutomator tree, so the same flow passes there either way.
   **Run the iOS flow when you touch an overlay container.** Android will not save you.
+  `overlay-reachability.yaml` opens every overlay family and asserts the controls inside
+  each are their own elements; it is in the release checklist, since no gate can run it.
 - **The OS keyboard** — `KeyboardAwareScreen` picks a `KeyboardAvoidingView` behaviour per
   platform, and nothing below this can observe the result. `keyboard-dock.yaml` is that
   check. `otp.yaml` is the code entry check. `keyboard-orientation.yaml` repeats the dock
