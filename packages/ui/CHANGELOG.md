@@ -1,5 +1,187 @@
 # @thewhileloop/whileui
 
+## 5.0.0
+
+### Major Changes
+
+- 261f63e: One prop vocabulary across controls: an overlay is `open` / `onOpenChange`, a selection
+  is `value` / `onValueChange`, as in `Dialog`, `Sheet`, `Select`, `Tabs` and the rest.
+  Five blocks used their own names. Rename at each call site:
+
+  | Component           | Before                  | After                                                       |
+  | ------------------- | ----------------------- | ----------------------------------------------------------- |
+  | `DrawerMenu`        | `visible`, `onClose`    | `open`, `onOpenChange` — called with `false` when dismissed |
+  | `DrawerMenu`        | `activeKey`, `onSelect` | `value`, `onValueChange`                                    |
+  | `BottomNav`         | `activeKey`, `onSelect` | `value`, `onValueChange`                                    |
+  | `FloatingBottomNav` | `activeKey`, `onSelect` | `value`, `onValueChange`                                    |
+  | `TabBar`            | `activeKey`, `onSelect` | `value`, `onValueChange`                                    |
+  | `PlanToggle`        | `selected`, `onChange`  | `value`, `onValueChange`                                    |
+
+  For `DrawerMenu`, `onClose={() => setOpen(false)}` becomes `onOpenChange={setOpen}`.
+
+### Minor Changes
+
+- a8b146f: `Pressable` is now the base every control renders through, and it derives what each
+  control used to set by hand. With a press handler it is a `button` unless you pass
+  another role, a Tab stop on web with a focus ring, and at least 24px there, where
+  `hitSlop` does nothing. Without a handler it is plain content: no role, no feedback and
+  no Tab stop. A new `focusIndicator` prop (`ring`, `inset`, `none`) chooses the web focus
+  treatment.
+
+  Rows, cards, navigation items, dialog and sheet buttons, the toast and search-field
+  buttons, the numeric steppers and the date-picker triggers now render through it. What
+  changes for users:
+
+  - Header actions, the Sheet and Dialog close buttons, the AlertDialog and
+    ConfirmActionSheet buttons, the date-picker triggers and the drawer items show the themed focus ring on web instead of at most the browser's default
+    outline.
+  - The Sheet close button draws its cross instead of a "×" glyph, at 44px like the
+    toast's, so it no longer sits off-centre.
+  - `Chat`'s send button is named "Send message" whether or not it is enabled; its state
+    is announced as disabled rather than read out as part of the name.
+  - `Chat` suggestions, `ListItem` and `NotificationItem` show the pressed state with
+    `bg-state-pressed`; the suggestion chips showed no press at all before.
+  - The time picker's wheel rows are no longer Tab stops inside a region hidden from
+    assistive technology; the wheels' own adjustable controls remain the keyboard path.
+
+  No props were removed. Two things to check at call sites:
+
+  - A `HeaderBackButton` (or any control built on `Pressable`) rendered without
+    `onPress` is no longer announced as a button or reachable by Tab. Pass the handler,
+    or wrap it in your router's link with `asChild` so the link supplies one.
+  - If you relied on a handler-less `Pressable` being focusable, give it a handler or
+    pass `tabIndex={0}`.
+
+- 261f63e: Navigation bars and Select options follow the keyboard patterns, and navigation bars
+  colour their icons by state.
+
+  - `BottomNav`, `FloatingBottomNav` and `TabBar` are one Tab stop — the active tab — with
+    the arrow keys, Home and End moving between tabs on web. Every tab was its own stop.
+  - Their `icon` can be a function of `{ active, color }` (`NavIcon`), so the icon follows
+    the tab: primary on the active `BottomNav` tab, primary-foreground on the
+    `FloatingBottomNav` pill, muted elsewhere. An icon font takes a colour value, not a
+    class, so a fixed-colour icon stayed grey on the active tab — on the floating pill,
+    grey on primary.
+  - `BottomNav` shows selection by colour alone. It used to dim inactive icons to 54%,
+    which also faded the badge inside them below readable contrast.
+  - `BottomNav` pads itself evenly. Its extra fixed bottom padding doubled the safe area
+    inside `AppShell` and pushed the tabs up.
+  - `Select` options draw the focus ring as well as the tinted background, which alone was
+    too faint to find.
+
+  What to check at call sites:
+
+  - Write tab icons as `icon: ({ color }) => <Feather name="home" color={color} />`. A
+    plain element still renders, in whatever colour you gave it.
+  - A `BottomNav` outside `AppShell`, at the bottom of an edge-to-edge screen, needs the
+    bottom safe-area inset from its screen.
+  - `INTERACTION_TOKENS.inactiveOpacity` is removed; nothing in the library used it after
+    this change.
+
+- 9245cd0: Stateful controls follow the WAI-ARIA keyboard patterns on web, which seven of the
+  eight checked did not.
+
+  - `RadioGroup`, `SegmentedControl`, single-choice `ToggleGroup` and `TabsList` are one
+    Tab stop, and the arrow keys move between items. Before, every item was its own Tab
+    stop. Behaviour comes from `@rn-primitives/radio-group`, `toggle-group` and `tabs`,
+    now dependencies pinned to 1.5.2, so there is nothing new to install.
+  - `Checkbox`, `Switch`, radios and tabs answer Space. React Native Web presses on Space
+    only for buttons, so they answered Enter alone; any `Pressable` with one of those
+    roles now handles Space itself.
+  - `TabsContent` is a `tabpanel` named by its tab.
+  - `Accordion` and `Collapsible` triggers say whether they are open (`aria-expanded`).
+  - `CollapsibleTrigger asChild` gives the child the press instead of wrapping it in a
+    second pressable, which nested one control inside another.
+  - `RadioGroupItem` takes `label` and `description`. The row becomes one radio named by
+    its text; before, the text beside a radio was a separate element outside the group.
+
+  What to check at call sites:
+
+  - Replace a `Label` placed beside a `RadioGroupItem` with the item's `label` prop.
+  - In tests, a multiple-choice `ToggleGroup` item on native is now a `checkbox` that is
+    checked, not a `button` that is selected (`getByRole('checkbox')`, `toBeChecked()`).
+  - `withInteractivePressableStyle` and `InteractivePressableOptions` are removed. Render
+    the control through `Pressable` with `feedback` (`pressedVariant`) and
+    `disabledFeedback` (`disabledVariant`), and pass `disabled` to it directly.
+
+- 7dd8d32: Menus close when you choose an item, and work from the keyboard.
+
+  - `DropdownMenuItem`, `ContextMenuItem` and `MenubarItem` with an `onPress` — every real
+    item — left their menu open: the item spread your props over its own closing handler.
+    Choosing an item now runs your `onPress` and closes the menu; call
+    `event.preventDefault()` to keep it open. The three menus now share one
+    implementation, so they cannot drift apart again.
+  - Triggers say whether their menu is open (`aria-expanded`). On web, opening from the
+    keyboard focuses the first item; the arrow keys, Home and End move between items; Escape
+    closes and returns focus to the trigger.
+  - `ContextMenuTrigger` opened only on a long press, which a keyboard or mouse cannot do.
+    On web it also opens on right-click, the context-menu key, Shift+F10, Enter and Space.
+  - Every overlay backdrop — Dialog, AlertDialog, Sheet, ConfirmActionSheet, DrawerMenu,
+    the menus and the date and time pickers — is one component. On web it is no longer a
+    Tab stop sitting in front of the overlay's contents.
+
+  Nothing to change at call sites. `DropdownMenuContentProps` and the other menu part prop
+  types are now aliases of one shared type, with the same props as before.
+
+### Patch Changes
+
+- 30800d8: Centred text is centred on iOS and Android, and `BottomNav` badges are redrawn.
+
+  - `Text`, `ButtonText` and `Label` no longer add 4pt of right padding under a
+    `FontProvider` on iOS and Android. It pushed every centred label 2pt left of centre —
+    button labels, `Badge`, initials, and most visibly a tab's count. `ResolvedFont` loses
+    its `paddingRight` field.
+  - A `BottomNav` count sits in a fixed line box with tabular digits, so it is centred in
+    its pill whatever the font's metrics. It overlaps the icon's top-right corner and grows
+    to the right, so "12" no longer spreads back over the icon.
+
+  Nothing to change at call sites.
+
+- 30800d8: Text fields type in the app's font, and `SmartInput` lays its text out like a composer.
+
+  - In a `card`, the text starts 16pt past a slot's glyph. It started 36pt past it: a row gap,
+    the field's own padding and the slot's padding stacked up.
+  - One line sits on the slots' centre line, and the slots stay on the last line as the
+    field grows. One line used to sit a few points above the icons.
+  - On the web, the field is one line that grows with what is typed, with no resize grip.
+    It was a fixed two-row textarea that scrolled.
+  - On the web, focus colours the card's border (in a `bar`, the field's border) instead of
+    drawing an offset ring around the field inside the card.
+  - `Input`, `Textarea`, `NumericInput`, `SearchField` and `SmartInput` type in the
+    `FontProvider`'s regular family. On iOS and Android they typed in the system font beside
+    text in the app's own; web was unaffected.
+
+  Nothing to change at call sites.
+
+- 1a06125: On iOS, a `DockedInput` inside `KeyboardAwareScreen` now rises above the keyboard. The
+  screen avoided the keyboard with bottom padding, which it measured correctly, but the
+  dock is pinned to the screen's bottom edge, and an absolutely positioned view ignores its
+  parent's padding: the field and its send button stayed under the keyboard. The screen
+  now shortens itself by the keyboard's height instead (`behavior="height"` on iOS).
+- 1a06125: `DrawerMenu` renders every row at once. Its list mounted rows after the first render
+  batch, and on iOS those rows were drawn but never reached the accessibility tree:
+  VoiceOver could not reach any entry past roughly the eighth until the list scrolled.
+- dca0656: `HeaderBackButton` (and so `PageHeader`'s back button) and the date pickers' month arrows
+  draw their chevrons instead of setting a "‹" or "›" character. The character was small in
+  most fonts and sat at the left edge of its 44pt target, so the back button read as a stray
+  mark with a gap beside it; the chevron is now centred. Pass `icon` to use your own.
+- 1a06125: Fields stay above the keyboard on Android. Since apps draw edge to edge, Android no
+  longer shrinks the window for the keyboard, which `KeyboardAwareScreen` and
+  `KeyboardAwareScrollView` relied on there, so the docked field and lower form fields sat
+  under it. Both now shorten themselves to the keyboard's top edge on Android as on iOS
+  (`KeyboardAwareScreen` defaults to `behavior="height"` on every platform); where the
+  window still shrinks, the measured overlap is zero, so nothing is applied twice. `FormModalScreen`,
+  `SheetContent` and `PullToRefreshScrollView` are now built on `KeyboardAwareScrollView`,
+  so their fields follow suit.
+  `SmartInput` also turns off Android's landscape full-screen editor, which hid the app
+  and its send button while typing.
+- 1a06125: `OTPInput` can be tapped and reached by screen readers. Its hidden text field had opacity
+  0: below 0.01 an iOS view takes no touches, and iOS and Android both leave it out of the
+  accessibility tree, so on iOS tapping the cells did nothing and neither VoiceOver nor
+  TalkBack could reach the field. It now sits at 0.011, still invisible — its text is
+  transparent and its caret hidden. On Android it also no longer opens the landscape
+  full-screen editor, which covered the cells.
+
 ## 4.7.1
 
 ### Patch Changes
