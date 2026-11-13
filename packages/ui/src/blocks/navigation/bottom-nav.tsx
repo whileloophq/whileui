@@ -14,6 +14,7 @@ export interface BottomNavItem {
   label: string;
   /** A function receives the tab's colour; see `NavIcon`. */
   icon: NavIcon;
+  /** A count drawn on the icon; nothing at 0, `99+` above 99. */
   badge?: number;
 }
 
@@ -68,18 +69,49 @@ function BottomNavItemComponent({
           which took the badge inside it below contrast and the icon below 3:1. */}
       <View aria-hidden className="relative">
         <View>{renderNavIcon(icon, { active: isActive, color })}</View>
-        {badge !== undefined && badge > 0 && (
-          <View className="absolute -right-2 -top-1 h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1">
-            <Text
-              className="font-bold text-destructive-foreground"
-              style={{ fontSize: visual.bottomNavBadgeFontSize }}
-            >
-              {badge > 99 ? '99+' : badge}
-            </Text>
-          </View>
-        )}
+        {badge !== undefined && badge > 0 && <NavBadge count={badge} />}
       </View>
     </Pressable>
+  );
+}
+
+/**
+ * A count on a tab's icon. Its left half overlaps the icon's top-right corner and a longer
+ * count grows to the right, away from the icon. The anchor is a zero-size view on that
+ * corner, so the badge needs no percentage offset, which resolved differently on iOS.
+ * The line box is the pill's height, so the digits sit in its centre whatever the font's
+ * own metrics.
+ */
+function NavBadge({ count }: { count: number }) {
+  const visual = useVisualTokens();
+  const fontSize = visual.bottomNavBadgeFontSize;
+  const size = fontSize + 6;
+  return (
+    <View className="absolute right-0 top-0">
+      <View
+        className="absolute items-center justify-center rounded-full bg-destructive"
+        style={{
+          left: -size / 2,
+          top: -size / 2,
+          height: size,
+          minWidth: size,
+          paddingHorizontal: size / 4,
+        }}
+      >
+        <Text
+          className="font-semibold text-destructive-foreground"
+          style={{
+            fontSize,
+            lineHeight: size,
+            textAlign: 'center',
+            includeFontPadding: false,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {count > 99 ? '99+' : count}
+        </Text>
+      </View>
+    </View>
   );
 }
 

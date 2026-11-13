@@ -6,6 +6,7 @@ import {
   type TextStyle,
 } from 'react-native';
 import { cn } from '../../lib/cn';
+import { useFieldFont } from '../../lib/font-context';
 import { focusField } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
@@ -58,6 +59,7 @@ const Textarea: ForwardRefComponent<TextInputInstance, TextareaProps> = React.fo
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
     const field = useFormFieldState();
+    const font = useFieldFont();
     const effectiveEditable = editable ?? !field.disabled;
 
     const minHeight =
@@ -69,6 +71,7 @@ const Textarea: ForwardRefComponent<TextInputInstance, TextareaProps> = React.fo
 
     const style: TextStyle = {
       ...typographyStyle(visual, TEXTAREA_TEXT_ROLE[size ?? 'default'] ?? 'label'),
+      ...font,
       minHeight,
       borderWidth: visual.borderWidthControl,
       borderRadius: visual.radiusLg,

@@ -854,6 +854,12 @@ classes are unnecessary for normal hierarchy. `heading` also sets
 `--ui-font-size-display` token (36 by default), so a preset can change it. It is not a
 heading; give it a role yourself if it titles the screen.
 
+Custom fonts: React Native needs one family per weight, so wrap the app in
+`FontProvider` with a `FontFamilyMap` (`{ 'font-normal': 'Brand_400Regular',
+'font-bold': 'Brand_700Bold', … }`). `Text`, `ButtonText` and `Label` pick the family from
+their weight class; `Input`, `Textarea`, `NumericInput`, `SearchField` and `SmartInput` type
+in `font-normal`. Never pass `fontWeight` with a family: Android draws a synthetic bold.
+
 <!-- api:Text -->
 
 | Prop      | Type                                                                                                                    | Default     | Description |
@@ -1916,6 +1922,9 @@ active tab. `BottomNav`, `FloatingBottomNav` and `TabBar` all accept it, and a p
 element still works. Selection is shown by colour alone. The bar pads itself evenly;
 the screen's safe area owns the bottom inset, which `AppShell` applies.
 
+An item's `badge` draws a count on the icon's top-right corner (`99+` above 99); a longer
+count grows away from the icon. The count is part of the tab's name ("Inbox, 12").
+
 <!-- api:BottomNav -->
 
 | Prop                     | Type                    | Default | Description                                     |
@@ -2040,6 +2049,11 @@ Also accepts the props of `ScrollViewProps`.
 ## SmartInput
 
 Compose input for use inline or inside `DockedInput`. `variant`: "bar" or "card". Slots: `leftSlot`, `centerSlot` (intent selector), `rightSlot`. `submitBehavior`: "newline" (default) or "submit"/"blurAndSubmit". `placeholderExamples` animates rotating prompts and respects the platform reduced-motion setting. Forwards ref to `TextInput`.
+
+The field starts one line tall and grows with what is typed up to `smartInputMaxHeight`, on
+the web as well; the slots stay on the last line. In a `card`, the text starts just past a
+slot's glyph and focus colours the card's border; in a `bar`, the field's own border. Pass
+slots that are `size="icon"` buttons (44pt) so one line sits on their centre line.
 
 ```tsx
 import { SmartInput, Button, ButtonText } from '@thewhileloop/whileui';

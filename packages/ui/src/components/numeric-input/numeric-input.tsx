@@ -8,6 +8,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { cn } from '../../lib/cn';
+import { useFieldFont } from '../../lib/font-context';
 import { focusFieldWrapper } from '../../lib/focus-ring';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
@@ -184,10 +185,12 @@ function numericInputTextStyle(
   visual: ReturnType<typeof useVisualTokens>,
   size: NumericInputSize,
   unstyled: boolean,
+  font: { fontFamily: string } | undefined,
   style: TextInputProps['style']
 ) {
   const base = {
     ...typographyStyle(visual, size === 'compact' ? 'caption' : 'label'),
+    ...font,
     paddingVertical: size === 'compact' ? visual.controlPaddingYSm : visual.controlPaddingYDefault,
     paddingHorizontal: unstyled ? 0 : visual.controlPaddingXDefault,
   };
@@ -329,6 +332,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
     const field = useFormFieldState();
+    const font = useFieldFont();
     const effectiveEditable = editable ?? !field.disabled;
     const effectiveVariant = variant ?? (field.invalid ? 'error' : 'default');
     // The border is on the wrapper and the focus on the field inside it.
@@ -385,7 +389,7 @@ const NumericInput: ForwardRefComponent<TextInputInstance, NumericInputProps> = 
               !unstyled && webAutofillField,
               inputClassName
             )}
-            style={numericInputTextStyle(visual, size, unstyled, styleProp)}
+            style={numericInputTextStyle(visual, size, unstyled, font, styleProp)}
             value={model.textValue}
             onChangeText={model.handleTextChange}
             onFocus={(event) => {

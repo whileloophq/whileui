@@ -1,4 +1,4 @@
-import { AccessibilityInfo, Text } from 'react-native';
+import { AccessibilityInfo, StyleSheet, Text } from 'react-native';
 import { act, render, screen, userEvent } from '../../test/render';
 import { SmartInput } from './smart-input';
 
@@ -22,6 +22,30 @@ describe('SmartInput', () => {
     expect(screen.getByText('left')).toBeOnTheScreen();
     expect(screen.getByText('center')).toBeOnTheScreen();
     expect(screen.getByText('right')).toBeOnTheScreen();
+  });
+
+  // A card's text used to start a row gap, a slot's padding and a field's padding past the
+  // slot — 36pt from the glyph — and one line sat above the slots' centre line.
+  it('starts a card’s text beside its slots, centred on them', async () => {
+    await render(
+      <SmartInput
+        variant="card"
+        placeholder="Ask"
+        leftSlot={<Text>left</Text>}
+        rightSlot={<Text>right</Text>}
+      />
+    );
+    const style = StyleSheet.flatten(screen.getByPlaceholderText('Ask').props.style) as {
+      paddingLeft: number;
+      paddingRight: number;
+      paddingVertical: number;
+      lineHeight: number;
+      minHeight: number;
+    };
+
+    expect(style.paddingLeft).toBeLessThanOrEqual(4);
+    expect(style.paddingRight).toBeLessThanOrEqual(4);
+    expect(style.lineHeight + 2 * style.paddingVertical).toBe(style.minHeight);
   });
 
   it('reports what is typed', async () => {

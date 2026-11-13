@@ -1,7 +1,23 @@
+import { StyleSheet } from 'react-native';
+import { FontProvider } from '../../lib/font-context';
 import { render, screen } from '../../test/render';
 import { Text } from './text';
 
 describe('Text', () => {
+  // A resolved font once carried 4pt of right padding on iOS and Android, which pushed
+  // every centred label — badge counts, button labels, initials — 2pt left of centre.
+  it('takes the app font without padding one side', async () => {
+    await render(
+      <FontProvider value={{ 'font-normal': 'Brand_400Regular', 'font-bold': 'Brand_700Bold' }}>
+        <Text className="font-bold">12</Text>
+      </FontProvider>
+    );
+    const style = StyleSheet.flatten(screen.getByText('12').props.style);
+
+    expect(style).toMatchObject({ fontFamily: 'Brand_700Bold' });
+    expect(style).not.toHaveProperty('paddingRight');
+  });
+
   it('renders an eyebrow at the label scale in the muted colour', async () => {
     await render(<Text variant="eyebrow">Members</Text>);
 

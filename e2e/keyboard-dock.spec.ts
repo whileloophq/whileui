@@ -4,7 +4,7 @@ import { openCategory, openShowcase } from './showcase';
 /**
  * Web has no OS keyboard to avoid. This checks the other half of the contract: the
  * docked field is on screen at a phone width and a desktop width, Tab reaches it, and
- * the focus ring is visible. It must not depend on a translated native keyboard offset.
+ * focus is visible — as a text field shows it, by its own border taking the ring colour. It must not depend on a translated native keyboard offset.
  */
 const WIDTHS = [
   { name: 'phone', width: 390, height: 844 },
@@ -15,17 +15,19 @@ for (const viewport of WIDTHS) {
   test.describe(viewport.name, () => {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
-    test('the docked field stays in the viewport and shows a focus ring', async ({ page }) => {
+    test('the docked field stays in the viewport and shows focus', async ({ page }) => {
       await openShowcase(page);
       await openCategory(page, 'Layout');
       await page.getByRole('button', { name: 'Open keyboard screen' }).click();
 
       const close = page.getByRole('button', { name: 'Close keyboard screen' });
       await close.waitFor();
+      const field = page.getByRole('textbox', { name: 'Message' });
+      const borderColor = () => field.evaluate((el) => getComputedStyle(el).borderTopColor);
+      const restingBorder = await borderColor();
       await close.focus();
       await page.keyboard.press('Tab');
 
-      const field = page.getByRole('textbox', { name: 'Message' });
       await expect(field).toBeFocused();
       await page.keyboard.type('hello');
       await expect(field).toHaveValue('hello');
@@ -43,13 +45,7 @@ for (const viewport of WIDTHS) {
       // Docked to the bottom edge, not parked at the top of a scrolling page.
       expect(box.y + box.height).toBeGreaterThan(size.height * 0.7);
 
-      const indicated = await field.evaluate((el) => {
-        const style = getComputedStyle(el);
-        const hasRing = /0px 0px 0px [1-9]\d*px/.test(style.boxShadow);
-        const hasOutline = style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
-        return hasRing || hasOutline;
-      });
-      expect(indicated, 'message field has no focus indicator').toBe(true);
+      expect(await borderColor(), 'message field shows no focus').not.toBe(restingBorder);
     });
   });
 }

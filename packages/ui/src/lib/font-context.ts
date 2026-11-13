@@ -1,5 +1,4 @@
 import { createContext, useContext } from 'react';
-import { Platform } from 'react-native';
 
 /**
  * Map of Tailwind font-weight class names to the actual font family name
@@ -21,7 +20,6 @@ export interface FontFamilyMap {
 
 export interface ResolvedFont {
   fontFamily: string;
-  paddingRight?: number;
   /** Omit fontWeight — with explicit font files (Nunito_700Bold etc.) the family
    *  name encodes weight. Passing fontWeight on Android triggers synthetic bold
    *  (setTypeface(_, BOLD)) which distorts B, D, P, R. */
@@ -55,22 +53,19 @@ export function useResolveFontFamily(className?: string): ResolvedFontResult | u
   const map = useContext(FontContext);
   if (!map) return undefined;
 
-  const isNative = Platform.OS !== 'web';
-  const paddingRight = isNative ? 4 : undefined;
-
   if (!className)
     return {
-      style: { fontFamily: map['font-normal'], paddingRight },
+      style: { fontFamily: map['font-normal'] },
       className: '',
     };
 
   const classes = className.split(/\s+/);
-  let resolved: ResolvedFont = { fontFamily: map['font-normal'], paddingRight };
+  let resolved: ResolvedFont = { fontFamily: map['font-normal'] };
   for (let i = classes.length - 1; i >= 0; i--) {
     const cls = classes[i] as keyof FontFamilyMap;
     const mapped = map[cls];
     if (mapped) {
-      resolved = { fontFamily: mapped, paddingRight };
+      resolved = { fontFamily: mapped };
       break;
     }
   }
@@ -82,4 +77,15 @@ export function useResolveFontFamily(className?: string): ResolvedFontResult | u
       .replace(/\s{2,}/g, ' ')
       .trim(),
   };
+}
+
+/**
+ * The family a text field types in: the app's regular weight. Without it a field on iOS
+ * and Android typed in the system font beside text in the app's own, because a
+ * `TextInput` reads no family from `FontProvider`. Returns only the family — a field
+ * keeps its own padding.
+ */
+export function useFieldFont(): { fontFamily: string } | undefined {
+  const map = useContext(FontContext);
+  return map ? { fontFamily: map['font-normal'] } : undefined;
 }

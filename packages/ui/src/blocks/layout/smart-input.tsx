@@ -8,11 +8,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../lib/cn';
-import { focusRing } from '../../lib/focus-ring';
+import { focusField, focusFieldWrapper } from '../../lib/focus-ring';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
 import { useVisualTokens } from '../../lib/visual-tokens';
 import { webAutofillField } from '../../lib/web-autofill';
+import { useFieldFont } from '../../lib/font-context';
 import {
   controlRecipe,
   shadowStyle,
@@ -216,6 +217,8 @@ export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps>
       onChangeText,
       editable = true,
       style,
+      onFocus,
+      onBlur,
       ...props
     },
     ref
@@ -224,9 +227,21 @@ export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps>
     const colors = useThemeColors();
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
+    const font = useFieldFont();
+    const card = variant === 'card';
+    // A card is one surface, so its controls sit an even inset from its edge, and beside a
+    // slot the field keeps only enough padding that a glyph's overhang is not clipped. The
+    // text starts just past the slot's glyph, not a gap, a slot's padding and a field's
+    // padding later.
+    const inset = card ? visual.controlPaddingYSm : visual.controlPaddingXSm;
+    const textInset = visual.controlPaddingYSm / 2;
+    const lineHeight = Math.round(visual.fontSizeSm * 1.4);
+    const fieldBorder = card ? 0 : visual.borderWidthControl;
     const bottomPadding = safeArea
       ? Math.max(insets.bottom, visual.controlPaddingYSm)
       : visual.controlPaddingYSm;
+    // A card shows focus on its own border; the field inside it has none to colour.
+    const [focused, setFocused] = useState(false);
     const placeholderState = useSmartInputPlaceholder({
       value,
       defaultValue,
@@ -242,19 +257,20 @@ export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps>
     return (
       <View
         className={cn(
-          'w-full flex-row items-center gap-2 bg-background',
-          variant === 'bar' && 'border-border',
-          variant === 'card' && 'border-border',
+          // Slots stay on the last line as the field grows, where the thumb is.
+          'w-full flex-row items-end border-border bg-background',
+          !card && 'gap-2',
+          card && focused && focusFieldWrapper,
           className
         )}
         style={[
           {
-            paddingHorizontal: visual.controlPaddingXSm,
+            paddingHorizontal: inset,
             paddingTop: visual.controlPaddingYSm,
             paddingBottom: bottomPadding,
           },
           variant === 'bar' ? { borderTopWidth: visual.borderWidthHairline } : null,
-          variant === 'card'
+          card
             ? {
                 borderRadius: surfaceRadius(visual, 'xl'),
                 borderWidth: visual.borderWidthHairline,
@@ -270,17 +286,32 @@ export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps>
           style={[
             controlRecipe(visual, 'default'),
             typographyStyle(visual, 'label'),
-            variant === 'bar' ? { borderWidth: visual.borderWidthControl } : null,
+            font,
+            {
+              borderWidth: fieldBorder,
+              // One line sits on the slots' centre line: the padding is what the line
+              // leaves of the control height, not a fixed value that leaves it high.
+              lineHeight,
+              paddingVertical: (visual.controlHeightDefault - lineHeight) / 2 - fieldBorder,
+            },
+            card
+              ? {
+                  paddingLeft: leftSlot || centerSlot ? textInset : visual.controlPaddingXSm,
+                  paddingRight: rightSlot ? textInset : visual.controlPaddingXSm,
+                }
+              : null,
             { maxHeight: visual.smartInputMaxHeight },
             !editable ? { opacity: interaction.disabledOpacity } : null,
             style,
           ]}
           className={cn(
             'flex-1 text-foreground placeholder:text-muted-foreground',
-            focusRing,
+            // A browser textarea is two rows tall with a resize grip; a composer is one
+            // line that grows with what is typed, as it does on iOS and Android.
+            'web:resize-none web:field-sizing-content',
+            card ? 'bg-transparent web:outline-none' : focusField,
             variant === 'bar' && 'border-border bg-muted',
             variant === 'bar' && webAutofillField,
-            variant === 'card' && 'bg-transparent',
             inputClassName
           )}
           multiline
@@ -296,6 +327,14 @@ export const SmartInput: ForwardRefComponent<TextInputInstance, SmartInputProps>
           defaultValue={defaultValue}
           onChangeText={placeholderState.onChangeText}
           editable={editable}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
           {...props}
         />
         <SmartInputSlot>{rightSlot}</SmartInputSlot>

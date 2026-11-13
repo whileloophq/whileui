@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, type TextInputInstance, type TextInputProps } from 'react-native';
 import { cn } from '../../lib/cn';
 import { focusFieldWrapper } from '../../lib/focus-ring';
+import { useFieldFont } from '../../lib/font-context';
 import { tv, type VariantProps } from '../../lib/tv';
 import { useThemeColors } from '../../lib/theme-colors';
 import { useInteractionTokens } from '../../lib/interaction-tokens';
@@ -60,6 +61,7 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
     const interaction = useInteractionTokens();
     const visual = useVisualTokens();
     const field = useFormFieldState();
+    const font = useFieldFont();
     const effectiveEditable = editable ?? !field.disabled;
     const effectiveVariant = variant ?? (field.invalid ? 'error' : 'default');
     // The border is on this wrapper and the focus is on the TextInput inside it, so the
@@ -101,6 +103,7 @@ const Input: ForwardRefComponent<TextInputInstance, InputProps> = React.forwardR
           )}
           style={{
             ...typographyStyle(visual, 'label'),
+            ...font,
             minHeight: visual.controlHeightDefault - 2,
             paddingVertical: visual.controlPaddingYDefault,
           }}
